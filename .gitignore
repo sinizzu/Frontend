@@ -1,0 +1,8 @@
+# 모듈
+*/package-lock.json
+paperinsight/node_modules
+.env
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
