@@ -70,7 +70,7 @@ paperinsight/
 - `api.js`: API 호출 관련 파일입니다.
 
 ## src/store
-- regex.js: redux 관련 파일입니다.
+- `regex.js`: redux 관련 파일입니다.
 
 ## src/styles
 - 스타일시트 파일을 저장
