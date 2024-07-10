@@ -65,7 +65,7 @@ const PDFPreview = ({ pdfUrl }) => {
 
   const handleWebSearch = async () => {
     setSearchResult(''); // Reset search result before making a new request
-
+  
     try {
       const response = await fetch(`http://${jhIp}:3000/search/searchWeb`, {
         method: 'POST',
@@ -74,19 +74,29 @@ const PDFPreview = ({ pdfUrl }) => {
         },
         body: JSON.stringify({ text: selectedText }),
       });
-
+  
       if (response.ok) {
         const data = await response.json();
         const formattedResult = data.result.map(result => 
-          `<li><a href="${result.link}" class="search-link" target="_blank">${result.title}</a></li>`
+          `<li class="search-item">
+            <a href="${result.link}" class="search-link" target="_blank">
+              <div class="search-item-header">
+                ${result.image ? `<img src="${result.image}" alt="${result.title}" class="search-image">` : ''}
+                <div class="search-item-content">
+                  ${result.title}
+                </div>
+              </div>
+              ${result.snippet ? `<p class="search-snippet">${result.snippet}</p>` : ''}
+            </a>
+          </li>`
         ).join('');
         const resultHtml = `
-          <div style="font-size: larger; font-weight: bold;">${selectedText}</div>
+          <div style="font-size: 20px; font-weight: bold;">Search results for ${selectedText}</div>
           <ul>${formattedResult}</ul>
         `;
         setSearchResult(resultHtml);
         setSearchAnchorEl(anchorEl); // Set search popover anchor after receiving the response
-
+  
       } else {
         console.error('Error fetching data:', response.statusText);
       }
@@ -94,6 +104,9 @@ const PDFPreview = ({ pdfUrl }) => {
       console.error('Error fetching data:', error);
     }
   };
+  
+  
+  
 
   const open = Boolean(anchorEl);
   const searchOpen = Boolean(searchAnchorEl);
@@ -106,6 +119,53 @@ const PDFPreview = ({ pdfUrl }) => {
         handleTextSelection(e);
       }
     }}>
+      <style>
+        {`
+        .search-link {
+            text-decoration: none;
+            color: inherit;
+            font-weight: bold;
+        }
+        .search-link:hover {
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .search-link .search-image,
+        .search-link .search-snippet,
+        .search-link .search-item-content {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .search-snippet {
+            font-size: 1em;
+            font-weight: normal;
+            color: #4d5156;
+            margin-top: 5px;
+        }
+        .search-image {
+            max-width: 60px;
+            max-height: 60px;
+            width: auto;
+            height: auto;
+            margin-right: 10px;
+        }
+        .search-item {
+            display: flex;
+            flex-direction: column; /* 세로 방향으로 정렬 */
+            margin-bottom: 20px;
+        }
+        .search-item-header {
+            display: flex;
+            align-items: flex-start;
+        }
+        .search-item-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        `}
+      </style>
+
       {pdfUrl ? (
         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.0.279/build/pdf.worker.min.js">
           <Viewer
