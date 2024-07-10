@@ -8,6 +8,7 @@ import PDFPreview from './pages/pdfpreview';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Link } from 'react-router-dom';
 import Header from './components/header';
+
 const drawerWidth = 80;
 
 const App = () => {
@@ -31,11 +32,11 @@ const App = () => {
           </Box>
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pb: 5 }}>
             <List>
-            <ListItem button component={Link} to="/">
-              <ListItemIcon>
-                <AccountCircleIcon sx={{ fontSize: 40 }}/>
-              </ListItemIcon>
-            </ListItem>
+              <ListItem button component={Link} to="/">
+                <ListItemIcon>
+                  <AccountCircleIcon sx={{ fontSize: 40 }} />
+                </ListItemIcon>
+              </ListItem>
             </List>
           </Box>
         </Drawer>
@@ -47,10 +48,10 @@ const App = () => {
           <Grid container spacing={2}>
             <Grid item xs={4}>
               <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/search" element={<Search />} />
-              <Route path="/paper" element={<div>Paper Page</div>} />
-            </Routes>
+                <Route path="/" element={<Home setSelectedPdf={setSelectedPdf} />} />
+                <Route path="/search" element={<Search />} />
+                <Route path="/paper" element={<div>Paper Page</div>} />
+              </Routes>
             </Grid>
             <Grid item xs={6}>
               <PDFPreview pdfUrl={selectedPdf} />
