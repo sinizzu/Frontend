@@ -5,6 +5,7 @@ import Menu from './components/menu';
 import Search from './pages/search';
 import Home from './pages/driver';
 import PDFPreview from './pages/pdfpreview';
+import Keyword from './pages/keyword';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Link } from 'react-router-dom';
 import Header from './components/header';
@@ -50,6 +51,7 @@ const App = () => {
               <Route path="/" element={<Home />} />
               <Route path="/search" element={<Search />} />
               <Route path="/paper" element={<div>Paper Page</div>} />
+              <Route path="/Keyword" element={<Keyword />} />
             </Routes>
             </Grid>
             <Grid item xs={6}>
