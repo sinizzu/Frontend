@@ -4,6 +4,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ChatIcon from '@mui/icons-material/Chat';
 import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import BookIcon from '@mui/icons-material/Book';
+import KeyIcon from '@mui/icons-material/Key';
 import { Link } from 'react-router-dom';
 
 function Menu() {
@@ -27,6 +28,11 @@ function Menu() {
       <ListItem button component={Link} to="/paper">
         <ListItemIcon>
           <BookIcon sx={{ fontSize: 40 }}/>
+        </ListItemIcon>
+      </ListItem>
+      <ListItem button component={Link} to="/keyword">
+        <ListItemIcon>
+          <KeyIcon sx={{ fontSize: 40 }}/>
         </ListItemIcon>
       </ListItem>
     </List>
