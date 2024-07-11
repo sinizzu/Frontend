@@ -17,9 +17,10 @@ const PDFPreview = ({ pdfUrl }) => {
 
   useEffect(() => {
     if (!jhIp) {
-      setJhIp(process.env.REACT_APP_JH_IP);
+      setJhIp(process.env.MAIN_FASTAPI);
     }
   }, [jhIp]);
+
 
   useEffect(() => {
     const handleLinkClick = (event) => {
@@ -91,8 +92,8 @@ const PDFPreview = ({ pdfUrl }) => {
           </li>`
         ).join('');
         const resultHtml = `
-          <div style="font-size: 20px; font-weight: bold;">Search results for ${selectedText}</div>
-          <ul>${formattedResult}</ul>
+          <div style="font-size: 20px; font-weight: bold;">Search results for "${selectedText}"</div>
+          <ul class="spaced-ul">${formattedResult}</ul>
         `;
         setSearchResult(resultHtml);
         setSearchAnchorEl(anchorEl); // Set search popover anchor after receiving the response
@@ -105,9 +106,6 @@ const PDFPreview = ({ pdfUrl }) => {
     }
   };
   
-  
-  
-
   const open = Boolean(anchorEl);
   const searchOpen = Boolean(searchAnchorEl);
   const id = open ? 'simple-popover' : undefined;
@@ -153,6 +151,7 @@ const PDFPreview = ({ pdfUrl }) => {
             display: flex;
             flex-direction: column; /* 세로 방향으로 정렬 */
             margin-bottom: 20px;
+            border-bottom: 1px solid #ccc;
         }
         .search-item-header {
             display: flex;
@@ -163,6 +162,9 @@ const PDFPreview = ({ pdfUrl }) => {
             flex-direction: column;
             flex: 1;
         }
+        .spaced-ul {
+            margin-top: 35px;
+          }
         `}
       </style>
 
