@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Paper, Typography, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { getDocument } from 'pdfjs-dist';
@@ -10,10 +10,18 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 
 
 function Home({ setSelectedPdf }) {
+  const [jhIp, setJhIp] = useState(process.env.REACT_APP_JH_IP);
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [thumbnails, setThumbnails] = useState([]);
+
+
+  useEffect(() => {
+    if (!jhIp) {
+      setJhIp(process.env.MAIN_FASTAPI);
+    }
+  }, [jhIp]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -53,9 +61,39 @@ function Home({ setSelectedPdf }) {
     ]);
   };
 
-  const handleFileUpload = () => {
-    console.log('파일 업로드:', file);
-    handleClose();
+  const handleFileUpload = async () => {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch(`http://${jhIp}:3000/api/paper/saveToS3`, {  
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      console.log('File uploaded to S3:', data.file_url);
+
+      // 업로드된 파일의 UUID를 사용하여 썸네일 업데이트
+      setThumbnails((prevThumbnails) => 
+        prevThumbnails.map((thumbnail) => 
+          thumbnail.name === file.name ? { ...thumbnail, uuid: data.uuid, file_url: data.file_url } : thumbnail
+        )
+      );
+
+      handleClose();
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  const handleThumbnailClick = (fileUrl) => {
+    setSelectedPdf(fileUrl); // 선택한 PDF 파일 URL을 설정
   };
 
   return (
@@ -66,7 +104,7 @@ function Home({ setSelectedPdf }) {
           +Add PDF
         </Button>
         {thumbnails.map((thumbnail, index) => (
-          <Paper key={index} sx={{ p: 2, mb: 2 }}>
+          <Paper key={index} sx={{ p: 2, mb: 2 }} onClick={() => handleThumbnailClick(thumbnail.file_url)}>
             <Typography variant="body2" sx={{ fontSize: '14px', mb: 1 }}>{thumbnail.name}</Typography>
             <img src={thumbnail.url} alt={thumbnail.name} width={150} />
           </Paper>
@@ -93,7 +131,7 @@ function Home({ setSelectedPdf }) {
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
           <Button onClick={handleFileUpload} variant="contained" color="primary">
-            Upload
+            Save
           </Button>
         </DialogActions>
       </Dialog>
