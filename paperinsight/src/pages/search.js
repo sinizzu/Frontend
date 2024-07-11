@@ -1,27 +1,12 @@
 import React, { useState } from 'react';
-import { Container, Paper, Typography, Box, TextField, Select, MenuItem, FormControl } from '@mui/material';
-
-const papers = [
-  {
-    title: "Towards Robust Speech Representation Learning for Thousands of Languages",
-    authors: "William Chen1, Wangyou Zhang1,2, Yifan Peng1, Xinjiang Li3, Jinchuan Tian1, Jiatong Shi1, Xuankai Chang1, Soumi Maiti1, Karen Livescu1,4, Shinji Watanabe1",
-    summary: "Self-supervised learning (SSL) has helped extend speech technologies to more languages by reducing the need for labeled data. However, models are still far from supporting the world's 7000+ languages...",
-    date: "30 June 2024",
-    pdf: "path/to/pdf1.pdf"
-  },
-  {
-    title: "Characterizing Stereotypical Bias from Privacy-preserving Pre-Training",
-    authors: "Simran Arlot, Rene Gulden, Annica Schreiner",
-    summary: "Biases can introduce real challenges for model privatization, which are known to degrade language modeling capabilities, unfair social outcomes and undesired biases...",
-    date: "30 June 2024",
-    pdf: "path/to/pdf2.pdf"
-  }
-  // Add more papers as needed
-];
+import { Container, Paper, Typography, Box, TextField, Select, MenuItem, FormControl, Button } from '@mui/material';
+import axios from 'axios';
 
 const Search = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchCategory, setSearchCategory] = useState('keyword');
+  const [papers, setPapers] = useState([]);
+  const [expandedAbstracts, setExpandedAbstracts] = useState({});
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
@@ -31,22 +16,59 @@ const Search = () => {
     setSearchCategory(event.target.value);
   };
 
-  const handleSearchSubmit = () => {
-    console.log("Search term:", searchTerm);
-    console.log("Search category:", searchCategory);
-  };
-
-  const handleKeyPress = (event) => {
-    if (event.key === 'Enter') {
-      handleSearchSubmit();
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' && event.nativeEvent.isComposing === false) {
+      console.log("Search term:", searchTerm);
+      console.log("Search category:", searchCategory);
+      const MainFastAPI = process.env.REACT_APP_MainFastAPI;
+      let response = null;
+      if (searchCategory === 'keyword') {
+        response = axios.get(`${MainFastAPI}/api/paper/searchKeyword?searchword=${searchTerm}`);
+      }
+      else if (searchCategory === 'sentence') {
+        response = axios.get(`${MainFastAPI}/api/paper/getColl?searchword=${searchTerm}`);
+      }
+      response.then((res) => {
+        const { resultCode, data } = res.data;
+        if (resultCode === 200) {
+          setPapers(data); // Update the papers state with the new data
+        } else {
+          console.error('Error: ', res.data);
+        }
+      }).catch((error) => {
+        console.error('Error fetching data:', error);
+      });
     }
   };
+  const toggleAbstract = (index) => {
+    setExpandedAbstracts((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
 
+  const truncateAbstract = (abstract, index) => {
+    if (abstract.length > 200) {
+      if (expandedAbstracts[index]) {
+        return (
+          <>
+            {abstract} <Button onClick={() => toggleAbstract(index)} sx={{ fontSize: '10px' }}>show less</Button>
+          </>
+        );
+      }
+      return (
+        <>
+          {abstract.substring(0, 200)}... <Button onClick={() => toggleAbstract(index)} sx={{ fontSize: '10px' }}>show more</Button>
+        </>
+      );
+    }
+    return abstract;
+  };
   return (
-    <Box sx={{ height: '88vh', overflow: 'auto', borderRight: '1px solid #ccc', pr: 2 }}>
+    <Box sx={{ height: '87vh', overflow: 'auto', borderRight: '1px solid #ccc', pr: 2 }}>
       <h1>Paper Search</h1>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, maxWidth: '750px' }}>
-        <FormControl sx={{ mr: 1 }}>
+      <Box sx={{ display: 'flex', mb: 3, maxWidth: '750px' }}>
+        <FormControl sx={{ mr: 1, flexGrow: 1 }}>
           <Select
             labelId="search-category-label"
             id="search-category"
@@ -55,7 +77,7 @@ const Search = () => {
             sx={{ fontSize: '12px' }}
           >
             <MenuItem value="keyword" sx={{ fontSize: '12px' }}>키워드검색</MenuItem>
-            <MenuItem value="setence" sx={{ fontSize: '12px' }}>구어체검색</MenuItem>
+            <MenuItem value="sentence" sx={{ fontSize: '12px' }}>구어체검색</MenuItem>
           </Select>
         </FormControl>
         <TextField 
@@ -63,8 +85,8 @@ const Search = () => {
           placeholder="Search..." 
           value={searchTerm}
           onChange={handleSearchChange}
-          onKeyPress={handleKeyPress}
-          sx={{ flexGrow: 0.8 }}
+          onKeyDown={handleKeyDown}
+          sx={{ flexGrow: 10 }}
           InputProps={{
             style: {
               fontSize: '12px',
@@ -77,11 +99,34 @@ const Search = () => {
       </Box>
       <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
         {papers.map((paper, index) => (
-          <Paper key={index} sx={{ p: 2, mb: 2 }}>
-            <Typography variant="h6" sx={{ fontSize: '14px' }}>{paper.title}</Typography>
-            <Typography variant="subtitle1" sx={{ fontSize: '10px' }}>{paper.authors}</Typography>
-            <Typography variant="body2" sx={{ fontSize: '10px' }}>{paper.summary}</Typography>
-            <Typography variant="caption" sx={{ fontSize: '10px' }}>{paper.date}</Typography>
+          <Paper key={index} sx={{ p: 2, mb: 2, border: '1px solid #ccc' }}>
+            <Typography variant="body2" sx={{ fontSize: '12px', color: '#666' }}>
+              {index + 1}. category: {paper.category}
+            </Typography>
+            <Typography variant="h6" sx={{ fontSize: '18px', color: '#1a73e8', mb: 1 }}>
+              {paper.title}
+            </Typography>
+            <Typography variant="body2" sx={{ fontSize: '12px', color: '#333' }}>
+              <strong>Authors:</strong> {paper.authors.join(', ')}
+            </Typography>
+            <Typography variant="body2" sx={{ fontSize: '12px', color: '#333', mt: 1 }}>
+              <strong>Abstract:</strong> {truncateAbstract(paper.abstract, index)}
+            </Typography>
+            <Typography variant="body2" sx={{ fontSize: '10px', color: '#999', mt: 1 }}>
+              Submitted {new Date(paper.published).toLocaleDateString()}
+            </Typography>
+            <Box sx={{ textAlign: 'right', mt: 2 }}>
+              <Button 
+                variant="outlined" 
+                color="secondary" 
+                href={paper.pdf_link} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                sx={{ fontSize: '12px' }}
+              >
+                PDF로 보기
+              </Button>
+            </Box>
           </Paper>
         ))}
       </Container>
