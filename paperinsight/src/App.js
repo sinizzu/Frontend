@@ -18,20 +18,24 @@ const App = () => {
   return (
     <Router>
       <Box sx={{ display: 'flex', overflow: 'hidden' }}>
+        {/* 헤더 */}
         <Header />
+        {/* Drawer == 옆 팝업 */}
         <Drawer
           variant="permanent"
           sx={{
+            mt:5,
             width: drawerWidth,
             flexShrink: 0,
             [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
           }}
         >
-          <Toolbar />
-          <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 5 }}>
+          {/* 메뉴 */}
+          <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 5, mt: 5 }}>
             <Menu />
           </Box>
-          <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pb: 5 }}>
+          {/* 하단 유저 아이콘 */}
+          <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pb: 5, overflow: 'hidden', mt: 5 }}>
             <List>
               <ListItem button component={Link} to="/">
                 <ListItemIcon>
@@ -43,9 +47,8 @@ const App = () => {
         </Drawer>
         <Box
           component="main"
-          sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}
+          sx={{ flexGrow: 1, bgcolor: 'background.default', pl: 3,pt:10, width: '100%' }}
         >
-          <Toolbar />
           <Grid container spacing={2}>
             <Grid item xs={4}>
               <Routes>
