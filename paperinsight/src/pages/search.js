@@ -16,6 +16,31 @@ const Search = ({ setSelectedPdf }) => {
     setSearchCategory(event.target.value);
   };
 
+// pdf로 보기 버튼 눌렀을 때 viewer로 연결 및 ocr 실행 및 저장
+  const handleButtonClick = async (pdfLink) => {
+    // PDF 링크를 setSelectedPdf로 설정
+    setSelectedPdf(pdfLink);
+  
+    try {
+      const MainFastAPI = process.env.REACT_APP_MainFastAPI;
+      const formData = new URLSearchParams();
+      formData.append('pdfUrl', pdfLink);
+  
+      const response = await axios.post(`${MainFastAPI}/api/ocr/ocrTest`, 
+        formData,
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+      );
+  
+      if (response.status === 200) {
+        console.log('OCR 요청 성공:', response.data);
+      } else {
+        console.error('OCR 요청 실패:', response.statusText);
+      }
+    } catch (error) {
+      console.error('OCR 요청 에러:', error);
+    }
+  };
+
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && event.nativeEvent.isComposing === false) {
       console.log("Search term:", searchTerm);
@@ -119,7 +144,7 @@ const Search = ({ setSelectedPdf }) => {
               <Button 
                 variant="outlined" 
                 color="secondary" 
-                onClick={()=> setSelectedPdf(paper.pdf_link)}
+                onClick={() => handleButtonClick(paper.pdf_link)}
                 sx={{ fontSize: '12px' }}
               >
                 PDF로 보기

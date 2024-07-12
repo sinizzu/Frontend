@@ -4,6 +4,7 @@ import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import { Popover, Button } from '@mui/material';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import axios from 'axios';
 
 const PDFPreview = ({ pdfUrl }) => {
   const [jhIp, setJhIp] = useState(process.env.REACT_APP_JH_IP);
@@ -68,16 +69,13 @@ const PDFPreview = ({ pdfUrl }) => {
     setSearchResult(''); // Reset search result before making a new request
   
     try {
-      const response = await fetch(`http://${jhIp}:3000/search/searchWeb`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: selectedText }),
-      });
+      const response = await axios.post(`http://${jhIp}:3000/search/searchWeb`, 
+        { text: selectedText },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
   
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status === 200) {
+        const data = response.data;
         const formattedResult = data.result.map(result => 
           `<li class="search-item">
             <a href="${result.link}" class="search-link" target="_blank">
@@ -97,7 +95,6 @@ const PDFPreview = ({ pdfUrl }) => {
         `;
         setSearchResult(resultHtml);
         setSearchAnchorEl(anchorEl); // Set search popover anchor after receiving the response
-  
       } else {
         console.error('Error fetching data:', response.statusText);
       }
@@ -105,7 +102,6 @@ const PDFPreview = ({ pdfUrl }) => {
       console.error('Error fetching data:', error);
     }
   };
-  
   const open = Boolean(anchorEl);
   const searchOpen = Boolean(searchAnchorEl);
   const id = open ? 'simple-popover' : undefined;
