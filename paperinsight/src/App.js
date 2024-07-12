@@ -53,7 +53,7 @@ const App = () => {
             <Grid item xs={4}>
               <Routes>
               <Route path="/" element={<Home setSelectedPdf={setSelectedPdf} />} />
-              <Route path="/search" element={<Search />} />
+              <Route path="/search" element={<Search setSelectedPdf={setSelectedPdf} />} />
               <Route path="/paper" element={<div>Paper Page</div>} />
               <Route path="/Keyword" element={<Keyword />} />
               </Routes>

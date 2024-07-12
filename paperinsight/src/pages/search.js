@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Container, Paper, Typography, Box, TextField, Select, MenuItem, FormControl, Button } from '@mui/material';
 import axios from 'axios';
 
-const Search = () => {
+const Search = ({ setSelectedPdf }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchCategory, setSearchCategory] = useState('keyword');
   const [papers, setPapers] = useState([]);
@@ -119,9 +119,7 @@ const Search = () => {
               <Button 
                 variant="outlined" 
                 color="secondary" 
-                href={paper.pdf_link} 
-                target="_blank" 
-                rel="noopener noreferrer"
+                onClick={()=> setSelectedPdf(paper.pdf_link)}
                 sx={{ fontSize: '12px' }}
               >
                 PDF로 보기
