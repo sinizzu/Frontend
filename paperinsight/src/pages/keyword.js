@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import config from '../config/config.json';
+import { useLocation } from 'react-router-dom';
 import { MenuItem, FormControl, Select, Typography, Button } from '@mui/material';
-//config파일에서 backend_ip를 설정해주세요...
-const Backend_ip = config.Backend_ip;
 
+// env에 IP 가져오기
+const MainFastAPI = process.env.REACT_APP_MainFastAPI;
+const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
 function Keyword() {
+    const location = useLocation();
+    const title = location.state?.title || '';
+    
     const [searchCategory, setSearchCategory] = useState('summary'); // 기본값을 'summary'로 설정
     const [keywords, setKeywords] = useState({}); // 키워드 목록 상태
     const [loading, setLoading] = useState(true); // 데이터 로딩 상태
@@ -16,23 +20,24 @@ function Keyword() {
     const [wikiError, setWikiError] = useState(null); // 위키 검색 에러 상태
     const [showLength, setShowLength] = useState(200); // 표시할 텍스트 길이 상태
 
-    // 컴포넌트 마운트 시 초기 데이터 로드
+    // Fetch the summary on component mount
     useEffect(() => {
-        const fetchKeywords = async () => {
-            try {
-                const response = await axios.get(`${Backend_ip}/api/paper/keywordExtract`);
-                setKeywords(response.data.data); // 서버에서 받은 키워드 데이터 설정
-                setLoading(false); // 로딩 상태 해제
-            } catch (error) {
-                setError(error); // 에러 설정
-                setLoading(false); // 로딩 상태 해제
-            }
-        };
-        fetchKeywords(); // 키워드 데이터 가져오기
-
-        
-        
-    }, []); // 빈 배열을 전달하여 컴포넌트 마운트 시 한 번만 실행
+        if (title) {
+            const fetchSummary = async () => {
+                try {
+                    const response = await axios.get(`${SubFastAPI}/api/summary/summaryPaper?title=${title}`);
+                    setWikiResult(response.data.data.text);
+                    setLoading(false);
+                } catch (error) {
+                    setError(error);
+                    setLoading(false);
+                }
+            };
+            fetchSummary();
+        } else {
+            setLoading(false);
+        }
+    }, [title]);
 
     // 검색 카테고리 변경 시 처리
     const handleCategoryChange = async (event) => {
@@ -44,10 +49,7 @@ function Keyword() {
 
         if (selectedKeyword !== 'summary') {
             try {
-              // summary api call
-                const response = await axios.get(`${Backend_ip}/search/wikiSearch?query=${selectedKeyword}`);
-                // summary api response 받는 로직을 짜주세용..
-              // summary api end
+                const response = await axios.get(`${MainFastAPI}/search/wikiSearch?query=${selectedKeyword}`);
                 if (response.data.result.resultCode === 200) {
                     setWikiResult(response.data.result.data.text);
                 } else {
@@ -60,16 +62,9 @@ function Keyword() {
                 setWikiLoading(false);
             }
         } else {
-            // 'summary' 선택 시 summary API 호출
-            try {
-                const response = await axios.get(`${Backend_ip}/api/summary`);
-                setWikiResult(response.data.data.text);
-            } catch (error) {
-                console.error('Error fetching summary data:', error);
-                setWikiError(error.response?.data?.message || 'An error occurred');
-            } finally {
-                setWikiLoading(false);
-            }
+            // 'summary' 선택 시 summary 데이터 사용
+            setWikiResult(wikiResult);
+            setWikiLoading(false);
         }
     };
 
