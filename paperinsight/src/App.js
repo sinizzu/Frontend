@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, CssBaseline, Drawer, Box, Grid, List, ListItem, ListItemIcon } from '@mui/material';
 import Menu from './components/menu';
+import Login from './pages/login';
+import Register from './pages/register';
 import Search from './pages/search';
 import Home from './pages/driver';
 import PDFPreview from './pages/pdfpreview';
@@ -17,7 +19,7 @@ const App = () => {
 
   return (
     <Router>
-      <Box sx={{ display: 'flex', overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex',height: '100vh',  overflow: 'hidden' }}>
         {/* 헤더 */}
         <Header />
         {/* Drawer == 옆 팝업 */}
@@ -37,7 +39,7 @@ const App = () => {
           {/* 하단 유저 아이콘 */}
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pb: 5, overflow: 'hidden', mt: 5 }}>
             <List>
-              <ListItem button component={Link} to="/">
+              <ListItem button component={Link} to="/login">
                 <ListItemIcon>
                   <AccountCircleIcon sx={{ fontSize: 40 }} />
                 </ListItemIcon>
@@ -47,21 +49,27 @@ const App = () => {
         </Drawer>
         <Box
           component="main"
-          sx={{ flexGrow: 1, bgcolor: 'background.default', pl: 3,pt:10, width: '100%' }}
+          sx={{ flexGrow: 1, bgcolor: 'background.default', pl: 3,pt:10, width: '100%'}}
         >
-          <Grid container spacing={2}>
-            <Grid item xs={4}>
-              <Routes>
-              <Route path="/" element={<Home setSelectedPdf={setSelectedPdf} />} />
-              <Route path="/search" element={<Search setSelectedPdf={setSelectedPdf} />} />
-              <Route path="/paper" element={<div>Paper Page</div>} />
-              <Route path="/Keyword" element={<Keyword />} />
-              </Routes>
-            </Grid>
-            <Grid item xs={6}>
-              <PDFPreview pdfUrl={selectedPdf} />
-            </Grid>
-          </Grid>
+          <Routes>
+            <Route path="/login" element={<Grid container spacing={2}><Grid item xs={12}><Login /></Grid></Grid>} />
+            <Route path="/register" element={<Grid container spacing={2}><Grid item xs={12}><Register /></Grid></Grid>} />
+            <Route path="*" element={
+              <Grid container spacing={2}>
+                <Grid item xs={3} sx={{ overflowY: 'auto', height: '100%' }}>
+                  <Routes>
+                    <Route path="/" element={<Home setSelectedPdf={setSelectedPdf} />} />
+                    <Route path="/search" element={<Search setSelectedPdf={setSelectedPdf} />} />
+                    <Route path="/paper" element={<div>Paper Page</div>} />
+                    <Route path="/Keyword" element={<Keyword />} />
+                  </Routes>
+                </Grid>
+                <Grid item xs={7}>
+                  <PDFPreview pdfUrl={selectedPdf} />
+                </Grid>
+              </Grid>
+            } />
+          </Routes>
         </Box>
       </Box>
     </Router>
