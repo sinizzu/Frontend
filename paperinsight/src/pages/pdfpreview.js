@@ -6,8 +6,11 @@ import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import axios from 'axios';
 
+// env에 IP 가져오기
+const MainFastAPI = process.env.REACT_APP_MainFastAPI;
+const SubFastAPI = process.env.REACT_APP_SubFastAPI;
+
 const PDFPreview = ({ pdfUrl }) => {
-  const [jhIp, setJhIp] = useState(process.env.REACT_APP_JH_IP);
   const [selectedText, setSelectedText] = useState('');
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const [referenceElement, setReferenceElement] = useState(null);
@@ -15,13 +18,6 @@ const PDFPreview = ({ pdfUrl }) => {
   const [searchResult, setSearchResult] = useState('');
   const [searchAnchorEl, setSearchAnchorEl] = useState(null);
   const viewerRef = useRef(null);
-
-  useEffect(() => {
-    if (!jhIp) {
-      setJhIp(process.env.MAIN_FASTAPI);
-    }
-  }, [jhIp]);
-
 
   useEffect(() => {
     const handleLinkClick = (event) => {
@@ -69,7 +65,7 @@ const PDFPreview = ({ pdfUrl }) => {
     setSearchResult(''); // Reset search result before making a new request
   
     try {
-      const response = await axios.post(`http://${jhIp}:3000/search/searchWeb`, 
+      const response = await axios.post(`${MainFastAPI}/api/keyword/searchWeb`, 
         { text: selectedText },
         { headers: { 'Content-Type': 'application/json' } }
       );
