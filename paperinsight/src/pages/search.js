@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { Container, Paper, Typography, Box, TextField, Select, MenuItem, FormControl, Button } from '@mui/material';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+const MainFastAPI = process.env.REACT_APP_MainFastAPI;
+const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
 const Search = ({ setSelectedPdf }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchCategory, setSearchCategory] = useState('keyword');
   const [papers, setPapers] = useState([]);
   const [expandedAbstracts, setExpandedAbstracts] = useState({});
+
+  const navigate = useNavigate();
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
@@ -33,6 +39,8 @@ const Search = ({ setSelectedPdf }) => {
   
       if (response.status === 200) {
         console.log('OCR 요청 성공:', response.data);
+        const title = response.data.data.title;
+        navigate('/keyword', { state: { title } });
       } else {
         console.error('OCR 요청 실패:', response.statusText);
       }
