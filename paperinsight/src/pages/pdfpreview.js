@@ -12,11 +12,14 @@ const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
 const PDFPreview = ({ pdfUrl }) => {
   const [selectedText, setSelectedText] = useState('');
+  const [tokenCount, setTokenCount] = useState(0);
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const [referenceElement, setReferenceElement] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [searchResult, setSearchResult] = useState('');
   const [searchAnchorEl, setSearchAnchorEl] = useState(null);
+  const [summaryResult, setSummaryResult] = useState('');
+  const [summaryAnchorEl, setSummaryAnchorEl] = useState(null);
   const viewerRef = useRef(null);
 
   useEffect(() => {
@@ -40,6 +43,8 @@ const PDFPreview = ({ pdfUrl }) => {
     const text = selection.toString().trim();
     if (text) {
       setSelectedText(text);
+      const tokens = text.split(/\s+/); // Count the tokens (words)
+      setTokenCount(tokens.length);
 
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
@@ -59,6 +64,7 @@ const PDFPreview = ({ pdfUrl }) => {
   const handleClose = () => {
     setAnchorEl(null);
     setSearchAnchorEl(null);
+    setSummaryAnchorEl(null);
   };
 
   const handleWebSearch = async () => {
@@ -98,10 +104,38 @@ const PDFPreview = ({ pdfUrl }) => {
       console.error('Error fetching data:', error);
     }
   };
+
+  const handleSummary = async () => {
+    setSummaryResult(''); // Reset summary result before making a new request
+
+    try {
+      const response = await axios.post(`${SubFastAPI}/api/summary/summaryScroll`,
+        { text: selectedText },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+
+      if (response.status === 200) {
+        const data = response.data;
+        const summaryHtml = `
+          <div style="font-size: 14px; font-weight: bold;">Summary for "${selectedText}"</div>
+          <p style="font-size: 12px; line-height: 1.4;">${data.summary}</p>
+        `;
+        setSummaryResult(summaryHtml);
+        setSummaryAnchorEl(anchorEl); // Set summary popover anchor after receiving the response
+      } else {
+        console.error('Error fetching summary:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching summary:', error);
+    }
+  };
+
   const open = Boolean(anchorEl);
   const searchOpen = Boolean(searchAnchorEl);
+  const summaryOpen = Boolean(summaryAnchorEl);
   const id = open ? 'simple-popover' : undefined;
   const searchId = searchOpen ? 'search-popover' : undefined;
+  const summaryId = summaryOpen ? 'summary-popover' : undefined;
 
   return (
     <div style={{ height: '100vh', position: 'relative' }} ref={viewerRef} onMouseUp={(e) => {
@@ -226,6 +260,21 @@ const PDFPreview = ({ pdfUrl }) => {
         >
           위키 검색
         </Button>
+        <Button
+          id="summary-button"
+          variant="text"
+          sx={{
+            color: '#000',
+            fontWeight: 'bold',
+            backgroundColor: 'transparent',
+            '&:hover': { backgroundColor: '#d3d3d3' },
+            fontSize: '14px',
+          }}
+          onClick={handleSummary}
+          disabled={tokenCount < 50 || tokenCount > 512}
+        >
+          요약
+        </Button>
       </Popover>
       <Popover
         id={searchId}
@@ -252,6 +301,35 @@ const PDFPreview = ({ pdfUrl }) => {
         }}
       >
         {searchResult && <div dangerouslySetInnerHTML={{ __html: searchResult }} />}
+      </Popover>
+      <Popover
+        id={summaryId}
+        open={summaryOpen}
+        anchorEl={summaryAnchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        sx={{
+          '& .MuiPopover-paper': {
+            width: '300px',
+            height: '200px',
+            padding: '10px',
+            backgroundColor: '#FFFFE1',
+            border: '1px solid #ccc',
+            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '2px',
+            overflowY: 'auto',
+            fontSize: '12px', // Set font size for summary text
+          },
+        }}
+      >
+        {summaryResult && <div dangerouslySetInnerHTML={{ __html: summaryResult }} />}
       </Popover>
     </div>
   );
