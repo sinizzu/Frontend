@@ -10,7 +10,7 @@ const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
 function Keyword() {
     const location = useLocation();
-    const title = location.state?.title || '';
+    const pdf_id = location.state?.pdf_id || '';
     
     const [searchCategory, setSearchCategory] = useState('summary'); // 기본값을 'summary'로 설정
     const [keywords, setKeywords] = useState([]); // 키워드 목록 상태, 초기값을 빈 배열로 설정
@@ -28,7 +28,7 @@ function Keyword() {
         const fetchKeywords = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`${SubFastAPI}/api/topic/keywordExtract?title=${title}`);
+                const response = await axios.get(`${SubFastAPI}/api/topic/keywordExtract?pdf_id=${pdf_id}`);
                 console.log("Keywords Data:", response.data.data); // Check the structure of the response data
                 setKeywords(response.data.data); // 서버에서 받은 키워드 데이터를 설정
             } catch (error) {
@@ -38,15 +38,15 @@ function Keyword() {
             }
         };
         fetchKeywords(); // 키워드 데이터 가져오기
-    }, [title]); // title이 바뀔 때만 실행
+    }, [pdf_id]); // pdf_id 바뀔 때만 실행
 
     // Fetch the summary on component mount
     useEffect(() => {
         const fetchSummary = async () => {
-            if (title && !summaryFetched) {
+            if (pdf_id && !summaryFetched) {
                 setLoading(true);
                 try {
-                    const response = await axios.get(`${SubFastAPI}/api/summary/summaryPaper?title=${title}`);
+                    const response = await axios.get(`${SubFastAPI}/api/summary/summaryPaper?pdf_link=${pdf_id}`);
                     console.log("Summary Data:", response.data);
                     setSummary(response.data.summary);
                     setSummaryFetched(true); // summary 데이터 가져왔음 설정
@@ -58,7 +58,7 @@ function Keyword() {
             }
         };
         fetchSummary();
-    }, [title, summaryFetched]);
+    }, [pdf_id, summaryFetched]);
 
     // 검색 카테고리 변경 시 처리
     const handleCategoryChange = async (event) => {
