@@ -39,8 +39,8 @@ const Search = ({ setSelectedPdf }) => {
   
       if (response.status === 200) {
         console.log('OCR 요청 성공:', response.data);
-        const title = response.data.data.title;
-        navigate('/keyword', { state: { title } });
+        const pdf_id = response.data.data.pdf_id;
+        navigate('/keyword', { state: { pdf_id } });
       } else {
         console.error('OCR 요청 실패:', response.statusText);
       }
