@@ -170,7 +170,7 @@ const PDFPreview = ({ pdfUrl }) => {
   const translateId = translateOpen ? 'translate-popover' : undefined;
 
   return (
-    <div style={{ height: '100vh', position: 'relative' }} ref={viewerRef} onMouseUp={(e) => {
+    <div style={{ height: '85vh', position: 'relative' }} ref={viewerRef} onMouseUp={(e) => {
       if (viewerRef.current && viewerRef.current.contains(e.target)) {
         handleTextSelection(e);
       }
