@@ -29,12 +29,11 @@ const Search = ({ setSelectedPdf }) => {
   
     try {
       const MainFastAPI = process.env.REACT_APP_MainFastAPI;
-      
       // pdf_id를 가져오기 (paper. uuid 가져오기)
       const id = await axios.get (`${SubFastAPI}/api/weaviate/searchPaperId?pdf_url=${pdfLink}`);
       const pdf_id = id.data.data;
       const formData = new URLSearchParams();
-      formData.append('pdfId', pdf_id); 
+      formData.append('pdfId', pdf_id);
       formData.append('pdfUrl', pdfLink);
       console.log("PDF ID:", pdf_id);
       console.log("PDF URL:", pdfLink);
