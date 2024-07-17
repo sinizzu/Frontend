@@ -74,7 +74,7 @@ const PDFPreview = ({ pdfUrl }) => {
     setSearchResult(''); // Reset search result before making a new request
   
     try {
-      const response = await axios.post(`${MainFastAPI}/api/keyword/searchWeb`, 
+      const response = await axios.post(`${MainFastAPI}/api/search/searchWeb`, 
         { text: selectedText },
         { headers: { 'Content-Type': 'application/json' } }
       );
@@ -119,9 +119,10 @@ const PDFPreview = ({ pdfUrl }) => {
 
       if (response.status === 200) {
         const data = response.data;
+        console.log(data)
         const summaryHtml = `
           <div style="font-size: 14px; font-weight: bold;">Summary for "${selectedText}"</div>
-          <p style="font-size: 12px; line-height: 1.4;">${data.summary}</p>
+          <p style="font-size: 12px; line-height: 1.4;">${data.data}</p>
         `;
         setSummaryResult(summaryHtml);
         setSummaryAnchorEl(anchorEl); // Set summary popover anchor after receiving the response
