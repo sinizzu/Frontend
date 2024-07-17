@@ -46,7 +46,7 @@ function Keyword() {
             if (pdf_id && !summaryFetched) {
                 setLoading(true);
                 try {
-                    const response = await axios.get(`${SubFastAPI}/api/summary/summaryPaper?pdf_link=${pdf_id}`);
+                    const response = await axios.get(`${SubFastAPI}/api/summary/summaryPaper?pdf_id=${pdf_id}`);
                     console.log("Summary Data:", response.data);
                     setSummary(response.data.summary);
                     setSummaryFetched(true); // summary 데이터 가져왔음 설정
@@ -74,7 +74,7 @@ function Keyword() {
             setWikiLoading(false);
         } else {
             try {
-                const response = await axios.get(`${MainFastAPI}/api/keyword/searchWiki?keyword=${selectedKeyword}`);
+                const response = await axios.get(`${MainFastAPI}/api/search/wikiSearch?keyword=${selectedKeyword}`);
                 console.log("Wiki Search Data:", response.data);
                 if (response.data.resultCode === 200) {
                     setWikiResult(response.data.data.text);
