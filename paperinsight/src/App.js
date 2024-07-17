@@ -18,12 +18,13 @@ const appBarHeight = 64; // AppBar의 높이
 
 const App = () => {
   const [selectedPdf, setSelectedPdf] = useState(null);
+  const [fileName, setFileName] = useState('');
 
   return (
     <Router>
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
         {/* 헤더 */}
-        <Header />
+        <Header fileName={fileName} />
         <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden', marginTop: `${appBarHeight}px` }}>
           {/* Drawer == 옆 팝업 */}
           <Drawer
@@ -35,9 +36,9 @@ const App = () => {
             }}
           >
             {/* 메뉴 */}
-            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 10}}>
-                <Menu />
-              </Box>
+            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 5 }}>
+              <Menu />
+            </Box>
             {/* 하단 유저 아이콘 */}
             <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pb: 5 }}>
               <List>
@@ -49,40 +50,31 @@ const App = () => {
               </List>
             </Box>
           </Drawer>
-            <Box
-              component="main"
-              sx={{
-                flexGrow: 1,
-                bgcolor: 'background.default',
-                display: 'flex',
-                flexDirection: 'row',
-                overflow: 'hidden',
-                height: 'calc(100vh - 64px)', // AppBar의 높이를 고려하여 height 설정
-              }}
-            >
-              <Routes>
-                <Route path="/login" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Login /></Grid></Grid>} />
-                <Route path="/register" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Register /></Grid></Grid>} />
-                <Route path="*" element={
-                  <Grid container sx={{ flexGrow: 1, height: 'calc(100vh - 64px)' }}>
-                    <Grid item xs={2.5} sx={{ overflowY: 'auto', height: '100%' }}>
-                      <Routes>
-                        <Route path="/" element={<Home setSelectedPdf={setSelectedPdf} />} />
-                        <Route path="/chatbot" element={<Home setSelectedPdf={setSelectedPdf} />} />
-                        <Route path="/search" element={<Search setSelectedPdf={setSelectedPdf} />} />
-                        <Route path="/paper" element={<div>Paper Page</div>} />
-                        <Route path="/Keyword" element={<Keyword />} />
-                      </Routes>
-                    </Grid>
-
-                    <Grid item xs={3.5} sx={{ overflowY: 'auto', height: '100%' }}><Routes><Route path="/chatbot" element={<Chatbot setSelectedPdf={setSelectedPdf} />} /></Routes></Grid>
-                    <Grid item xs={6} sx={{ overflowY: 'auto', height: '100%' }}>
-                      <PDFPreview pdfUrl={selectedPdf} />
-                    </Grid>
+          <Box
+            component="main"
+            sx={{ flexGrow: 1, bgcolor: 'background.default', display: 'flex', flexDirection: 'row', overflow: 'hidden', height: 'calc(100vh - 64px)' }} // AppBar의 높이를 고려하여 height 설정
+          >
+            <Routes>
+              <Route path="/login" element={<Grid container spacing={2}><Grid item xs={12}><Login /></Grid></Grid>} />
+              <Route path="/register" element={<Grid container spacing={2}><Grid item xs={12}><Register /></Grid></Grid>} />
+              <Route path="*" element={
+                <Grid container spacing={2} sx={{ flexGrow: 1, height: '100%' }}>
+                  <Grid item xs={3} sx={{ overflowY: 'auto', height: '100%' }}>
+                    <Routes>
+                      <Route path="/" element={<Home setSelectedPdf={setSelectedPdf} />} />
+                      <Route path="/chatbot" element={<Chatbot setSelectedPdf={setSelectedPdf} />} />
+                      <Route path="/search" element={<Search setSelectedPdf={setSelectedPdf} />} />
+                      <Route path="/paper" element={<div>Paper Page</div>} />
+                      <Route path="/Keyword" element={<Keyword />} />
+                    </Routes>
                   </Grid>
-                } />
-              </Routes>
-            </Box>
+                  <Grid item xs={9} sx={{ overflowY: 'auto', height: '100%' }}>
+                    <PDFPreview pdfUrl={selectedPdf} />
+                  </Grid>
+                </Grid>
+              } />
+            </Routes>
+          </Box>
         </Box>
       </Box>
     </Router>

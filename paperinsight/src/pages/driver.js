@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { Container, Paper, Typography, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { pdfjs } from 'react-pdf';
 import { getDocument } from 'pdfjs-dist';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import 'pdfjs-dist/build/pdf.worker.entry';
 
 // PDF.js 워커 설정
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-function Home({ setSelectedPdf }) {
+function Home({ setSelectedPdf, setFileName }) {
   const [MAIN_FASTAPI, setIp] = useState(process.env.REACT_APP_MainFastAPI || process.env.MAIN_FASTAPI);
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
@@ -83,6 +82,8 @@ function Home({ setSelectedPdf }) {
           thumbnail.name === file.name ? { ...thumbnail, uuid: data.uuid, file_url: data.file_url } : thumbnail
         )
       );
+
+      // setFileName(file.name);
 
       setPdfLink(data.file_url);
 
