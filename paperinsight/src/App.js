@@ -36,7 +36,7 @@ const App = () => {
             }}
           >
             {/* 메뉴 */}
-            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 10}}>
+            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 5 }}>
               <Menu />
             </Box>
             {/* 하단 유저 아이콘 */}
@@ -61,7 +61,7 @@ const App = () => {
                 <Grid container spacing={2} sx={{ flexGrow: 1, height: '100%' }}>
                   <Grid item xs={3} sx={{ overflowY: 'auto', height: '100%' }}>
                     <Routes>
-                      <Route path="/" element={<Home setSelectedPdf={setSelectedPdf} setFileName={setFileName}/>} />
+                      <Route path="/" element={<Home setSelectedPdf={setSelectedPdf} />} />
                       <Route path="/chatbot" element={<Chatbot setSelectedPdf={setSelectedPdf} />} />
                       <Route path="/search" element={<Search setSelectedPdf={setSelectedPdf} />} />
                       <Route path="/paper" element={<div>Paper Page</div>} />
@@ -69,7 +69,7 @@ const App = () => {
                     </Routes>
                   </Grid>
                   <Grid item xs={9} sx={{ overflowY: 'auto', height: '100%' }}>
-                    <PDFPreview pdfUrl={selectedPdf}/>
+                    <PDFPreview pdfUrl={selectedPdf} />
                   </Grid>
                 </Grid>
               } />
