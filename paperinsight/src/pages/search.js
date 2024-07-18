@@ -20,36 +20,32 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick }) => {
   };
 
   const handleButtonClickLocal = async (pdfLink) => {
-    // PDF 링크를 setSelectedPdf로 설정
-    setSelectedPdf(pdfLink);
-    handleButtonClick(pdfLink); // App 컴포넌트의 상태 변경 함수 호출
-
     try {
       const MainFastAPI = process.env.REACT_APP_MainFastAPI || process.env.MAIN_FASTAPI;
-      // pdf_id를 가져오기 (paper. uuid 가져오기)
-      const id = await axios.get (`${SubFastAPI}/api/weaviate/searchPaperId?pdf_url=${pdfLink}`);
+      const id = await axios.get(`${SubFastAPI}/api/weaviate/searchPaperId?pdf_url=${pdfLink}`);
       const pdf_id = id.data.data;
       const formData = new URLSearchParams();
       formData.append('pdfId', pdf_id);
       formData.append('pdfUrl', pdfLink);
       console.log("PDF ID:", pdf_id);
       console.log("PDF URL:", pdfLink);
-      const response = await axios.post(`${MainFastAPI}/api/ocr/ocrTest`, 
+      const response = await axios.post(`${MainFastAPI}/api/ocr/ocrTest`,
         formData,
         { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
       );
-  
+
       if (response.status === 200) {
         console.log('OCR 요청 성공:', response.data);
         const pdf_id = response.data.data.pdf_id;
-        console.log("pdf_id:", pdf_id);
-        console.log("full_text:", response.data.data.full_text);
+        let region = "search";
+        console.log("OCR ID:", pdf_id);
+        handleButtonClick(pdfLink, pdf_id, region); // App 컴포넌트의 상태 변경 함수 호출
       } else {
         console.error('OCR 요청 실패:', response.statusText);
       }
     } catch (error) {
-      console.error('IP:',`${MainFastAPI}/api/ocr/ocrTest`);
-      console.error('IP:',`${SubFastAPI}/api/weaviate/searchPaperId`);
+      console.error('IP:', `${MainFastAPI}/api/ocr/ocrTest`);
+      console.error('IP:', `${SubFastAPI}/api/weaviate/searchPaperId`);
       console.error('OCR 요청 에러:', error);
     }
   };
@@ -120,9 +116,9 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick }) => {
             <MenuItem value="sentence" sx={{ fontSize: '12px' }}>구어체검색</MenuItem>
           </Select>
         </FormControl>
-        <TextField 
-          variant="outlined" 
-          placeholder="Search..." 
+        <TextField
+          variant="outlined"
+          placeholder="Search..."
           value={searchTerm}
           onChange={handleSearchChange}
           onKeyDown={handleKeyDown}
@@ -156,9 +152,9 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick }) => {
               Submitted {new Date(paper.published).toLocaleDateString()}
             </Typography>
             <Box sx={{ textAlign: 'right', mt: 2 }}>
-              <Button 
-                variant="outlined" 
-                color="secondary" 
+              <Button
+                variant="outlined"
+                color="secondary"
                 onClick={() => handleButtonClickLocal(paper.pdf_link)}
                 sx={{ fontSize: '12px' }}
               >
