@@ -162,6 +162,7 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick }) {
         const { pdf_id, full_text } = response.data.data;
         let region = "driver";
         console.log("PDF ID:", pdf_id);
+        navigate('/keyword', { state: { pdf_id, region } });
         handleButtonClick(pdfLink, pdf_id, region); // App 컴포넌트의 상태 변경 함수 호출
 
         // OCR 결과를 divideChunk 엔드포인트로 전송

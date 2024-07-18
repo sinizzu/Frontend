@@ -13,6 +13,7 @@ import Summary from './pages/summary';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Header from './components/header';
 
+
 import axios from 'axios';
 
 const drawerWidth = 80;
@@ -211,14 +212,10 @@ const App = () => {
                       </>
                     )}
                     {value === 1 && selectedPdf && (
-                     <Keyword 
-                     setSelectedPdf={setSelectedPdf}
-                     handleButtonClick={handleButtonClick}
-                     fileName={fileName}
-                   />
+                     <Keyword setSelectedPdf={setSelectedPdf} handleButtonClick={handleButtonClick} pdfState={pdfState} />
                     )}
                     {value === 2 && selectedPdf && (
-                      <Keyword fileName={fileName} />
+                      <Keyword setSelectedPdf={setSelectedPdf} handleButtonClick={handleButtonClick} pdfState={pdfState}/>
                     )}
                     {!selectedPdf && (
                       <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
