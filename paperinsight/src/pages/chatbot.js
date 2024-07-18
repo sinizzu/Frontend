@@ -3,10 +3,10 @@ import { Container, Paper, Typography, Box, Button, TextField } from '@mui/mater
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 
+const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 function Chatbot() {
   const location = useLocation();
   const pdfId = location.state?.pdfId || ''; // 전달된 pdfId를 가져옴
-  const [MAIN_FASTAPI, setIp] = useState(process.env.REACT_APP_MainFastAPI || process.env.MAIN_FASTAPI);
   const [messages, setMessages] = useState([
     { text: '안녕하세요 무엇을 도와드릴까요?', sender: 'bot' }
   ]);
@@ -65,7 +65,7 @@ function Chatbot() {
 
   
   return (
-    <Box sx={{ height: '85vh', overflow: 'auto', borderRight: '1px solid #ccc', p: 2 }}>
+    <Box sx={{ height: '85vh', overflow: 'auto', p: 2 }}>
       <Typography variant="h5">Chatbot</Typography>
       <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
         {messages.map((message, index) => (

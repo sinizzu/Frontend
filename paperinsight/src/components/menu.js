@@ -14,21 +14,21 @@ function Menu() {
           <CloudUploadIcon sx={{ fontSize: 40 }}/>
         </ListItemIcon>
       </ListItem>
-      <ListItem button component={Link} to="/chatbot">
+      {/* <ListItem button component={Link} to="/chatbot">
         <ListItemIcon>
           <ChatIcon sx={{ fontSize: 40 }}/>
         </ListItemIcon>
-      </ListItem>
+      </ListItem> */}
       <ListItem button component={Link} to="/search">
         <ListItemIcon>
           <ManageSearchIcon sx={{ fontSize: 40 }}/>
         </ListItemIcon>
       </ListItem>
-      <ListItem button component={Link} to="/keyword">
+      {/* <ListItem button component={Link} to="/keyword">
         <ListItemIcon>
           <BookIcon sx={{ fontSize: 40 }}/>
         </ListItemIcon>
-      </ListItem>
+      </ListItem> */}
     </List>
   );
 }

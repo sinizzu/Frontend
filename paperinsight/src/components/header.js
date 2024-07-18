@@ -5,12 +5,16 @@ function Header({ fileName }) {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, 
-        boxShadow: 'none', backgroundColor: 'white', borderBottom: '1px solid #E0E0E0' }}>
-        <Toolbar>
-          <img src="/header.png" alt="Header Logo" style={{ height: '40px', marginRight: '16px' }} />
+      <AppBar position="fixed" sx={{ 
+        zIndex: (theme) => theme.zIndex.drawer + 1, 
+        boxShadow: 'none', 
+        backgroundColor: 'white', 
+        borderBottom: '1px solid #E0E0E0' 
+      }}>
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
+          <img src="/header.png" alt="Header Logo" style={{ height: '40px' }} />
           {fileName && (
-            <Typography variant="subtitle1" noWrap sx={{ marginLeft: '16px' }}>
+            <Typography variant="subtitle1" noWrap sx={{ color: 'black' }}>
               {fileName}
             </Typography>
           )}
