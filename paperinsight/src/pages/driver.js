@@ -6,7 +6,6 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import 'pdfjs-dist/build/pdf.worker.entry';
 
-// PDF.js 워커 설정
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
@@ -15,13 +14,58 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick }) {
   const [file, setFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [thumbnails, setThumbnails] = useState([]);
-  const [pdfLink, setPdfLink] = useState(null);  // pdfLink 변수를 상태로 정의
-  const navigate = useNavigate(); // useNavigate 훅 사용
-  const [ocrCompleted, setOcrCompleted] = useState(false);
+  const navigate = useNavigate();
+  const [selectedThumbnail, setSelectedThumbnail] = useState(null);
+
+  useEffect(() => {
+    fetchPdfFiles();
+  }, []);
+
+  const createThumbnail = async (pdfUrl) => {
+    const pdfDocument = await getDocument(pdfUrl).promise;
+    const page = await pdfDocument.getPage(1);
+    const viewport = page.getViewport({ scale: 0.5 });
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    const renderContext = {
+      canvasContext: context,
+      viewport: viewport,
+    };
+    await page.render(renderContext).promise;
+    return canvas.toDataURL();
+  };
+
+  const fetchPdfFiles = async () => {
+    try {
+      const response = await axios.get(`${MAIN_FASTAPI}/api/paper/listPdfs`);
+      const pdfFiles = response.data;
+
+      const thumbnails = await Promise.all(pdfFiles.map(async (pdf) => {
+        const pdfUrl = `https://kibwa07.s3.ap-northeast-2.amazonaws.com/${pdf.key}`;
+        const thumbnailUrl = await createThumbnail(pdfUrl);
+
+        return {
+          name: pdf.key.split('/').pop(),
+          url: thumbnailUrl,
+          file_url: pdfUrl,
+          key: pdf.key,
+          lastModified: pdf.fileUrl,
+          ocrCompleted: false
+        };
+      }));
+
+      setThumbnails(thumbnails);
+    } catch (error) {
+      console.error('Error fetching PDF files:', error);
+    }
+  };
 
   const handleClickOpen = () => {
     setOpen(true);
-    navigate('/'); 
+    navigate('/');
   };
 
   const handleClose = () => {
@@ -35,26 +79,12 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick }) {
     setPdfUrl(url);
     setSelectedPdf(url);
 
-    // PDF의 첫 페이지를 미리보기로 생성
-    const pdf = await getDocument(url).promise;
-    const page = await pdf.getPage(1);
-    const viewport = page.getViewport({ scale: 0.5 });
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
-
-    const renderContext = {
-      canvasContext: context,
-      viewport: viewport,
-    };
-    await page.render(renderContext).promise;
-    const thumbnailUrl = canvas.toDataURL();
+    const thumbnailUrl = await createThumbnail(url);
     
     // 새로운 PDF 미리보기를 기존의 미리보기와 함께 쌓기, OCR 미완료 상태로 초기화
     setThumbnails((prevThumbnails) => [
-      ...prevThumbnails,
       { name: uploadedFile.name, url: thumbnailUrl, ocrCompleted: false },
+      ...prevThumbnails
     ]);
   };
 
@@ -75,23 +105,34 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick }) {
       }
 
       const data = await response.json();
-      console.log('File uploaded to S3:', data.file_url);
+      console.log('Full server response:', data);
 
-      // 업로드된 파일의 UUID를 사용하여 썸네일 업데이트
-      setThumbnails((prevThumbnails) => 
-        prevThumbnails.map((thumbnail) => 
-          thumbnail.name === file.name ? { ...thumbnail, uuid: data.uuid, file_url: data.file_url } : thumbnail
-        )
-      );
+      const fileUrl = data.file_url || data.fileUrl;
+      const key = data.key || data.filePath;
+      const uuid = data.uuid;
+      console.log('File uploaded to S3:', fileUrl);
+      console.log('File key:', key);
+      console.log('UUID:', uuid);
+
+      const thumbnailUrl = await createThumbnail(fileUrl);
+
+      setThumbnails((prevThumbnails) => [{
+        name: file.name,
+        url: thumbnailUrl,
+        file_url: fileUrl,
+        key: key,
+        lastModified: new Date().toISOString(),
+        ocrCompleted: false
+      }, ...prevThumbnails]);
 
       setFileName(file.name);
-
-      setPdfLink(data.file_url);
+      setPdfUrl(fileUrl);
 
       handleClose();
-
+      
+      // 파일 업로드 후 전체 리스트 새로고침
       // 파일 업로드 후 OCR 처리 실행
-      await handleOcr(data.file_url, data.uuid);
+      await fetchPdfFiles();
     } catch (error) {
       console.error('Error:', error);
     }
@@ -160,9 +201,11 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick }) {
     }
   };
 
-  const handleThumbnailClick = (fileUrl, fileName) => {
-    setSelectedPdf(fileUrl); // 선택한 PDF 파일 URL을 설정
-    setFileName(fileName); // 선택한 파일 이름을 설정
+  const handleThumbnailClick = (fileUrl, thumbnailName) => {
+    setSelectedPdf(fileUrl);
+    setFileName(thumbnailName);
+    console.log("Selected PDF URL:", fileUrl);
+    console.log("Selected Thumbnail Data:", thumbnailName);
   };
 
   const handleChatBotClick = (uuid, fileUrl, fileName) => {
@@ -171,28 +214,29 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick }) {
   };
 
   return (
+    
     <Box sx={{ height: '85vh', overflow: 'auto', pr: 2 }}>
       <Typography variant="h5">Drive</Typography>
       <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
         <Button variant="contained" onClick={handleClickOpen} sx={{ mb: 2 }}>
           +Add PDF
         </Button>
-        {thumbnails.map((thumbnail, index) => (
-          <Paper key={index} sx={{ p: 2, mb: 2 }} onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name)}>
+        {thumbnails.slice(-10).map((thumbnail, index) => (
+          <Paper 
+            key={index} 
+            sx={{ 
+              p: 2, 
+              mb: 2, 
+              backgroundColor: selectedThumbnail === thumbnail.key ? '#e3f2fd' : 'white',
+              border: selectedThumbnail === thumbnail.key ? '2px solid #2196f3' : 'none',
+              transition: 'all 0.3s ease'
+            }} 
+            onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name)}
+          >
             <Typography variant="body2" sx={{ fontSize: '14px', mb: 1 }}>{thumbnail.name}</Typography>
             <img src={thumbnail.url} alt={thumbnail.name} width={150} />
-            {thumbnail.ocrCompleted && (
-              <Button 
-                variant="contained" 
-                color="primary" 
-                onClick={() => handleChatBotClick(thumbnail.uuid, thumbnail.file_url, thumbnail.name)} 
-                sx={{ mb: 2, mr: 2 }}
-              >
-                ChatBot 사용해보기
-              </Button>
-            )}
           </Paper>
-        ))}
+      ))}
       </Container>
 
       <Dialog open={open} onClose={handleClose}>

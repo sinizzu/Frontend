@@ -4,34 +4,46 @@ import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
-function Chatbot() {
+
+function Chatbot({ pdfId, fullText, ocrCompleted, fileName }) {
   const location = useLocation();
-  const pdfId = location.state?.pdfId || ''; // 전달된 pdfId를 가져옴
   const [messages, setMessages] = useState([
     { text: '안녕하세요 무엇을 도와드릴까요?', sender: 'bot' }
   ]);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (ocrCompleted && fullText && pdfId) {
+      setMessages(prevMessages => [
+        ...prevMessages,
+        { text: 'OCR 처리가 완료되었습니다. 질문해 주세요!', sender: 'bot' }
+      ]);
+    }
+  }, [ocrCompleted, fullText, pdfId]);
+
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
       handleSendMessage();
-    }};
+    }
+  };
+
   const handleInputChange = (event) => {
     setInput(event.target.value);
   };
 
   const handleSendMessage = async () => {
+    if (!input.trim()) return;
+
     const newMessages = [...messages, { text: input, sender: 'user' }];
     setMessages(newMessages);
     setInput('');
     
-    // 챗봇 응답 처리
     try {
       console.log(`Sending message to chatbot: ${input}`);
       const response = await fetchChatbotResponse(pdfId, input);
       console.log('Response from chatbot:', response);
 
-      // 응답 데이터 구조에 따라 수정 필요
       const botResponse = response.data.data || '챗봇 응답을 가져오지 못했습니다.';
       setMessages((prevMessages) => [...prevMessages, { text: botResponse, sender: 'bot' }]);
     } catch (error) {
@@ -42,20 +54,20 @@ function Chatbot() {
   
   const fetchChatbotResponse = async (pdfId, query) => {
     try {
-        console.log(`Making API request with pdfId: ${pdfId}, query: ${query}`);
-        const response = await axios.post(
-            `${MAIN_FASTAPI}/api/chatbot/useChatbot`, // 엔드포인트 URL 확인
-            { pdfId: pdfId, query: query }, // pdfId와 query를 payload로 전송
-            { headers: { 'Content-Type': 'application/json' } } // JSON 형식으로 전송
-        );
-        if (response.status === 200) {
-            console.log('useChatbot 요청 성공:', response.data);
-            return response; // 응답 반환
-        } else {
-            console.error('useChatbot 요청 실패:', response.statusText);
-        }
+      console.log(`Making API request with pdfId: ${pdfId}, query: ${query}`);
+      const response = await axios.post(
+        `${MAIN_FASTAPI}/api/chatbot/useChatbot`,
+        { pdfId: pdfId, query: query },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+      if (response.status === 200) {
+        console.log('useChatbot 요청 성공:', response.data);
+        return response;
+      } else {
+        console.error('useChatbot 요청 실패:', response.statusText);
+      }
     } catch (error) {
-        console.error('useChatbot 요청 에러:', error);
+      console.error('useChatbot 요청 에러:', error);
     }
   };
 
@@ -63,7 +75,6 @@ function Chatbot() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  
   return (
     <Box sx={{ height: '85vh', overflow: 'auto', p: 2 }}>
       <Typography variant="h5">Chatbot</Typography>
@@ -74,7 +85,7 @@ function Chatbot() {
             sx={{ 
               p: 2, 
               mb: 2, 
-              backgroundColor: message.sender === 'bot' ? '#e0f7fa' : '#fff9c4', // 챗봇과 사용자의 말풍선 색상 설정
+              backgroundColor: message.sender === 'bot' ? '#e0f7fa' : '#fff9c4',
               alignSelf: message.sender === 'bot' ? 'flex-start' : 'flex-end'
             }}
           >
@@ -90,10 +101,17 @@ function Chatbot() {
             variant="outlined"
             value={input}
             onChange={handleInputChange}
-            onKeyPress={handleKeyPress} // Enter 키 핸들러 추가
+            onKeyPress={handleKeyPress}
             placeholder="메시지를 입력하세요..."
+            disabled={!ocrCompleted}
           />
-          <Button variant="contained" color="primary" onClick={handleSendMessage} sx={{ ml: 2 }}>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleSendMessage} 
+            sx={{ ml: 2 }}
+            disabled={!ocrCompleted}
+          >
             전송
           </Button>
         </Box>
