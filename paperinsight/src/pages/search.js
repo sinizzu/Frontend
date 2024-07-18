@@ -21,6 +21,9 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick }) => {
 
   const handleButtonClickLocal = async (pdfLink) => {
     try {
+      // PDF 뷰어에 PDF 표시
+      setSelectedPdf(pdfLink);
+
       const MainFastAPI = process.env.REACT_APP_MainFastAPI || process.env.MAIN_FASTAPI;
       const id = await axios.get(`${SubFastAPI}/api/weaviate/searchPaperId?pdf_url=${pdfLink}`);
       const pdf_id = id.data.data;
@@ -44,9 +47,9 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick }) => {
         console.error('OCR 요청 실패:', response.statusText);
       }
     } catch (error) {
+      console.error('에러 상세:', error.response ? error.response.data : 'No response data');
       console.error('IP:', `${MainFastAPI}/api/ocr/ocrTest`);
       console.error('IP:', `${SubFastAPI}/api/weaviate/searchPaperId`);
-      console.error('OCR 요청 에러:', error);
     }
   };
 
