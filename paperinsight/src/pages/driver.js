@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Paper, Typography, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { pdfjs } from 'react-pdf';
 import { getDocument } from 'pdfjs-dist';
@@ -8,9 +8,9 @@ import 'pdfjs-dist/build/pdf.worker.entry';
 
 // PDF.js 워커 설정
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
 function Home({ setSelectedPdf, setFileName }) {
-  const [MAIN_FASTAPI, setIp] = useState(process.env.REACT_APP_MainFastAPI || process.env.MAIN_FASTAPI);
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -21,11 +21,13 @@ function Home({ setSelectedPdf, setFileName }) {
 
   const handleClickOpen = () => {
     setOpen(true);
+    navigate('/'); 
   };
 
   const handleClose = () => {
     setOpen(false);
   };
+
   const handleFileChange = async (event) => {
     const uploadedFile = event.target.files[0];
     const url = URL.createObjectURL(uploadedFile);
@@ -33,7 +35,6 @@ function Home({ setSelectedPdf, setFileName }) {
     setPdfUrl(url);
     setSelectedPdf(url);
 
-    // PDF의 첫 페이지를 미리보기로 생성
     const pdf = await getDocument(url).promise;
     const page = await pdf.getPage(1);
     const viewport = page.getViewport({ scale: 0.5 });
@@ -49,13 +50,13 @@ function Home({ setSelectedPdf, setFileName }) {
     await page.render(renderContext).promise;
     const thumbnailUrl = canvas.toDataURL();
     
-    // 새로운 PDF 미리보기를 기존의 미리보기와 함께 쌓기, OCR 미완료 상태로 초기화
     setThumbnails((prevThumbnails) => [
       ...prevThumbnails,
       { name: uploadedFile.name, url: thumbnailUrl, ocrCompleted: false },
     ]);
   };  
-  
+
+
 
   const handleFileUpload = async () => {
     if (!file) return;
@@ -64,6 +65,8 @@ function Home({ setSelectedPdf, setFileName }) {
     formData.append('file', file);
 
     try {
+      console.log("IP:", process.env.REACT_APP_MainFastAPI);
+      console.log('Uploading to URL:', `${MAIN_FASTAPI}/api/paper/saveToS3`);
       const response = await fetch(`${MAIN_FASTAPI}/api/paper/saveToS3`, {  
         method: 'POST',
         body: formData,
@@ -76,20 +79,18 @@ function Home({ setSelectedPdf, setFileName }) {
       const data = await response.json();
       console.log('File uploaded to S3:', data.file_url);
 
-      // 업로드된 파일의 UUID를 사용하여 썸네일 업데이트
       setThumbnails((prevThumbnails) => 
         prevThumbnails.map((thumbnail) => 
           thumbnail.name === file.name ? { ...thumbnail, uuid: data.uuid, file_url: data.file_url } : thumbnail
         )
       );
 
-      // setFileName(file.name);
+      setFileName(file.name);
 
       setPdfLink(data.file_url);
 
       handleClose();
 
-      // 파일 업로드 후 OCR 처리 실행
       await handleOcr(data.file_url, data.uuid);
     } catch (error) {
       console.error('Error:', error);
@@ -118,14 +119,14 @@ function Home({ setSelectedPdf, setFileName }) {
       if (response.status === 200) {
         console.log('OCR 요청 성공:', response.data);
         const { pdf_id, full_text } = response.data.data;
+        
+        console.log("IP:", `${MAIN_FASTAPI}/api/ocr/ocrTest`);
         let region = "driver";
         console.log("PDF ID:", pdf_id);
         navigate('/keyword', { state: { pdf_id, region } });
 
-        // OCR 결과를 divideChunk 엔드포인트로 전송
         await divideChunk(pdf_id, full_text);
         
-        // OCR 완료 상태 업데이트
         setThumbnails((prevThumbnails) =>
           prevThumbnails.map((thumbnail) =>
             thumbnail.uuid === uuid ? { ...thumbnail, ocrCompleted: true } : thumbnail
@@ -138,6 +139,7 @@ function Home({ setSelectedPdf, setFileName }) {
       console.error('OCR 요청 에러:', error);
     }
   };
+
   const divideChunk = async (pdfId, fullText) => {
     try {
       const response = await axios.post(
@@ -148,8 +150,6 @@ function Home({ setSelectedPdf, setFileName }) {
 
       if (response.status === 200) {
         console.log('divideChunk 요청 성공:', response.data);
-        // divideChunk 결과를 상태로 설정하거나 다른 처리를 할 수 있습니다.
-        // 예: setChunkedData(response.data);
       } else {
         console.error('divideChunk 요청 실패:', response.statusText);
       }
@@ -158,34 +158,36 @@ function Home({ setSelectedPdf, setFileName }) {
     }
   };
 
-
-const handleThumbnailClick = (fileUrl) => {
+  const handleThumbnailClick = (fileUrl, fileName) => {
     setSelectedPdf(fileUrl); // 선택한 PDF 파일 URL을 설정
+    setFileName(fileName); // 선택한 파일 이름을 설정
   };
-  const handleChatBotClick = (uuid, fileUrl) => {
-    handleThumbnailClick(fileUrl);  // 먼저 썸네일 클릭 처리
+
+  const handleChatBotClick = (uuid, fileUrl, fileName) => {
+    handleThumbnailClick(fileUrl, fileName); // 먼저 썸네일 클릭 처리
     navigate('/chatbot', { state: { pdfId: uuid } }); // uuid를 state로 전달
-};
+  };
+
   return (
-    <Box sx={{ height: '85vh', overflow: 'auto', pr: 2}}>
+    <Box sx={{ height: '85vh', overflow: 'auto',  pr: 2 }}>
       <Typography variant="h5">Drive</Typography>
       <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
         <Button variant="contained" onClick={handleClickOpen} sx={{ mb: 2 }}>
           +Add PDF
         </Button>
         {thumbnails.map((thumbnail, index) => (
-          <Paper key={index} sx={{ p: 2, mb: 2 }} onClick={() => handleThumbnailClick(thumbnail.file_url)}>
+          <Paper key={index} sx={{ p: 2, mb: 2 }} onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name)}>
             <Typography variant="body2" sx={{ fontSize: '14px', mb: 1 }}>{thumbnail.name}</Typography>
             <img src={thumbnail.url} alt={thumbnail.name} width={150} />
             {thumbnail.ocrCompleted && (
               <Button 
-              variant="contained" 
-              color="primary" 
-              onClick={() => handleChatBotClick(thumbnail.uuid, thumbnail.file_url)} 
-              sx={{ mb: 2, mr: 2 }}
-          >
-              ChatBot 사용해보기
-          </Button>
+                variant="contained" 
+                color="primary" 
+                onClick={() => handleChatBotClick(thumbnail.uuid, thumbnail.file_url, thumbnail.name)} 
+                sx={{ mb: 2, mr: 2 }}
+              >
+                ChatBot 사용해보기
+              </Button>
             )}
           </Paper>
         ))}

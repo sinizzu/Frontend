@@ -1,18 +1,15 @@
 import React, { useState } from 'react';
 import { Container, Paper, Typography, Box, TextField, Select, MenuItem, FormControl, Button } from '@mui/material';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 const MainFastAPI = process.env.REACT_APP_MainFastAPI;
 const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
-const Search = ({ setSelectedPdf }) => {
+const Search = ({ setSelectedPdf, setFileName, handleButtonClick }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchCategory, setSearchCategory] = useState('keyword');
   const [papers, setPapers] = useState([]);
   const [expandedAbstracts, setExpandedAbstracts] = useState({});
-
-  const navigate = useNavigate();
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
@@ -22,13 +19,13 @@ const Search = ({ setSelectedPdf }) => {
     setSearchCategory(event.target.value);
   };
 
-// pdf로 보기 버튼 눌렀을 때 viewer로 연결 및 ocr 실행 및 저장
-  const handleButtonClick = async (pdfLink) => {
+  const handleButtonClickLocal = async (pdfLink) => {
     // PDF 링크를 setSelectedPdf로 설정
     setSelectedPdf(pdfLink);
-  
+    handleButtonClick(pdfLink); // App 컴포넌트의 상태 변경 함수 호출
+
     try {
-      const MainFastAPI = process.env.REACT_APP_MainFastAPI;
+      const MainFastAPI = process.env.REACT_APP_MainFastAPI || process.env.MAIN_FASTAPI;
       // pdf_id를 가져오기 (paper. uuid 가져오기)
       const id = await axios.get (`${SubFastAPI}/api/weaviate/searchPaperId?pdf_url=${pdfLink}`);
       const pdf_id = id.data.data;
@@ -52,6 +49,8 @@ const Search = ({ setSelectedPdf }) => {
         console.error('OCR 요청 실패:', response.statusText);
       }
     } catch (error) {
+      console.error('IP:',`${MainFastAPI}/api/ocr/ocrTest`);
+      console.error('IP:',`${SubFastAPI}/api/weaviate/searchPaperId`);
       console.error('OCR 요청 에러:', error);
     }
   };
@@ -80,6 +79,7 @@ const Search = ({ setSelectedPdf }) => {
       });
     }
   };
+
   const toggleAbstract = (index) => {
     setExpandedAbstracts((prev) => ({
       ...prev,
@@ -104,8 +104,9 @@ const Search = ({ setSelectedPdf }) => {
     }
     return abstract;
   };
+
   return (
-    <Box sx={{ height: '87vh', overflow: 'auto', borderRight: '1px solid #ccc', pr: 2 }}>
+    <Box sx={{ height: '87vh', overflow: 'auto', pr: 2 }}>
       <h1>Paper Search</h1>
       <Box sx={{ display: 'flex', mb: 3, maxWidth: '750px' }}>
         <FormControl sx={{ mr: 1, flexGrow: 1 }}>
@@ -159,7 +160,7 @@ const Search = ({ setSelectedPdf }) => {
               <Button 
                 variant="outlined" 
                 color="secondary" 
-                onClick={() => handleButtonClick(paper.pdf_link)}
+                onClick={() => handleButtonClickLocal(paper.pdf_link)}
                 sx={{ fontSize: '12px' }}
               >
                 PDF로 보기

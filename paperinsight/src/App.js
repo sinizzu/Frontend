@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, CssBaseline, Drawer, Box, Grid, List, ListItem, ListItemIcon } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { Tabs, Tab, Typography, Drawer, Box, Grid, List, ListItem, ListItemIcon } from '@mui/material';
 import Menu from './components/menu';
 import Login from './pages/login';
 import Register from './pages/register';
@@ -10,23 +10,46 @@ import PDFPreview from './pages/pdfpreview';
 import Chatbot from './pages/chatbot';
 import Keyword from './pages/keyword';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { Link } from 'react-router-dom';
 import Header from './components/header';
+import { Key } from '@mui/icons-material';
 
 const drawerWidth = 80;
-const appBarHeight = 64; // AppBar의 높이
+const appBarHeight = 64;
 
 const App = () => {
   const [selectedPdf, setSelectedPdf] = useState(null);
   const [fileName, setFileName] = useState('');
+  const [showMessage, setShowMessage] = useState(true);
+  const [showFileMessage, setShowFileMessage] = useState(true);
+  const [value, setValue] = useState(null); // 기본값을 0으로 설정하여 첫 번째 탭이 선택되도록 설정
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+    if (newValue !== null) {
+      setShowMessage(false);
+    }
+    if (selectedPdf) {
+      setShowFileMessage(false);
+    }
+  };
+
+  const handleButtonClick = (pdfLink) => {
+    setSelectedPdf(pdfLink);
+    setValue(2); // 키워드 탭(2번 탭)으로 변경
+  };
+
+  useEffect(() => {
+    if (selectedPdf) {
+      setShowMessage(true);
+      setShowFileMessage(false);
+    }
+  }, [selectedPdf]);
 
   return (
     <Router>
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-        {/* 헤더 */}
         <Header fileName={fileName} />
         <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden', marginTop: `${appBarHeight}px` }}>
-          {/* Drawer == 옆 팝업 */}
           <Drawer
             variant="permanent"
             sx={{
@@ -35,11 +58,9 @@ const App = () => {
               [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
             }}
           >
-            {/* 메뉴 */}
-            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 10}}>
-                <Menu />
-              </Box>
-            {/* 하단 유저 아이콘 */}
+            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 10 }}>
+              <Menu />
+            </Box>
             <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pb: 5 }}>
               <List>
                 <ListItem button component={Link} to="/login">
@@ -51,35 +72,73 @@ const App = () => {
             </Box>
           </Drawer>
           <Box
-              component="main"
-              sx={{
-                flexGrow: 1,
-                bgcolor: 'background.default',
-                display: 'flex',
-                flexDirection: 'row',
-                overflow: 'hidden',
-                height: 'calc(100vh - 64px)', // AppBar의 높이를 고려하여 height 설정
-              }}
-            >
-              <Routes>
-                <Route path="/login" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Login /></Grid></Grid>} />
-                <Route path="/register" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Register /></Grid></Grid>} />
-                <Route path="*" element={
-                  <Grid container sx={{ flexGrow: 1, height: 'calc(100vh - 64px)' }}>
-                    <Grid item xs={2.5} sx={{ overflowY: 'auto', height: '100%' }}>
-                      <Routes>
-                        <Route path="/" element={<Home setSelectedPdf={setSelectedPdf} />} />
-                        <Route path="/chatbot" element={<Home setSelectedPdf={setSelectedPdf} />} />
-                        <Route path="/search" element={<Search setSelectedPdf={setSelectedPdf} />} />
-                        <Route path="/paper" element={<div>Paper Page</div>} />
-                        <Route path="/Keyword" element={<Keyword />} />
-                      </Routes>
-                    </Grid>
+            component="main"
+            sx={{
+              flexGrow: 1,
+              bgcolor: 'background.default',
+              display: 'flex',
+              flexDirection: 'row',
+              overflow: 'hidden',
+              height: 'calc(100vh - 64px)',
+            }}
+          >
+            <Routes>
+              <Route path="/login" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Login /></Grid></Grid>} />
+              <Route path="/register" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Register /></Grid></Grid>} />
+              <Route path="*" element={
+                <Grid container sx={{ flexGrow: 1, height: 'calc(100vh - 64px)' }}>
+                  <Grid data-label="l-container" item xs={2.5} padding={3}
+                    sx={{ overflowY: 'auto', height: '100%', backgroundColor: '#F7F9FB', borderRight: '1px solid #ccc' }}>
+                    <Routes>
+                      <Route path="/" element={<Home setSelectedPdf={setSelectedPdf} setFileName={setFileName} />} />
+                      <Route path="/chatbot" element={<Home setSelectedPdf={setSelectedPdf} setFileName={setFileName} />} />
+                      <Route path="/search" element={<Search setSelectedPdf={setSelectedPdf} setFileName={setFileName} handleButtonClick={handleButtonClick} />} />
+                      <Route path="/paper" element={<div>Paper Page</div>} />
+                      <Route path="/keyword" element={<Keyword />} />
+                    </Routes>
+                  </Grid>
 
-                    <Grid item xs={3.5} sx={{ overflowY: 'auto', height: '100%' }}><Routes><Route path="/chatbot" element={<Chatbot setSelectedPdf={setSelectedPdf} />} /></Routes></Grid>
-                    <Grid item xs={6} sx={{ overflowY: 'auto', height: '100%' }}>
+                  <Grid data-label="2-container" item xs={3.5} padding={3}
+                    sx={{
+                      overflowY: 'auto', height: '100%', borderRight: '1px solid #ccc',
+                      display: 'flex', flexDirection: 'column'
+                    }}>
+                    <Tabs value={value} onChange={handleChange} aria-label="basic tabs example"
+                      sx={{ width: '100%' }}>
+                      <Tab label="챗봇" sx={{ flexGrow: 1, textAlign: 'center' }} />
+                      <Tab label="키워드" sx={{ flexGrow: 1, textAlign: 'center' }} />
+                      <Tab label="요약" sx={{ flexGrow: 1, textAlign: 'center' }} />
+                    </Tabs>
+                    {value === 0 && selectedPdf && (
+                      <Chatbot setSelectedPdf={setSelectedPdf} />
+                    )}
+                    {value === 1 && selectedPdf && (
+                      <Keyword setSelectedPdf={setSelectedPdf} handleButtonClick={handleButtonClick} />
+                    )}
+                    {value === 2 && selectedPdf && (
+                      <Keyword />
+                    )}
+                    {showFileMessage && !selectedPdf && (
+                      <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <Typography variant="subtitle1">파일을 업로드 해주세요📁</Typography>
+                      </Box>
+                    )}
+                    {showMessage && selectedPdf && (
+                      <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                        <Typography variant="subtitle1">원하는 학습을 진행해보세요!✏️</Typography>
+                      </Box>
+                    )}
+                  </Grid>
+                  <Grid data-label="3-container" item xs={6} padding={3} sx={{ overflowY: 'auto', height: '100%' }}>
+                    {showFileMessage && !selectedPdf && (
+                      <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <Typography variant="subtitle1">pdf 뷰어</Typography>
+                      </Box>
+                    )}
+                    {selectedPdf && (
                       <PDFPreview pdfUrl={selectedPdf} />
-                    </Grid>
+                    )}
+                  </Grid>
                 </Grid>
               } />
             </Routes>
