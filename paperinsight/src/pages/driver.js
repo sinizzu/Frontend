@@ -9,7 +9,7 @@ import 'pdfjs-dist/build/pdf.worker.entry';
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
-function Home({ setSelectedPdf, setFileName }) {
+function Home({ setSelectedPdf, setFileName, handleButtonClick }) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -81,6 +81,7 @@ function Home({ setSelectedPdf, setFileName }) {
 
     const thumbnailUrl = await createThumbnail(url);
     
+    // 새로운 PDF 미리보기를 기존의 미리보기와 함께 쌓기, OCR 미완료 상태로 초기화
     setThumbnails((prevThumbnails) => [
       { name: uploadedFile.name, url: thumbnailUrl, ocrCompleted: false },
       ...prevThumbnails
@@ -94,8 +95,6 @@ function Home({ setSelectedPdf, setFileName }) {
     formData.append('file', file);
 
     try {
-      console.log("IP:", process.env.REACT_APP_MainFastAPI);
-      console.log('Uploading to URL:', `${MAIN_FASTAPI}/api/paper/saveToS3`);
       const response = await fetch(`${MAIN_FASTAPI}/api/paper/saveToS3`, {  
         method: 'POST',
         body: formData,
@@ -132,9 +131,73 @@ function Home({ setSelectedPdf, setFileName }) {
       handleClose();
       
       // 파일 업로드 후 전체 리스트 새로고침
+      // 파일 업로드 후 OCR 처리 실행
       await fetchPdfFiles();
     } catch (error) {
       console.error('Error:', error);
+    }
+  };
+
+  const handleOcr = async (pdfLink, uuid) => {
+    if (!pdfLink || !uuid) {
+      console.error('PDF link or UUID is not set');
+      return;
+    }
+
+    setSelectedPdf(pdfLink);
+
+    try {
+      const formData = new URLSearchParams();
+      formData.append('pdfUrl', pdfLink);
+      formData.append('pdfId', uuid);
+
+      const response = await axios.post(
+        `${MAIN_FASTAPI}/api/ocr/ocrTest`, 
+        formData,
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+      );
+
+      if (response.status === 200) {
+        console.log('OCR 요청 성공:', response.data);
+        const { pdf_id, full_text } = response.data.data;
+        let region = "driver";
+        console.log("PDF ID:", pdf_id);
+        handleButtonClick(pdfLink, pdf_id, region); // App 컴포넌트의 상태 변경 함수 호출
+
+        // OCR 결과를 divideChunk 엔드포인트로 전송
+        await divideChunk(pdf_id, full_text);
+        
+        // OCR 완료 상태 업데이트
+        setThumbnails((prevThumbnails) =>
+          prevThumbnails.map((thumbnail) =>
+            thumbnail.uuid === uuid ? { ...thumbnail, ocrCompleted: true } : thumbnail
+          )
+        );
+      } else {
+        console.error('OCR 요청 실패:', response.statusText);
+      }
+    } catch (error) {
+      console.error('OCR 요청 에러:', error);
+    }
+  };
+
+  const divideChunk = async (pdfId, fullText) => {
+    try {
+      const response = await axios.post(
+        `${MAIN_FASTAPI}/api/chatbot/divideChunk`, // 엔드포인트 URL 확인
+        { pdfId: pdfId, fullText: fullText }, // fullText와 pdfId를 payload로 전송
+        { headers: { 'Content-Type': 'application/json' } } // JSON 형식으로 전송
+      );
+
+      if (response.status === 200) {
+        console.log('divideChunk 요청 성공:', response.data);
+        // divideChunk 결과를 상태로 설정하거나 다른 처리를 할 수 있습니다.
+        // 예: setChunkedData(response.data);
+      } else {
+        console.error('divideChunk 요청 실패:', response.statusText);
+      }
+    } catch (error) {
+      console.error('divideChunk 요청 에러:', error);
     }
   };
 
@@ -145,7 +208,13 @@ function Home({ setSelectedPdf, setFileName }) {
     console.log("Selected Thumbnail Data:", thumbnailName);
   };
 
+  const handleChatBotClick = (uuid, fileUrl, fileName) => {
+    handleThumbnailClick(fileUrl, fileName); // 먼저 썸네일 클릭 처리
+    navigate('/chatbot', { state: { pdfId: uuid } }); // uuid를 state로 전달
+  };
+
   return (
+    
     <Box sx={{ height: '85vh', overflow: 'auto', pr: 2 }}>
       <Typography variant="h5">Drive</Typography>
       <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>

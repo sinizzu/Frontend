@@ -9,8 +9,10 @@ import Home from './pages/driver';
 import PDFPreview from './pages/pdfpreview';
 import Chatbot from './pages/chatbot';
 import Keyword from './pages/keyword';
+import Summary from './pages/summary';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Header from './components/header';
+
 import axios from 'axios';
 
 const drawerWidth = 80;
@@ -24,9 +26,11 @@ const App = () => {
   const [showFileMessage, setShowFileMessage] = useState(true);
   const [fullText, setFullText] = useState('');
   const [pdfId, setPdfId] = useState('');
-  const [value, setValue] = useState(null);
+  const [value, setValue] = useState(null); // 기본값을 0으로 설정하여 첫 번째 탭이 선택되도록 설정
+  const [pdfState, setPdfState] = useState({ pdf_id: '', region: '' });
   const [ocrCompleted, setOcrCompleted] = useState(false);
   const [ocrInProgress, setOcrInProgress] = useState(false);
+
 
   const handleChange = async (event, newValue) => {
     setValue(newValue);
@@ -103,10 +107,10 @@ const App = () => {
     }
   };
 
-
-  const handleButtonClick = (pdfLink) => {
+  const handleButtonClick = (pdfLink, pdf_id, region) => {
     setSelectedPdf(pdfLink);
-    setValue(2); // 키워드 탭(2번 탭)으로 변경
+    setPdfState({ pdf_id, region });
+    setValue(2); // 요약 탭(2번 탭)으로 변경
   };
 
   useEffect(() => {
@@ -117,6 +121,7 @@ const App = () => {
       console.log("Selected Thumbnail Name in useEffect:", fileName);
     }
   }, [selectedPdf, fileName]);
+
   return (
     <Router>
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -162,15 +167,15 @@ const App = () => {
                   <Grid data-label="l-container" item xs={2.5} padding={3}
                     sx={{ overflowY: 'auto', height: '100%', backgroundColor: '#F7F9FB', borderRight: '1px solid #ccc' }}>
                     <Routes>
-                      <Route path="/" element={
-                        <Home 
+                      <Route path="/" element={<Home 
                           setSelectedPdf={setSelectedPdf}
                           setFileName={setFileName}
                         />} />
                       <Route path="/chatbot" element={<Home setSelectedPdf={setSelectedPdf} setFileName={setFileName} />} />
                       <Route path="/search" element={<Search setSelectedPdf={setSelectedPdf} setFileName={setFileName} handleButtonClick={handleButtonClick} />} />
                       <Route path="/paper" element={<div>Paper Page</div>} />
-                      <Route path="/keyword" element={<Keyword />} />
+                      <Route path="/keyword" element={<Keyword pdfState={pdfState} />} />
+                      <Route path="/summary" element={<Summary pdfState={pdfState} />} />
                     </Routes>
                   </Grid>
 
@@ -206,30 +211,23 @@ const App = () => {
                       </>
                     )}
                     {value === 1 && selectedPdf && (
-                      <Keyword 
-                        setSelectedPdf={setSelectedPdf}
-                        handleButtonClick={handleButtonClick}
-                        fileName={fileName}
-                      />
+                     <Keyword 
+                     setSelectedPdf={setSelectedPdf}
+                     handleButtonClick={handleButtonClick}
+                     fileName={fileName}
+                   />
                     )}
                     {value === 2 && selectedPdf && (
-                      <Keyword 
-                        fileName={fileName}
-                      />
+                      <Keyword fileName={fileName} />
                     )}
-                    {showFileMessage && !selectedPdf && (
+                    {!selectedPdf && (
                       <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <Typography variant="subtitle1">파일을 업로드 해주세요📁</Typography>
                       </Box>
                     )}
-                    {showMessage && selectedPdf && (
-                      <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-                        <Typography variant="subtitle1">원하는 학습을 진행해보세요!✏️</Typography>
-                      </Box>
-                    )}
                   </Grid>
                   <Grid data-label="3-container" item xs={6} padding={3} sx={{ overflowY: 'auto', height: '100%' }}>
-                    {showFileMessage && !selectedPdf && (
+                    {!selectedPdf && (
                       <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <Typography variant="subtitle1">pdf 뷰어</Typography>
                       </Box>
