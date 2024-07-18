@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
 import { MenuItem, FormControl, Select, Typography, Button, Box } from '@mui/material';
 import { ClipLoader } from 'react-spinners';
 
@@ -8,10 +7,9 @@ import { ClipLoader } from 'react-spinners';
 const MainFastAPI = process.env.REACT_APP_MainFastAPI;
 const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
-function Keyword() {
-    const location = useLocation();
-    const pdf_id = location.state?.pdf_id || '';
-    const region = location.state?.region || '';
+function Keyword({ pdfState }) {
+    const pdf_id = pdfState.pdf_id || '';
+    const region = pdfState.region || '';
     const [searchCategory, setSearchCategory] = useState('summary'); // 기본값을 'summary'로 설정
     const [keywords, setKeywords] = useState([]); // 키워드 목록 상태, 초기값을 빈 배열로 설정
     const [loading, setLoading] = useState(true); // 데이터 로딩 상태

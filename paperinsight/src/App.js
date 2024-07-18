@@ -11,7 +11,6 @@ import Chatbot from './pages/chatbot';
 import Keyword from './pages/keyword';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Header from './components/header';
-import { Key } from '@mui/icons-material';
 
 const drawerWidth = 80;
 const appBarHeight = 64;
@@ -21,7 +20,8 @@ const App = () => {
   const [fileName, setFileName] = useState('');
   const [showMessage, setShowMessage] = useState(true);
   const [showFileMessage, setShowFileMessage] = useState(true);
-  const [value, setValue] = useState(null); // 기본값을 0으로 설정하여 첫 번째 탭이 선택되도록 설정
+  const [value, setValue] = useState(null);
+  const [pdfState, setPdfState] = useState({ pdf_id: '', region: '' });
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -33,8 +33,9 @@ const App = () => {
     }
   };
 
-  const handleButtonClick = (pdfLink) => {
+  const handleButtonClick = (pdfLink, pdf_id, region) => {
     setSelectedPdf(pdfLink);
+    setPdfState({ pdf_id, region });
     setValue(2); // 키워드 탭(2번 탭)으로 변경
   };
 
@@ -90,11 +91,11 @@ const App = () => {
                   <Grid data-label="l-container" item xs={2.5} padding={3}
                     sx={{ overflowY: 'auto', height: '100%', backgroundColor: '#F7F9FB', borderRight: '1px solid #ccc' }}>
                     <Routes>
-                      <Route path="/" element={<Home setSelectedPdf={setSelectedPdf} setFileName={setFileName} />} />
+                      <Route path="/" element={<Home setSelectedPdf={setSelectedPdf} setFileName={setFileName} handleButtonClick={handleButtonClick} />} />
                       <Route path="/chatbot" element={<Home setSelectedPdf={setSelectedPdf} setFileName={setFileName} />} />
                       <Route path="/search" element={<Search setSelectedPdf={setSelectedPdf} setFileName={setFileName} handleButtonClick={handleButtonClick} />} />
                       <Route path="/paper" element={<div>Paper Page</div>} />
-                      <Route path="/keyword" element={<Keyword />} />
+                      <Route path="/keyword" element={<Keyword pdfState={pdfState} />} />
                     </Routes>
                   </Grid>
 
@@ -113,10 +114,10 @@ const App = () => {
                       <Chatbot setSelectedPdf={setSelectedPdf} />
                     )}
                     {value === 1 && selectedPdf && (
-                      <Keyword setSelectedPdf={setSelectedPdf} handleButtonClick={handleButtonClick} />
+                      <Keyword setSelectedPdf={setSelectedPdf} handleButtonClick={handleButtonClick} pdfState={pdfState} />
                     )}
                     {value === 2 && selectedPdf && (
-                      <Keyword />
+                      <Keyword setSelectedPdf={setSelectedPdf} handleButtonClick={handleButtonClick} pdfState={pdfState}/>
                     )}
                     {showFileMessage && !selectedPdf && (
                       <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
