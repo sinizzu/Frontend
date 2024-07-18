@@ -233,9 +233,7 @@ const PDFPreview = ({ pdfUrl }) => {
             plugins={[defaultLayoutPluginInstance]}
           />
         </Worker>
-      ) : (
-        <p>No PDF selected</p>
-      )}
+      ) : null}
       <Popover
         id={id}
         open={open}
