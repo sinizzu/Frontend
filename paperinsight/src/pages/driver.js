@@ -118,8 +118,9 @@ function Home({ setSelectedPdf, setFileName }) {
       if (response.status === 200) {
         console.log('OCR 요청 성공:', response.data);
         const { pdf_id, full_text } = response.data.data;
+        let region = "driver";
         console.log("PDF ID:", pdf_id);
-        console.log("Full Text:", full_text);
+        navigate('/keyword', { state: { pdf_id, region } });
 
         // OCR 결과를 divideChunk 엔드포인트로 전송
         await divideChunk(pdf_id, full_text);
@@ -166,7 +167,7 @@ const handleThumbnailClick = (fileUrl) => {
     navigate('/chatbot', { state: { pdfId: uuid } }); // uuid를 state로 전달
 };
   return (
-    <Box sx={{ height: '85vh', overflow: 'auto', borderRight: '1px solid #ccc', pr: 2 }}>
+    <Box sx={{ height: '85vh', overflow: 'auto', pr: 2}}>
       <Typography variant="h5">Drive</Typography>
       <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
         <Button variant="contained" onClick={handleClickOpen} sx={{ mb: 2 }}>

@@ -11,7 +11,7 @@ const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 function Keyword() {
     const location = useLocation();
     const pdf_id = location.state?.pdf_id || '';
-    
+    const region = location.state?.region || '';
     const [searchCategory, setSearchCategory] = useState('summary'); // 기본값을 'summary'로 설정
     const [keywords, setKeywords] = useState([]); // 키워드 목록 상태, 초기값을 빈 배열로 설정
     const [loading, setLoading] = useState(true); // 데이터 로딩 상태
@@ -28,8 +28,10 @@ function Keyword() {
         const fetchKeywords = async () => {
             setLoading(true);
             try {
+                console.log("PDF ID:", pdf_id);
                 const response = await axios.get(`${SubFastAPI}/api/topic/keywordExtract?pdf_id=${pdf_id}`);
                 console.log("Keywords Data:", response.data.data); // Check the structure of the response data
+                console.log("Keywords Data:", response["data"]);
                 setKeywords(response.data.data); // 서버에서 받은 키워드 데이터를 설정
             } catch (error) {
                 setError(error); // 에러 설정
@@ -46,7 +48,13 @@ function Keyword() {
             if (pdf_id && !summaryFetched) {
                 setLoading(true);
                 try {
-                    const response = await axios.get(`${SubFastAPI}/api/summary/summaryPaper?pdf_id=${pdf_id}`);
+                    let response = null;
+                    console.log("region:", region);
+                    if (region === 'search') {
+                        response = await axios.get(`${SubFastAPI}/api/summary/summaryPaper?pdf_id=${pdf_id}`);
+                    } else {
+                        response = await axios.get(`${SubFastAPI}/api/summary/summaryPdf?pdf_id=${pdf_id}`);
+                    }
                     console.log("Summary Data:", response.data);
                     setSummary(response.data.summary);
                     setSummaryFetched(true); // summary 데이터 가져왔음 설정

@@ -45,8 +45,9 @@ const Search = ({ setSelectedPdf }) => {
       if (response.status === 200) {
         console.log('OCR 요청 성공:', response.data);
         const pdf_id = response.data.data.pdf_id;
+        let region = "search";
         console.log("OCR ID:", pdf_id);
-        navigate('/keyword', { state: { pdf_id } });
+        navigate('/keyword', { state: { pdf_id, region } });
       } else {
         console.error('OCR 요청 실패:', response.statusText);
       }
