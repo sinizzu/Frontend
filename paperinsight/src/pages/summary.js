@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Typography, Box } from '@mui/material';
+import { Typography, Box, Button, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { ClipLoader } from 'react-spinners';
 import '../styles/main.css';
 
@@ -13,29 +13,35 @@ function Summary({ pdfState }) {
     const [summary, setSummary] = useState(''); // summary 데이터를 저장할 상태
     const [loading, setLoading] = useState(true); // 데이터 로딩 상태
     const [error, setError] = useState(null); // 에러 상태
+    const [language, setLanguage] = useState('en'); // 언어 상태
 
-    // Fetch the summary on component mount
-    useEffect(() => {
-        const fetchSummary = async () => {
-            setLoading(true);
-            try {
-                let response = null;
-                console.log("region:", region);
+    // Fetch the summary based on the selected language
+    const fetchSummary = async (lang) => {
+        setLoading(true);
+        try {
+            let response = null;
+            if (lang === 'en') {
                 if (region === 'search') {
                     response = await axios.get(`${SubFastAPI}/api/summary/summaryPaper?pdf_id=${pdf_id}`);
                 } else {
                     response = await axios.get(`${SubFastAPI}/api/summary/summaryPdf?pdf_id=${pdf_id}`);
                 }
-                console.log("Summary Data:", response.data);
-                setSummary(response.data.summary);
-            } catch (error) {
-                setError(error);
-            } finally {
-                setLoading(false);
+            } else if (lang === 'ko') {
+                response = await axios.get(`${SubFastAPI}/api/translate/transelateSummary?pdf_id=${pdf_id}`);
             }
-        };
-        fetchSummary();
-    }, [pdf_id, region]);
+            console.log("Summary Data:", response.data.data);
+            setSummary(response.data.summary || response.data.data); // Adjust based on response structure
+        } catch (error) {
+            setError(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Fetch the summary on component mount or when language changes
+    useEffect(() => {
+        fetchSummary(language);
+    }, [pdf_id, region, language]);
 
     // 데이터 로딩 중이면 로딩 표시
     if (loading) {
@@ -57,16 +63,38 @@ function Summary({ pdfState }) {
         return null;
     }
 
+    // 언어 토글 버튼 핸들러
+    const handleLanguageChange = (event, newLanguage) => {
+        if (newLanguage !== null) {
+            setLanguage(newLanguage);
+        }
+    };
+
     // UI 렌더링
     return (
-
-    <Box className='drive-container' sx={{ height: '80vh', display: 'flex', flexDirection: 'column', p: 2 }}>
-      <Box className='drive-container' sx={{ height: '100%',flexGrow: 1, overflow: 'auto', mb: 2 }}>
-        <h1>Summary</h1>
-        <Typography variant="body1">{summary}</Typography>
-      </Box>
-    </Box>
-
+        <div>
+            <Box display="block" width="100%">
+                <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+                    <h1 style={{ margin: 0 }}>Summary</h1>
+                </Box>
+                <Box display="flex" justifyContent="flex-end" alignItems="center" width="100%">
+                    <ToggleButtonGroup
+                        value={language}
+                        exclusive
+                        onChange={handleLanguageChange}
+                        aria-label="language"
+                    >
+                        <ToggleButton value="en" aria-label="english">
+                            English
+                        </ToggleButton>
+                        <ToggleButton value="ko" aria-label="korean">
+                            한국어
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+                </Box>
+            </Box>
+            <Typography variant="body1">{summary}</Typography>
+        </div>
     );
 }
 

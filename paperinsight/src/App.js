@@ -241,6 +241,7 @@ const App = () => {
                             pdfId={pdfId}
                             fullText={fullText}
                             ocrCompleted={ocrCompleted}
+                            pdfState={pdfState}
                           />
                         ) : selectedPdf ? (
                           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
