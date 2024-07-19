@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import { Tabs, Tab, Typography, Drawer, Box, Grid, List, ListItem, ListItemIcon, CircularProgress } from '@mui/material';
+import { Tabs, Tab, Typography, Drawer, Box, Grid, List, ListItem, ListItemIcon, CircularProgress, IconButton } from '@mui/material';
+import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutlined';
 import Menu from './components/menu';
 import Login from './pages/login';
 import Register from './pages/register';
@@ -15,6 +16,7 @@ import Header from './components/header';
 
 
 import axios from 'axios';
+import { calculateMD5 } from 'pdfjs-dist/build/pdf.worker';
 
 const drawerWidth = 80;
 const appBarHeight = 64;
@@ -27,10 +29,11 @@ const App = () => {
   const [showFileMessage, setShowFileMessage] = useState(true);
   const [fullText, setFullText] = useState('');
   const [pdfId, setPdfId] = useState('');
-  const [value, setValue] = useState(null); // 기본값을 0으로 설정하여 첫 번째 탭이 선택되도록 설정
+  const [value, setValue] = useState(null); // 기본값을 null로 아무 탭도 선택되지 않도록 함
   const [pdfState, setPdfState] = useState({ pdf_id: '', region: '' });
   const [ocrCompleted, setOcrCompleted] = useState(false);
   const [ocrInProgress, setOcrInProgress] = useState(false);
+  const [isDriveVisible, setIsDriveVisible] = useState(true); //드라이브 열림 상태
 
 
   const handleChange = async (event, newValue) => {
@@ -54,18 +57,29 @@ const App = () => {
       }
     }
   };
-  const performOCR = async () => {
-    if (!selectedPdf) {
-      console.error('선택된 PDF URL이 없습니다.');
-      return;
-    }
+
+  const handlePdfSelection = async (pdfUrl, pdfId) => {
+    setSelectedPdf(pdfUrl);
+    setFileName(pdfId);
+    setOcrCompleted(false);
+    setOcrInProgress(true);
   
     try {
-      console.log("Performing OCR on PDF URL:", selectedPdf);
-      console.log("Thumbnail Name during OCR:", fileName);
+      await performOCR(pdfUrl, pdfId);
+    } catch (error) {
+      console.error('OCR 처리 중 오류 발생:', error);
+    } finally {
+      setOcrInProgress(false);
+    }
+  };
+  
+  const performOCR = async (pdfUrl, pdfId) => {
+    try {
+      console.log("Performing OCR on PDF URL:", pdfUrl);
+      console.log("PDF ID during OCR:", pdfId);
       const formData = new URLSearchParams();
-      formData.append('pdfUrl', selectedPdf);
-      formData.append('pdfId', fileName);
+      formData.append('pdfUrl', pdfUrl);
+      formData.append('pdfId', pdfId);
       const response = await axios.post(`${MAIN_FASTAPI}/api/ocr/ocrTest`, formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -77,8 +91,7 @@ const App = () => {
         setOcrCompleted(true);
         setFullText(full_text);
         setPdfId(pdf_id);
-
-        // OCR이 완료되면 divideChunk 함수 호출
+  
         await divideChunk(pdf_id, full_text);
       } else {
         throw new Error('OCR 요청 실패');
@@ -164,25 +177,46 @@ const App = () => {
               <Route path="/login" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Login /></Grid></Grid>} />
               <Route path="/register" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Register /></Grid></Grid>} />
               <Route path="*" element={
-                <Grid container sx={{ flexGrow: 1, height: 'calc(100vh - 64px)' }}>
-                  <Grid data-label="l-container" item xs={2.5} padding={3}
-                    sx={{ overflowY: 'auto', height: '100%', backgroundColor: '#F7F9FB', borderRight: '1px solid #ccc' }}>
+                <Grid  container sx={{ flexGrow: 1, height: 'calc(100vh - 64px)' }}>
+                  <Grid className='drive-container' data-label="1-container " item xs={isDriveVisible ? 2.5 : 0.5} padding={isDriveVisible ? 3 : 0}
+                    sx={{ 
+                      height: '100%', backgroundColor: '#F7F9FB', 
+                      borderRight: '1px solid #ccc', position: 'relative',
+                      transition: '0.5s ease' }}>
+                    {isDriveVisible ? (
                     <Routes>
                       <Route path="/" element={<Home 
                           setSelectedPdf={setSelectedPdf}
                           setFileName={setFileName}
+                          setIsDriveVisible={setIsDriveVisible}
+                          handlePdfSelection={handlePdfSelection}
                         />} />
                       <Route path="/chatbot" element={<Home setSelectedPdf={setSelectedPdf} setFileName={setFileName} />} />
-                      <Route path="/search" element={<Search setSelectedPdf={setSelectedPdf} setFileName={setFileName} handleButtonClick={handleButtonClick} />} />
+                      <Route path="/search" element={<Search setSelectedPdf={setSelectedPdf} setFileName={setFileName} handleButtonClick={handleButtonClick} handlePdfSelection={handlePdfSelection} />} />
                       <Route path="/paper" element={<div>Paper Page</div>} />
                       <Route path="/keyword" element={<Keyword pdfState={pdfState} />} />
                       <Route path="/summary" element={<Summary pdfState={pdfState} />} />
                     </Routes>
+                    ) : (
+                      <Box 
+                        sx={{ 
+                          position: 'absolute',
+                          top: '33px', // 상단으로부터의 거리 조정
+                          left: '50%',
+                          transform: 'translateX(-50%)', // 수평 중앙 정렬
+                          width: '100%',
+                          display: 'flex',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <IconButton onClick={() => setIsDriveVisible(true)}>
+                          < ArrowForwardIosOutlinedIcon/>
+                        </IconButton>
+                      </Box>
+                    )}
                   </Grid>
-
-                  <Grid data-label="2-container" item xs={3.5} padding={3}
-                    sx={{
-                      overflowY: 'auto', height: '100%', borderRight: '1px solid #ccc',
+                  <Grid data-label="2-container" item xs={isDriveVisible ? 3.5 : 4} padding={isDriveVisible ? 3 : 1}
+                    sx={{ height: '100%', borderRight: '1px solid #ccc',
                       display: 'flex', flexDirection: 'column'
                     }}>
                     <Tabs value={value} onChange={handleChange} aria-label="basic tabs example"
@@ -196,7 +230,7 @@ const App = () => {
                         {ocrInProgress ? (
                           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                             <CircularProgress />
-                            <Typography variant="body1" sx={{ ml: 2 }}>OCR 처리 중...</Typography>
+                            <Typography variant="body1" sx={{ ml: 2 }}>분석중...</Typography>
                           </Box>
                         ) : ocrCompleted ? (
                           <Chatbot 
@@ -204,6 +238,10 @@ const App = () => {
                             fullText={fullText}
                             ocrCompleted={ocrCompleted}
                           />
+                        ) : selectedPdf ? (
+                          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                            <Typography variant="body1">OCR 처리를 시작하려면 챗봇 탭을 다시 클릭하세요.</Typography>
+                          </Box>
                         ) : (
                           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                             <Typography variant="body1">PDF를 선택하고 챗봇 탭을 클릭하여 OCR 처리를 시작하세요.</Typography>
@@ -223,14 +261,19 @@ const App = () => {
                       </Box>
                     )}
                   </Grid>
-                  <Grid data-label="3-container" item xs={6} padding={3} sx={{ overflowY: 'auto', height: '100%' }}>
-                    {!selectedPdf && (
-                      <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <Grid 
+                    data-label="3-container" 
+                    item 
+                    xs={isDriveVisible ? 5.5 : 7.5} 
+                    padding={3} 
+                    sx={{ height: '100%' }}>
+                
+                    {selectedPdf ? (
+                      <PDFPreview pdfUrl={selectedPdf} />
+                    ) : (
+                      <Box sx={{ flexGrow: 1, height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <Typography variant="subtitle1">pdf 뷰어</Typography>
                       </Box>
-                    )}
-                    {selectedPdf && (
-                      <PDFPreview pdfUrl={selectedPdf} />
                     )}
                   </Grid>
                 </Grid>
