@@ -34,6 +34,8 @@ const App = () => {
   const [ocrCompleted, setOcrCompleted] = useState(false);
   const [ocrInProgress, setOcrInProgress] = useState(false);
   const [isDriveVisible, setIsDriveVisible] = useState(true); //드라이브 열림 상태
+  const [loading, setLoading] = useState(false);
+  const [wikiLoading, setWikiLoading] = useState(false);
 
 
   const handleChange = async (event, newValue) => {
@@ -58,11 +60,12 @@ const App = () => {
     }
   };
 
-  const handlePdfSelection = async (pdfUrl, pdfId) => {
+  const handlePdfSelection = async (pdfUrl, pdfId, region) => {
     setSelectedPdf(pdfUrl);
     setFileName(pdfId);
     setOcrCompleted(false);
     setOcrInProgress(true);
+    handleButtonClick(pdfUrl, pdfId, region);
   
     try {
       await performOCR(pdfUrl, pdfId);
@@ -124,7 +127,7 @@ const App = () => {
   const handleButtonClick = (pdfLink, pdf_id, region) => {
     setSelectedPdf(pdfLink);
     setPdfState({ pdf_id, region });
-    setValue(2); // 요약 탭(2번 탭)으로 변경
+    setValue(0); // 요약 탭(2번 탭)으로 변경
   };
 
   useEffect(() => {
@@ -178,7 +181,7 @@ const App = () => {
               <Route path="/register" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Register /></Grid></Grid>} />
               <Route path="*" element={
                 <Grid  container sx={{ flexGrow: 1, height: 'calc(100vh - 64px)' }}>
-                  <Grid className='drive-container' data-label="1-container " item xs={isDriveVisible ? 2 : 0.5} padding={isDriveVisible ? 3 : 0}
+                  <Grid className='drive-container' data-label="1-container " item xs={isDriveVisible ? 3 : 0.5} padding={isDriveVisible ? 3 : 0}
                     sx={{ 
                       height: '100%', backgroundColor: '#F7F9FB', 
                       borderRight: '1px solid #ccc', position: 'relative',
@@ -189,6 +192,7 @@ const App = () => {
                           setSelectedPdf={setSelectedPdf}
                           setFileName={setFileName}
                           setIsDriveVisible={setIsDriveVisible}
+                          handleButtonClick={handleButtonClick} 
                           handlePdfSelection={handlePdfSelection}
                         />} />
                       <Route path="/chatbot" element={<Home setSelectedPdf={setSelectedPdf} setFileName={setFileName} />} />
@@ -215,7 +219,7 @@ const App = () => {
                       </Box>
                     )}
                   </Grid>
-                  <Grid data-label="2-container" item xs={isDriveVisible ? 3.5 : 4} padding={isDriveVisible ? 3 : 1}
+                  <Grid data-label="2-container" item xs={isDriveVisible ? 3 : 4.5} padding={isDriveVisible ? 3 : 1}
                     sx={{ height: '100%', borderRight: '1px solid #ccc',
                       display: 'flex', flexDirection: 'column'
                     }}>
@@ -250,10 +254,22 @@ const App = () => {
                       </>
                     )}
                     {value === 1 && selectedPdf && (
-                     <Keyword setSelectedPdf={setSelectedPdf} handleButtonClick={handleButtonClick} pdfState={pdfState} />
+                      loading || wikiLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                            <CircularProgress />
+                            <Typography variant="body1" sx={{ ml: 2 }}>키워드 추출 중...</Typography>
+                          </Box>
+                            ) :(
+                          <Keyword 
+                            setSelectedPdf={setSelectedPdf} 
+                            handleButtonClick={handleButtonClick} 
+                            pdfState={pdfState} 
+                            setLoading={setLoading}
+                            setWikiLoading={setWikiLoading}/>
+                            )
                     )}
                     {value === 2 && selectedPdf && (
-                      <Keyword setSelectedPdf={setSelectedPdf} handleButtonClick={handleButtonClick} pdfState={pdfState}/>
+                      <Summary setSelectedPdf={setSelectedPdf} handleButtonClick={handleButtonClick} pdfState={pdfState}/>
                     )}
                     {!selectedPdf && (
                       <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -264,7 +280,7 @@ const App = () => {
                   <Grid 
                     data-label="3-container" 
                     item 
-                    xs={isDriveVisible ? 5.5 : 7.5} 
+                    xs={isDriveVisible ? 6 : 7.5} 
                     padding={3} 
                     sx={{ height: '100%' }}>
                 

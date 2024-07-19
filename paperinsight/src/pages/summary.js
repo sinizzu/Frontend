@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Typography, Box } from '@mui/material';
 import { ClipLoader } from 'react-spinners';
+import '../styles/main.css';
 
 // env에 IP 가져오기
 const SubFastAPI = process.env.REACT_APP_SubFastAPI;
@@ -58,10 +59,14 @@ function Summary({ pdfState }) {
 
     // UI 렌더링
     return (
-        <div>
-            <h1>Summary</h1>
-            <Typography variant="body1">{summary}</Typography>
-        </div>
+
+    <Box className='drive-container' sx={{ height: '80vh', display: 'flex', flexDirection: 'column', p: 2 }}>
+      <Box className='drive-container' sx={{ height: '100%',flexGrow: 1, overflow: 'auto', mb: 2 }}>
+        <h1>Summary</h1>
+        <Typography variant="body1">{summary}</Typography>
+      </Box>
+    </Box>
+
     );
 }
 

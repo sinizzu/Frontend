@@ -37,7 +37,7 @@ function Keyword({ pdfState }) {
             }
         };
         fetchKeywords(); // 키워드 데이터 가져오기
-    }, [pdf_id]); // pdf_id 바뀔 때만 실행
+    }, [pdf_id, setLoading]); // pdf_id 바뀔 때만 실행
 
     const fetchWikiData = async (keyword) => {
         setWikiLoading(true);
@@ -76,14 +76,14 @@ function Keyword({ pdfState }) {
     };
 
     // 데이터 로딩 중이면 로딩 표시
-    if (loading || wikiLoading) {
-        return (
-            <div>
-                <Typography variant="body1">Loading...</Typography>
-                <ClipLoader size={50} />
-            </div>
-        );
-    }
+    // if (loading || wikiLoading) {
+    //     return (
+    //         <div>
+    //             <Typography variant="body1">Loading...</Typography>
+    //             <ClipLoader size={50} />
+    //         </div>
+    //     );
+    // }
 
     // 에러가 발생하면 에러 메시지 표시
     if (error) {
