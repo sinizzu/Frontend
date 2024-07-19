@@ -1,21 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Paper, Typography, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Container, Paper, Typography, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import { pdfjs } from 'react-pdf';
 import { getDocument } from 'pdfjs-dist';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import 'pdfjs-dist/build/pdf.worker.entry';
+import ArrowBackIosNewOutlinedIcon from '@mui/icons-material/ArrowBackIosNewOutlined';
+import '../styles/main.css';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
-function Home({ setSelectedPdf, setFileName, handleButtonClick }) {
+function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisible, handlePdfSelection }) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [thumbnails, setThumbnails] = useState([]);
   const navigate = useNavigate();
   const [selectedThumbnail, setSelectedThumbnail] = useState(null);
+
+  const handleCloseIcon = () => {
+    setIsDriveVisible(false);
+
+  }
 
   useEffect(() => {
     fetchPdfFiles();
@@ -205,6 +212,7 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick }) {
   const handleThumbnailClick = (fileUrl, thumbnailName) => {
     setSelectedPdf(fileUrl);
     setFileName(thumbnailName);
+    handlePdfSelection(fileUrl, thumbnailName);
     console.log("Selected PDF URL:", fileUrl);
     console.log("Selected Thumbnail Data:", thumbnailName);
   };
@@ -216,8 +224,13 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick }) {
 
   return (
     
-    <Box sx={{ height: '85vh', overflow: 'auto', pr: 2 }}>
-      <Typography variant="h5">Drive</Typography>
+    <Box className = "drive-container" sx={{ height: '85vh', overflow: 'auto', pr: 2, position: 'relative'  }}>
+      <IconButton
+        sx={{ position: 'absolute', top: 8, right: 8 }}
+        onClick={handleCloseIcon}>
+        <ArrowBackIosNewOutlinedIcon />
+      </IconButton>
+      <h1>Drive</h1>
       <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
         <Button variant="contained" onClick={handleClickOpen} sx={{ mb: 2 }}>
           +Add PDF
@@ -230,12 +243,33 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick }) {
               mb: 2, 
               backgroundColor: selectedThumbnail === thumbnail.key ? '#e3f2fd' : 'white',
               border: selectedThumbnail === thumbnail.key ? '2px solid #2196f3' : 'none',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              flexDirection: 'column',
+              width: '100%',
+              maxWidth: '200px'
             }} 
             onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name)}
           >
-            <Typography variant="body2" sx={{ fontSize: '14px', mb: 1 }}>{thumbnail.name}</Typography>
-            <img src={thumbnail.url} alt={thumbnail.name} width={150} />
+            <Typography variant="body2" sx={{ fontSize: '14px', mb: 1, width: '100%', wordBreak: 'break-word'}}>{thumbnail.name}</Typography>
+            <Box 
+              sx={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <img 
+                src={thumbnail.url} 
+                alt={thumbnail.name} 
+                style={{
+                  width: '100%',  // 이미지 너비를 100%로 설정
+                  height: 'auto',  // 비율 유지
+                  objectFit: 'contain'  // 이미지 비율 유지하면서 컨테이너에 맞춤
+                }}
+              />
+            </Box>
           </Paper>
       ))}
       </Container>

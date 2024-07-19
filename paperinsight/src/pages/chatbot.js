@@ -1,14 +1,44 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Container, Paper, Typography, Box, Button, TextField } from '@mui/material';
+import { Container, Paper, Typography, Box, Button, TextField, Avatar } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import '../styles/main.css';
 
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
+const ChatBubble = ({ message, isUser }) => (
+  <Box
+    sx={{
+      display: 'flex',
+      justifyContent: isUser ? 'flex-end' : 'flex-start',
+      mb: 1,
+    }}
+  >
+    {!isUser && (
+      <Avatar sx={{ mr: 1, bgcolor: '#4677F0' }}>
+        <SmartToyIcon />
+      </Avatar>
+    )}
+    <Paper
+      elevation={1}
+      sx={{
+        p: 2,
+        maxWidth: '80%',
+        borderRadius: isUser ? '20px 20px 0 20px' : '20px 20px 20px 0',
+        backgroundColor: isUser ? '#4677F0' :  '#E8E8E8',
+        color: isUser ? 'white' : 'black',
+      }}
+    >
+      <Typography variant="body2" sx={{ fontSize: '0.9rem'}}>{message}</Typography>
+    </Paper>
+    {isUser && <Avatar sx={{ ml: 1 }}>U</Avatar>}
+  </Box>
+);
 
 function Chatbot({ pdfId, fullText, ocrCompleted, fileName }) {
   const location = useLocation();
   const [messages, setMessages] = useState([
-    { text: '안녕하세요 무엇을 도와드릴까요?', sender: 'bot' }
+    { text: '본문과 관련된 내용 분석을 도와드릴게요😄', sender: 'bot' }
   ]);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
@@ -17,7 +47,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName }) {
     if (ocrCompleted && fullText && pdfId) {
       setMessages(prevMessages => [
         ...prevMessages,
-        { text: 'OCR 처리가 완료되었습니다. 질문해 주세요!', sender: 'bot' }
+        { text: '분석이 완료되었습니다. 질문해 주세요!', sender: 'bot' }
       ]);
     }
   }, [ocrCompleted, fullText, pdfId]);
@@ -76,46 +106,37 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName }) {
   }, [messages]);
 
   return (
-    <Box sx={{ height: '85vh', overflow: 'auto', p: 2 }}>
-      <Typography variant="h5">Chatbot</Typography>
-      <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
+    <Box className='drive-container' sx={{ height: '85vh', display: 'flex', flexDirection: 'column', p: 2 }}>
+      <Box className='drive-container' sx={{ height: '100%',flexGrow: 1, overflow: 'auto', mb: 2 }}>
         {messages.map((message, index) => (
-          <Paper 
-            key={index} 
-            sx={{ 
-              p: 2, 
-              mb: 2, 
-              backgroundColor: message.sender === 'bot' ? '#e0f7fa' : '#fff9c4',
-              alignSelf: message.sender === 'bot' ? 'flex-start' : 'flex-end'
-            }}
-          >
-            <Typography variant="body1" sx={{ fontWeight: message.sender === 'bot' ? 'bold' : 'normal' }}>
-              {message.text}
-            </Typography>
-          </Paper>
+          <ChatBubble
+            key={index}
+            message={message.text}
+            isUser={message.sender === 'user'}
+          />
         ))}
         <div ref={messagesEndRef} />
-        <Box sx={{ display: 'flex', mt: 2 }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            value={input}
-            onChange={handleInputChange}
-            onKeyPress={handleKeyPress}
-            placeholder="메시지를 입력하세요..."
-            disabled={!ocrCompleted}
-          />
-          <Button 
-            variant="contained" 
-            color="primary" 
-            onClick={handleSendMessage} 
-            sx={{ ml: 2 }}
-            disabled={!ocrCompleted}
-          >
-            전송
-          </Button>
-        </Box>
-      </Container>
+      </Box>
+      <Box sx={{ display: 'flex', mt: 2 }}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          value={input}
+          onChange={handleInputChange}
+          onKeyPress={handleKeyPress}
+          placeholder="메시지를 입력하세요..."
+          disabled={!ocrCompleted}
+        />
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={handleSendMessage} 
+          sx={{ ml: 2 }}
+          disabled={!ocrCompleted}
+        >
+          전송
+        </Button>
+      </Box>
     </Box>
   );
 }

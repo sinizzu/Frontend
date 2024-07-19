@@ -5,7 +5,7 @@ import axios from 'axios';
 const MainFastAPI = process.env.REACT_APP_MainFastAPI;
 const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
-const Search = ({ setSelectedPdf, setFileName, handleButtonClick }) => {
+const Search = ({ setSelectedPdf, setFileName, handleButtonClick, handlePdfSelection }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchCategory, setSearchCategory] = useState('keyword');
   const [papers, setPapers] = useState([]);
@@ -23,6 +23,7 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick }) => {
     try {
       // PDF 뷰어에 PDF 표시
       setSelectedPdf(pdfLink);
+
 
       const MainFastAPI = process.env.REACT_APP_MainFastAPI || process.env.MAIN_FASTAPI;
       const id = await axios.get(`${SubFastAPI}/api/weaviate/searchPaperId?pdf_url=${pdfLink}`);
@@ -104,7 +105,7 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick }) => {
   };
 
   return (
-    <Box sx={{ height: '87vh', overflow: 'auto', pr: 2 }}>
+    <Box className='drive-container' sx={{ height: '87vh', overflow: 'auto', pr: 2 }}>
       <h1>Paper Search</h1>
       <Box sx={{ display: 'flex', mb: 3, maxWidth: '750px' }}>
         <FormControl sx={{ mr: 1, flexGrow: 1 }}>
@@ -159,8 +160,7 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick }) => {
                 variant="outlined"
                 color="secondary"
                 onClick={() => handleButtonClickLocal(paper.pdf_link)}
-                sx={{ fontSize: '12px' }}
-              >
+                sx={{ fontSize: '12px' }}>
                 PDF로 보기
               </Button>
             </Box>
