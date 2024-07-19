@@ -34,7 +34,7 @@ const App = () => {
   const [ocrCompleted, setOcrCompleted] = useState(false);
   const [ocrInProgress, setOcrInProgress] = useState(false);
   const [isDriveVisible, setIsDriveVisible] = useState(true); //드라이브 열림 상태
-  const [loading, setLoading] = useState(false);
+  const [keywordLoading, setKeywordLoading] = useState(false);
   const [wikiLoading, setWikiLoading] = useState(false);
 
 
@@ -254,18 +254,20 @@ const App = () => {
                       </>
                     )}
                     {value === 1 && selectedPdf && (
-                      loading || wikiLoading ? (
+                      keywordLoading || wikiLoading ? (
+                        
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                             <CircularProgress />
-                            <Typography variant="body1" sx={{ ml: 2 }}>키워드 추출 중...</Typography>
+                            <Typography variant="body1" sx={{ ml: 2 }}>{keywordLoading ? '키워드 추출 중...' : '위키 데이터 로딩 중...'}</Typography>
                           </Box>
                             ) :(
-                          <Keyword 
-                            setSelectedPdf={setSelectedPdf} 
-                            handleButtonClick={handleButtonClick} 
-                            pdfState={pdfState} 
-                            setLoading={setLoading}
-                            setWikiLoading={setWikiLoading}/>
+                              <Keyword 
+                              setSelectedPdf={setSelectedPdf} 
+                              handleButtonClick={handleButtonClick} 
+                              pdfState={pdfState} 
+                              setKeywordLoading={setKeywordLoading}
+                              setWikiLoading={setWikiLoading}
+                          />
                             )
                     )}
                     {value === 2 && selectedPdf && (

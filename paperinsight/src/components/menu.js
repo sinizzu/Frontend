@@ -8,13 +8,13 @@ function Menu() {
   const tooltipStyles = {
     tooltip: {
       fontSize: "0.9rem", // 툴팁 글자 크기
-      backgroundColor: "rgba(125, 125, 125, 0.6)", // 툴팁 배경색
+      backgroundColor: "rgba(25, 117, 250, 0.8)", // 툴팁 배경색
       color: 'white', // 툴팁 글자색
       padding: "8px 12px", // 툴팁 내부 여백
       maxWidth: "200px", // 툴팁 최대 너비
     },
     arrow: {
-      color: "rgba(125, 125, 125, 0.6)", // 화살표 색상
+      color: "rgba(25, 117, 250, 0.8)", // 화살표 색상
     }
   };
   return (

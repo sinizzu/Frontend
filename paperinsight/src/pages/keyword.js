@@ -7,53 +7,48 @@ import { ClipLoader } from 'react-spinners';
 const MainFastAPI = process.env.REACT_APP_MainFastAPI;
 const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
-function Keyword({ pdfState }) {
+function Keyword({ pdfState, setKeywordLoading, setWikiLoading }) {
     const pdf_id = pdfState.pdf_id || '';
-    const [keywords, setKeywords] = useState([]); // 키워드 목록 상태, 초기값을 빈 배열로 설정
-    const [selectedKeyword, setSelectedKeyword] = useState(''); // 선택된 키워드 상태
-    const [loading, setLoading] = useState(true); // 데이터 로딩 상태
-    const [error, setError] = useState(null); // 에러 상태
-    const [wikiResult, setWikiResult] = useState(''); // 위키 결과 상태, 초기값을 빈 문자열로 설정
-    const [wikiLoading, setWikiLoading] = useState(false); // 위키 검색 로딩 상태
-    const [wikiError, setWikiError] = useState(null); // 위키 검색 에러 상태
+    const [keywords, setKeywords] = useState([]);
+    const [selectedKeyword, setSelectedKeyword] = useState('');
+    const [wikiResult, setWikiResult] = useState('');
+    const [error, setError] = useState(null);
+    const [wikiError, setWikiError] = useState(null); // wikiError 상태 추가
 
-    // 컴포넌트 마운트 시 초기 데이터 로드
     useEffect(() => {
         const fetchKeywords = async () => {
-            setLoading(true);
+            if (!pdf_id) {
+                console.log("Keyword component - No pdf_id, skipping fetchKeywords");
+                return;}
+            console.log("Keyword component - Fetching keywords for pdf_id:", pdf_id);
+            setKeywordLoading(true);
             try {
-                console.log("PDF ID:", pdf_id);
                 const response = await axios.get(`${SubFastAPI}/api/topic/keywordExtract?pdf_id=${pdf_id}`);
-                const keywordsData = response.data.data;
-                setKeywords(keywordsData); // 서버에서 받은 키워드 데이터를 설정
-                if (keywordsData.length > 0) {
-                    setSelectedKeyword(keywordsData[0]); // 첫 번째 키워드를 기본값으로 설정
-                    fetchWikiData(keywordsData[0]); // 기본 선택 키워드로 위키 데이터 가져오기
+                setKeywords(response.data.data);
+                if (response.data.data.length > 0) {
+                    setSelectedKeyword(response.data.data[0]);
+                    await fetchWikiData(response.data.data[0]);
                 }
             } catch (error) {
-                setError(error); // 에러 설정
+                setError(error);
             } finally {
-                setLoading(false); // 로딩 상태 해제
+                setKeywordLoading(false);
             }
         };
-        fetchKeywords(); // 키워드 데이터 가져오기
-    }, [pdf_id, setLoading]); // pdf_id 바뀔 때만 실행
+        fetchKeywords();
+    }, [pdf_id, setKeywordLoading]);
 
     const fetchWikiData = async (keyword) => {
         setWikiLoading(true);
-        setWikiError(null);
-
         try {
             const response = await axios.get(`${MainFastAPI}/api/search/wikiSearch?keyword=${keyword}`);
-            console.log("Wiki Search Data:", response.data);
             if (response.data.resultCode === 200) {
                 setWikiResult(response.data.data.text);
             } else {
                 throw new Error(response.data.data.message || 'No data found in wiki response');
             }
         } catch (error) {
-            console.error('Error fetching wiki data:', error);
-            setWikiError(error.response?.data?.result?.data?.message || 'An error occurred');
+            setError(error);
         } finally {
             setWikiLoading(false);
         }
@@ -92,7 +87,8 @@ function Keyword({ pdfState }) {
 
     // UI 렌더링
     return (
-        <div>
+        
+        <Box className='drive-container' sx={{ height: '80vh', display: 'flex', flexDirection: 'column', p: 2 }}>
             <h1>Keywords</h1>
             <Box sx={{ display: 'flex', alignItems: 'center', maxWidth: '100%', mb: 2 }}>
                 <FormControl sx={{ flex: 1, mr: 2 }}>
@@ -115,7 +111,7 @@ function Keyword({ pdfState }) {
                 {renderWikiText()}
             </Box>
             {wikiError && <div>Error: {wikiError}</div>}
-        </div>
+        </Box>
     );
 }
 

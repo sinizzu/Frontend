@@ -210,6 +210,7 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
   };
 
   const handleThumbnailClick = (fileUrl, thumbnailName) => {
+    console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", thumbnailName);
     setSelectedPdf(fileUrl);
     setFileName(thumbnailName);
     handlePdfSelection(fileUrl, thumbnailName);
