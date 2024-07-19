@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Typography, Box, Button, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { ClipLoader } from 'react-spinners';
+import '../styles/main.css';
 
 // env에 IP 가져오기
 const SubFastAPI = process.env.REACT_APP_SubFastAPI;

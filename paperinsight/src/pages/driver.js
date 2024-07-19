@@ -224,20 +224,16 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
 
   return (
     
-    <Box className = "drive-container" sx={{ height: '85vh', overflow: 'auto', pr: 2, position: 'relative'  }}>
+    <Box className = "drive-container" sx={{ height: '85vh', overflow: 'auto', pr: 1, position: 'relative'  }}>
       <IconButton
         sx={{ position: 'absolute', top: 8, right: 8 }}
         onClick={handleCloseIcon}>
         <ArrowBackIosNewOutlinedIcon />
       </IconButton>
-      <Box sx={{ textAlign: 'center' }}>
-        <Typography variant="h4" component="h1" sx={{ mb: 2, fontWeight: 'bold' }}>
-          Drive
-        </Typography>
-      </Box>
-      <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
+      <h1>Drive</h1>
+        <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-        <Button variant="contained" onClick={handleClickOpen}>
+        <Button variant="contained" size="small" onClick={handleClickOpen}>
           +Add PDF
         </Button>
       </Box>
