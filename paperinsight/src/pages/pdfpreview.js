@@ -143,17 +143,16 @@ const PDFPreview = ({ pdfUrl }) => {
         { headers: { 'Content-Type': 'application/json' } }
       );
 
-      if (response.status === 200) {
+      if (response.data.resultCode === 200) {
         const data = response.data.data;
         console.log(data);
         const translateHtml = `
-          <div style="font-size: 14px; font-weight: bold;">Translation for "${selectedText}"</div>
-          <p style="font-size: 12px; line-height: 1.4;">${data.text}</p>
+          <p style="font-size: 12px; line-height: 1.4;">${data}</p>
         `;
         setTranslateResult(translateHtml);
         setTranslateAnchorEl(anchorEl); // Set translate popover anchor after receiving the response
       } else {
-        console.error('Error fetching translation:', response.statusText);
+        console.error('Error fetching translation:', response);
       }
     } catch (error) {
       console.error('Error fetching translation:', error);

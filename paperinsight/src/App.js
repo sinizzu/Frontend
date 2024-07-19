@@ -124,7 +124,7 @@ const App = () => {
   const handleButtonClick = (pdfLink, pdf_id, region) => {
     setSelectedPdf(pdfLink);
     setPdfState({ pdf_id, region });
-    setValue(2); // 요약 탭(2번 탭)으로 변경
+    setValue(0); // 요약 탭(2번 탭)으로 변경
   };
 
   useEffect(() => {
@@ -237,6 +237,7 @@ const App = () => {
                             pdfId={pdfId}
                             fullText={fullText}
                             ocrCompleted={ocrCompleted}
+                            pdfState={pdfState}
                           />
                         ) : selectedPdf ? (
                           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -253,7 +254,7 @@ const App = () => {
                      <Keyword setSelectedPdf={setSelectedPdf} handleButtonClick={handleButtonClick} pdfState={pdfState} />
                     )}
                     {value === 2 && selectedPdf && (
-                      <Keyword setSelectedPdf={setSelectedPdf} handleButtonClick={handleButtonClick} pdfState={pdfState}/>
+                      <Summary setSelectedPdf={setSelectedPdf} handleButtonClick={handleButtonClick} pdfState={pdfState}/>
                     )}
                     {!selectedPdf && (
                       <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

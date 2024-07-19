@@ -35,7 +35,8 @@ const ChatBubble = ({ message, isUser }) => (
   </Box>
 );
 
-function Chatbot({ pdfId, fullText, ocrCompleted, fileName }) {
+function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState }) {
+  
   const location = useLocation();
   const [messages, setMessages] = useState([
     { text: '본문과 관련된 내용 분석을 도와드릴게요😄', sender: 'bot' }
