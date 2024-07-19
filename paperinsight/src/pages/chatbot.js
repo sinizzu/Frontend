@@ -106,7 +106,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName }) {
   }, [messages]);
 
   return (
-    <Box className='drive-container' sx={{ height: '85vh', display: 'flex', flexDirection: 'column', p: 2 }}>
+    <Box className='drive-container' sx={{ height: '80vh', display: 'flex', flexDirection: 'column', p: 2 }}>
       <Box className='drive-container' sx={{ height: '100%',flexGrow: 1, overflow: 'auto', mb: 2 }}>
         {messages.map((message, index) => (
           <ChatBubble
