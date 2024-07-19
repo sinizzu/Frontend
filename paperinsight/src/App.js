@@ -178,7 +178,7 @@ const App = () => {
               <Route path="/register" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Register /></Grid></Grid>} />
               <Route path="*" element={
                 <Grid  container sx={{ flexGrow: 1, height: 'calc(100vh - 64px)' }}>
-                  <Grid className='drive-container' data-label="1-container " item xs={isDriveVisible ? 2.5 : 0.5} padding={isDriveVisible ? 3 : 0}
+                  <Grid className='drive-container' data-label="1-container " item xs={isDriveVisible ? 2 : 0.5} padding={isDriveVisible ? 3 : 0}
                     sx={{ 
                       height: '100%', backgroundColor: '#F7F9FB', 
                       borderRight: '1px solid #ccc', position: 'relative',

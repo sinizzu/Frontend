@@ -230,11 +230,23 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
         onClick={handleCloseIcon}>
         <ArrowBackIosNewOutlinedIcon />
       </IconButton>
-      <h1>Drive</h1>
+      <Box sx={{ textAlign: 'center' }}>
+        <Typography variant="h4" component="h1" sx={{ mb: 2, fontWeight: 'bold' }}>
+          Drive
+        </Typography>
+      </Box>
       <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
-        <Button variant="contained" onClick={handleClickOpen} sx={{ mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Button variant="contained" onClick={handleClickOpen}>
           +Add PDF
         </Button>
+      </Box>
+      <Box sx={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        justifyContent: 'center', 
+        gap: 2 
+      }}>
         {thumbnails.slice(-10).map((thumbnail, index) => (
           <Paper 
             key={index} 
@@ -246,8 +258,8 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
               transition: 'all 0.3s ease',
               display: 'flex',
               flexDirection: 'column',
-              width: '100%',
-              maxWidth: '200px'
+              width: '180px',
+              maxWidth: '180px'
             }} 
             onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name)}
           >
@@ -272,6 +284,7 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
             </Box>
           </Paper>
       ))}
+        </Box>
       </Container>
 
       <Dialog open={open} onClose={handleClose}>
