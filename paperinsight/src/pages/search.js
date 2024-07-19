@@ -28,6 +28,7 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick, handlePdfSelec
       const MainFastAPI = process.env.REACT_APP_MainFastAPI || process.env.MAIN_FASTAPI;
       const id = await axios.get(`${SubFastAPI}/api/weaviate/searchPaperId?pdf_url=${pdfLink}`);
       const pdf_id = id.data.data;
+      handlePdfSelection(pdfLink, pdf_id, 'search');
       const formData = new URLSearchParams();
       formData.append('pdfId', pdf_id);
       formData.append('pdfUrl', pdfLink);
