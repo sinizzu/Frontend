@@ -23,6 +23,7 @@ const PDFPreview = ({ pdfUrl }) => {
   const [translateResult, setTranslateResult] = useState('');
   const [translateAnchorEl, setTranslateAnchorEl] = useState(null);
   const viewerRef = useRef(null);
+  const [wikiResult, setWikiResult] = useState({ text: '', link: '' });
 
   useEffect(() => {
     const handleLinkClick = (event) => {
@@ -95,7 +96,7 @@ const PDFPreview = ({ pdfUrl }) => {
           </li>`
         ).join('');
         const resultHtml = `
-          <div style="font-size: 20px; font-weight: bold;">Search results for "${selectedText}"</div>
+          <div style="font-size: 18px; font-weight: bold; padding-top: 20px;">🔎구글 검색 &lt;${selectedText}&gt;</div>
           <ul class="spaced-ul">${formattedResult}</ul>
         `;
         setSearchResult(resultHtml);
@@ -105,6 +106,85 @@ const PDFPreview = ({ pdfUrl }) => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+  const handleWikiSearch = async () => {
+    setSearchResult(''); // 새 요청 전 검색 결과 초기화
+  
+    try {
+      const response = await axios.get(`${MainFastAPI}/api/search/wikiSearch`, {
+        params: { keyword: selectedText },
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const { resultCode, data } = response.data;
+      
+      if (resultCode === 200) {
+        // 성공 케이스 처리
+        const sentences = data.text.split(/(?<=\.)\s+/);
+        const initialText = sentences.slice(0, 10).join(' ');
+        const remainingText = sentences.slice(10).join(' ');
+        
+        const formattedResult = `
+          <li class="search-item">
+            <div class="search-item-header">
+              <div class="search-item-content">
+                <a href="${data.link}" class="search-link" target="_blank">Wikipedia: ${selectedText}</a>
+              </div>
+            </div>
+            <div>
+              <p class="search-snippet" id="wikiText">${initialText}</p>
+              <p class="search-snippet" id="remainingText" style="display: none;">${remainingText}</p>
+            </div>
+            ${remainingText ? '<button id="showMoreBtn" class="show-more-btn">더보기</button>' : ''}
+          </li>
+        `;
+        
+        const resultHtml = `
+          <div style="font-size: 18px; font-weight: bold; padding-top: 20px;">🔎위키피디아 검색 &lt;${selectedText}&gt;</div>
+          <ul class="spaced-ul">${formattedResult}</ul>
+        `;
+        
+        setSearchResult(resultHtml);
+        setSearchAnchorEl(anchorEl);
+  
+        // 더보기 버튼 이벤트 리스너 추가
+        setTimeout(() => {
+          const showMoreBtn = document.getElementById('showMoreBtn');
+          const remainingText = document.getElementById('remainingText');
+          if (showMoreBtn && remainingText) {
+            showMoreBtn.addEventListener('click', () => {
+              remainingText.style.display = 'block';
+              showMoreBtn.style.display = 'none';
+            });
+          }
+        }, 0);
+      } else if (resultCode === 404) {
+        // 404 에러 처리
+        const formattedResult = `
+          <li class="search-item">
+            <div class="search-item-header">
+              <div class="search-item-content">
+                Wikipedia: ${selectedText}
+              </div>
+            </div>
+            <p class="search-snippet">위키 검색 결과가 없습니다.</p>
+            <a href="${data.link}" class="search-link" target="_blank">직접 위키피디아에서 검색해보기</a>
+          </li>
+        `;
+  
+        const resultHtml = `
+          <div style="font-size: 18px; font-weight: bold; padding-top: 20px;">🔎위키피디아 검색 &lt;${selectedText}&gt;</div>
+          <ul class="spaced-ul">${formattedResult}</ul>
+        `;
+  
+        setSearchResult(resultHtml);
+        setSearchAnchorEl(anchorEl);
+      } else {
+        console.error('위키피디아 검색 중 오류 발생:', resultCode);
+      }
+    } catch (error) {
+      console.error('위키피디아 검색 요청 실패:', error.message);
     }
   };
 
@@ -174,56 +254,6 @@ const PDFPreview = ({ pdfUrl }) => {
         handleTextSelection(e);
       }
     }}>
-      <style>
-        {`
-        .search-link {
-            text-decoration: none;
-            color: inherit;
-            font-weight: bold;
-        }
-        .search-link:hover {
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        .search-link .search-image,
-        .search-link .search-snippet,
-        .search-link .search-item-content {
-            display: inline-block;
-            vertical-align: middle;
-        }
-        .search-snippet {
-            font-size: 1em;
-            font-weight: normal;
-            color: #4d5156;
-            margin-top: 5px;
-        }
-        .search-image {
-            max-width: 60px;
-            max-height: 60px;
-            width: auto;
-            height: auto;
-            margin-right: 10px;
-        }
-        .search-item {
-            display: flex;
-            flex-direction: column; /* 세로 방향으로 정렬 */
-            margin-bottom: 20px;
-            border-bottom: 1px solid #ccc;
-        }
-        .search-item-header {
-            display: flex;
-            align-items: flex-start;
-        }
-        .search-item-content {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
-        .spaced-ul {
-            margin-top: 35px;
-          }
-        `}
-      </style>
 
       {pdfUrl ? (
         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.0.279/build/pdf.worker.min.js">
@@ -239,66 +269,58 @@ const PDFPreview = ({ pdfUrl }) => {
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: 'top',
+          vertical: 'bottom',
           horizontal: 'left',
         }}
         transformOrigin={{
           vertical: 'top',
           horizontal: 'left',
         }}
+        anchorPosition={{ top: window.pageYOffset + anchorEl?.getBoundingClientRect().bottom || 0, 
+                          left: anchorEl?.getBoundingClientRect().left || 0 }}
         sx={{
           '& .MuiPopover-paper': {
             width: '200px',
-            padding: '10px',
-            backgroundColor: '#FFFFE1',
+            padding: '8px', // 패딩을 줄여 전체 크기를 줄입니다
+            backgroundColor: 'rgba(38, 38, 38, 0.9)',
             border: '1px solid #ccc',
+            borderRadius: '10px',
             boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-            borderRadius: '2px',
             display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
+            flexDirection: 'row',
+            gap: '3px', // 버튼 간 간격을 더 줄입니다
             justifyContent: 'center',
           },
+          '& .MuiButton-root': { // 모든 버튼에 적용될 스타일
+            color: '#ffffff',
+            backgroundColor: 'transparent',
+            fontSize: '13px', // 폰트 크기를 더 줄입니다
+            padding: '4px 8px', // 버튼 내부 패딩을 줄입니다
+            minWidth: '40px', // 버튼의 최소 너비를 설정합니다
+            '&:hover': { 
+              color: '#000', 
+              backgroundColor: '#d3d3d3' 
+            },
+          }
         }}
       >
         <Button
           id="web-search-button"
           variant="text"
-          sx={{
-            color: '#000',
-            fontWeight: 'bold',
-            backgroundColor: 'transparent',
-            '&:hover': { backgroundColor: '#d3d3d3' },
-            fontSize: '14px',
-          }}
           onClick={handleWebSearch}
         >
-          웹 검색
+          구글
         </Button>
         <Button
           id="wiki-search-button"
           variant="text"
-          sx={{
-            color: '#000',
-            fontWeight: 'bold',
-            backgroundColor: 'transparent',
-            '&:hover': { backgroundColor: '#d3d3d3' },
-            fontSize: '14px',
-          }}
-          onClick={() => window.open(`https://en.wikipedia.org/wiki/${selectedText}`)}
+          onClick={handleWikiSearch}
         >
-          위키 검색
+          위키
         </Button>
         <Button
           id="summary-button"
           variant="text"
-          sx={{
-            color: '#000',
-            fontWeight: 'bold',
-            backgroundColor: 'transparent',
-            '&:hover': { backgroundColor: '#d3d3d3' },
-            fontSize: '14px',
-          }}
           onClick={handleSummary}
           disabled={tokenCount < 50 || tokenCount > 512}
         >
@@ -307,13 +329,6 @@ const PDFPreview = ({ pdfUrl }) => {
         <Button
           id="translate-button"
           variant="text"
-          sx={{
-            color: '#000',
-            fontWeight: 'bold',
-            backgroundColor: 'transparent',
-            '&:hover': { backgroundColor: '#d3d3d3' },
-            fontSize: '14px',
-          }}
           onClick={handleTranslate}
           disabled={tokenCount > 512}
         >
@@ -335,9 +350,9 @@ const PDFPreview = ({ pdfUrl }) => {
         }}
         sx={{
           '& .MuiPopover-paper': {
-            width: '500px',
+            width: '400px',
             padding: '10px',
-            backgroundColor: '#FFFFE1',
+            backgroundColor: '#f2f2f2',
             border: '1px solid #ccc',
             boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
             borderRadius: '2px',

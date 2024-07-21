@@ -6,8 +6,8 @@ import kakaoIcon from '../assets/kakao.png'; // Kakao 아이콘을 이미지 파
 import Logo from '../assets/logo.png';
 import { Link as RouterLink, useNavigate  } from 'react-router-dom';
 import axios from 'axios';
+import api from '../services/api.js';
 
-const YJ_IP = process.env.REACT_APP_YJ_IP
 const Login = () => {
  
   const [id, setId] = useState('');
@@ -16,17 +16,24 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(`${YJ_IP}:8000/api/auth/login`, { 
+      const response = await api.post('/api/auth/login', { 
         userId: id,
         passWord: password 
       });
       console.log('Login successful:', response.data);
+      
+      // 토큰 저장
+      localStorage.setItem('accessToken', response.data.accessToken);
+      if (response.data.refreshToken) {
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+      }
+
       // handle successful login
       navigate('/home');
     
     } catch (error) {
       console.error('Login failed:', error);
-      console.log('Environment variable REACT_APP_YJ_IP:', process.env.REACT_APP_YJ_IP);
+      console.log('Full API URL:', `${process.env.REACT_APP_API_BASE_URL}/api/auth/login`);
     }
   }
   return (
