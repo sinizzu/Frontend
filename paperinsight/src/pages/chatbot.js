@@ -73,12 +73,12 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language})
     setInput('');
     
     try {
-      // const request = await axios.post(`${SubFastAPI}/api/translate/transelateToEnglish`,
-      //   { text: input },
-      //   { headers: { 'Content-Type': 'application/json' } }
-      // )
-      // console.log(`Sending message to chatbot: ${request.data.data}`);
-      const response = await fetchChatbotResponse(pdfId, input, language);
+      const request = await axios.post(`${SubFastAPI}/api/translate/transelateToEnglish`,
+        { text: input },
+        { headers: { 'Content-Type': 'application/json' } }
+      )
+      console.log(`Sending message to chatbot: ${request.data.data}`);
+      const response = await fetchChatbotResponse(pdfId, request.data.data, language);
       console.log('Response from chatbot:', response);
 
       const botResponse = response.data.data || '챗봇 응답을 가져오지 못했습니다.';
