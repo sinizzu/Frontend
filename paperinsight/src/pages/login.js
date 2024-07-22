@@ -17,8 +17,8 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       const response = await api.post('/api/auth/login', { 
-        userId: id,
-        passWord: password 
+        email: id,
+        password: password 
       });
       console.log('Login successful:', response.data);
       

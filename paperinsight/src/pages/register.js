@@ -6,45 +6,65 @@ import kakaoIcon from '../assets/kakao.png'; // Kakao 아이콘을 이미지 파
 import Logo from '../assets/logo.png';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from '../services/api.js';
 
-const YJ_IP = process.env.REACT_APP_YJ_IP;
+
 
 const Register = () => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post(`${YJ_IP}:8000/api/auth/register`, {
-        userId: id,
-        passWord: password,
-        email: email,
-        name: name,
+      const response = await api.post(`/api/auth/signup`, {
+        email: id,
+        password: password,
       }, {
         headers: {
           'Content-Type': 'application/json',
         }
       });
       console.log('Registration successful:', response.data);
+  
       alert('회원가입이 완료되었습니다.'); 
       navigate('/login');
-      
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.data && error.response.data.data.message) {
-        if (error.response.data.data.message.includes('Duplicate entry')) {
-          setError('사용할 수 없는 ID 혹은 email 입니다.');
-          alert('사용할 수 없는 아이디 혹은 이메일입니다.'); // 사용자에게 경고 메시지 표시
-        } else {
-          setError(error.response.data.data.message);
-        }
-      } else {
-        setError('Registration failed');
-      }
       console.error('Registration failed:', error);
+  
+      if (error.response) {
+        // 서버가 2xx 범위를 벗어나는 상태 코드로 응답한 경우
+        switch(error.response.status) {
+          case 409:
+            alert('중복된 email 입니다.');
+            break;
+          case 400:
+            alert('사용할 수 없는 ID 혹은 PW 입력하세요.');
+            break;
+          default:
+            if (error.response.data && error.response.data.data && error.response.data.data.message) {
+              if (error.response.data.data.message.includes('Duplicate entry')) {
+                setError('사용할 수 없는 ID 혹은 email 입니다.');
+                alert('사용할 수 없는 아이디 혹은 이메일입니다.');
+              } else {
+                setError(error.response.data.data.message);
+                alert(error.response.data.data.message);
+              }
+            } else {
+              setError('Registration failed');
+              alert('회원가입에 실패했습니다.');
+            }
+        }
+      } else if (error.request) {
+        // 요청이 이루어졌으나 응답을 받지 못한 경우
+        console.error('No response received:', error.request);
+        alert('서버로부터 응답을 받지 못했습니다.');
+      } else {
+        // 요청을 설정하는 중에 문제가 발생한 경우
+        console.error('Error setting up request:', error.message);
+        alert('요청 설정 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -90,24 +110,7 @@ const Register = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <TextField
-          label="Name"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          size="small"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <TextField
-          label="Email"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          size="small"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+
         <Button
           variant="contained"
           color="primary"
