@@ -146,7 +146,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language }
         <Button 
           variant="contained"
           onClick={handleSendMessage} 
-          sx={{ 
+          sx={{
             ml: 1,
             backgroundColor: '#4677F0',
             borderRadius: '20px',

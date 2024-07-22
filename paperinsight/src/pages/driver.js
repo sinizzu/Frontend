@@ -7,11 +7,12 @@ import { useNavigate } from 'react-router-dom';
 import 'pdfjs-dist/build/pdf.worker.entry';
 import ArrowBackIosNewOutlinedIcon from '@mui/icons-material/ArrowBackIosNewOutlined';
 import '../styles/main.css';
+import api from '../services/api.js';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
-function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisible, handlePdfSelection }) {
+function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisible, handlePdfSelection, id, password }) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -45,30 +46,42 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
     return canvas.toDataURL();
   };
 
+
   const fetchPdfFiles = async () => {
-    try {
-      const response = await axios.get(`${MAIN_FASTAPI}/api/paper/listPdfs`);
-      const pdfFiles = response.data;
 
-      const thumbnails = await Promise.all(pdfFiles.map(async (pdf) => {
-        const pdfUrl = `https://kibwa07.s3.ap-northeast-2.amazonaws.com/${pdf.key}`;
-        const thumbnailUrl = await createThumbnail(pdfUrl);
+  try {
+    console.log( `Bearer ${localStorage.getItem('accessToken')}`);
+    const response = await api.get(`/api/auth/importS3`, {
+      params: {
+        email: localStorage.getItem('email'),
+      },
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+      }
+    });
 
-        return {
-          name: pdf.key.split('/').pop(),
-          url: thumbnailUrl,
-          file_url: pdfUrl,
-          key: pdf.key,
-          lastModified: pdf.fileUrl,
-          ocrCompleted: false
-        };
-      }));
+    const pdfFiles = response.data.data;  // 응답에서 'data' 필드를 추출합니다.
 
-      setThumbnails(thumbnails);
-    } catch (error) {
-      console.error('Error fetching PDF files:', error);
-    }
-  };
+    const thumbnails = await Promise.all(pdfFiles.map(async (pdf) => {
+      const thumbnailUrl = await createThumbnail(pdf.url);
+
+      return {
+        name: pdf.url.split('/').pop(),  // URL에서 파일 이름을 추출합니다.
+        url: thumbnailUrl,               // 생성된 썸네일 URL
+        file_url: pdf.url,               // PDF 파일의 원본 URL
+        key: pdf.uuid,                   // PDF 파일의 UUID를 키로 사용합니다.
+        lastModified: pdf.uploadedAt,    // 업로드된 날짜를 마지막 수정 날짜로 사용합니다.
+        ocrCompleted: false              // OCR 작업 완료 여부 (초기값 false)
+      };
+    }));
+
+    setThumbnails(thumbnails);
+  } catch (error) {
+    console.error('Error fetching PDF files:', error);
+    throw error;
+  }
+};
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -102,20 +115,19 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
     formData.append('file', file);
 
     try {
-      const response = await fetch(`${MAIN_FASTAPI}/api/paper/saveToS3`, {  
-        method: 'POST',
-        body: formData,
+      console.log( `Bearer ${localStorage.getItem('accessToken')}`);
+
+      const response = await api.post(`/api/auth/uploadS3`, formData, {
+        headers: {
+          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                }
       });
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const data = await response.json();
+      const data = response.data.data;
       console.log('Full server response:', data);
 
-      const fileUrl = data.file_url || data.fileUrl;
-      const key = data.key || data.filePath;
+      const fileUrl = data.file_url;
+      const key = data.key;
       const uuid = data.uuid;
       console.log('File uploaded to S3:', fileUrl);
       console.log('File key:', key);
@@ -124,7 +136,7 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
       const thumbnailUrl = await createThumbnail(fileUrl);
 
       setThumbnails((prevThumbnails) => [{
-        name: file.name,
+        name: uuid,
         url: thumbnailUrl,
         file_url: fileUrl,
         key: key,
@@ -132,12 +144,23 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
         ocrCompleted: false
       }, ...prevThumbnails]);
 
-      setFileName(file.name);
+      const req = {
+        uuid : uuid,
+        url : fileUrl,
+        email: localStorage.getItem('email')
+      }
+
       setPdfUrl(fileUrl);
+      const res = await api.post(`/api/auth/saveS3`, req, {  
+        headers: {
+          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+      console.log(res.data.message);
+
 
       handleClose();
       
-      // 파일 업로드 후 전체 리스트 새로고침
       // 파일 업로드 후 OCR 처리 실행
       await fetchPdfFiles();
     } catch (error) {
@@ -154,10 +177,6 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
     console.log("Selected Thumbnail Data:", thumbnailName);
   };
 
-  const handleChatBotClick = (uuid, fileUrl, fileName) => {
-    handleThumbnailClick(fileUrl, fileName); // 먼저 썸네일 클릭 처리
-    navigate('/chatbot', { state: { pdfId: uuid } }); // uuid를 state로 전달
-  };
 
   return (
     
