@@ -27,9 +27,17 @@ const Login = () => {
       if (response.data.refreshToken) {
         localStorage.setItem('refreshToken', response.data.refreshToken);
       }
+      localStorage.setItem('email', id);
 
       // handle successful login
-      navigate('/home');
+      navigate('/',{ 
+        state : {
+          accessToken: response.data.accessToken,
+          refreshToken: response.data.refreshToken,
+          email: id
+        }
+      }
+      );
     
     } catch (error) {
       console.error('Login failed:', error);
@@ -106,7 +114,8 @@ const Login = () => {
           fullWidth
           style={{ marginTop: '16px' }}
           sx = {{fontWeight: 'bold'}}
-          onClick={handleLogin}>Log in</Button>
+          onClick={handleLogin}>
+            Log in</Button>
         <Divider style={{ width: '100%', margin: '24px 0' }}>OR</Divider>
         <Button 
           variant="contained" 
