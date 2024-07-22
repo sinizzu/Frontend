@@ -5,6 +5,7 @@ import { Popover, Button } from '@mui/material';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import axios from 'axios';
+import '../styles/main.css';
 
 // env에 IP 가져오기
 const MainFastAPI = process.env.REACT_APP_MainFastAPI;
@@ -201,7 +202,7 @@ const PDFPreview = ({ pdfUrl }) => {
         const data = response.data;
         console.log(data)
         const summaryHtml = `
-          <div style="font-size: 14px; font-weight: bold;">Summary for "${selectedText}"</div>
+          <div style="font-size: 14px; font-weight: bold;"> 요약</div>
           <p style="font-size: 12px; line-height: 1.4;">${data.data}</p>
         `;
         setSummaryResult(summaryHtml);
@@ -356,6 +357,20 @@ const PDFPreview = ({ pdfUrl }) => {
             border: '1px solid #ccc',
             boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
             borderRadius: '2px',
+            '&::-webkit-scrollbar': {
+              width: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: '#f1f1f1',
+              borderRadius: '10px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#c8c8c8',
+              borderRadius: '10px',
+              '&:hover': {
+                background: '#939393',
+              },
+            },
           },
         }}
       >
@@ -377,14 +392,25 @@ const PDFPreview = ({ pdfUrl }) => {
         sx={{
           '& .MuiPopover-paper': {
             width: '300px',
-            height: '200px',
             padding: '10px',
-            backgroundColor: '#FFFFE1',
+            backgroundColor: '#f2f2f2',
             border: '1px solid #ccc',
             boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
             borderRadius: '2px',
-            overflowY: 'auto',
-            fontSize: '12px', // Set font size for summary text
+            '&::-webkit-scrollbar': {
+              width: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: '#f1f1f1',
+              borderRadius: '10px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#c8c8c8',
+              borderRadius: '10px',
+              '&:hover': {
+                background: '#939393',
+              },
+            },
           },
         }}
       >
@@ -405,15 +431,26 @@ const PDFPreview = ({ pdfUrl }) => {
         }}
         sx={{
           '& .MuiPopover-paper': {
-            width: '300px',
-            height: '200px',
+            width: '250px',
             padding: '10px',
-            backgroundColor: '#FFFFE1',
+            backgroundColor: '#f2f2f2',
             border: '1px solid #ccc',
             boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
             borderRadius: '2px',
-            overflowY: 'auto',
-            fontSize: '12px', // Set font size for translation text
+            '&::-webkit-scrollbar': {
+              width: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: '#f1f1f1',
+              borderRadius: '10px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#c8c8c8',
+              borderRadius: '10px',
+              '&:hover': {
+                background: '#939393',
+              },
+            },
           },
         }}
       >

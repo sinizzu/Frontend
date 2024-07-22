@@ -1,56 +1,63 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { MenuItem, FormControl, Select, Typography, Button, Box } from '@mui/material';
-import { ClipLoader } from 'react-spinners';
+import { MenuItem, FormControl, Select, Typography, Box, CircularProgress } from '@mui/material';
 
-// env에 IP 가져오기
 const MainFastAPI = process.env.REACT_APP_MainFastAPI;
 const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
-function Keyword({ pdfState, setKeywordLoading, setWikiLoading }) {
-    const pdf_id = pdfState.pdf_id || '';
+function Keyword({ pdfState }) {
+    const [pdf_id, setPdf_id] = useState('');
     const [keywords, setKeywords] = useState([]);
     const [selectedKeyword, setSelectedKeyword] = useState('');
     const [wikiResult, setWikiResult] = useState('');
     const [error, setError] = useState(null);
-    const [wikiError, setWikiError] = useState(null); // wikiError 상태 추가
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        const fetchKeywords = async () => {
-            if (!pdf_id) {
-                console.log("Keyword component - No pdf_id, skipping fetchKeywords");
-                return;}
-            console.log("Keyword component - Fetching keywords for pdf_id:", pdf_id);
-            setKeywordLoading(true);
-            try {
-                const response = await axios.get(`${SubFastAPI}/api/topic/keywordExtract?pdf_id=${pdf_id}`);
+        if (pdfState.pdf_id && pdfState.pdf_id !== pdf_id) {
+            setPdf_id(pdfState.pdf_id);
+            fetchKeywords(pdfState.pdf_id);
+        }
+    }, [pdfState.pdf_id]);
+
+    const fetchKeywords = async (id) => {
+        setIsLoading(true);
+        try {
+            console.log("Fetching keywords for pdf_id:", id);
+            const response = await axios.get(`${SubFastAPI}/api/topic/keywordExtract?pdf_id=${id}`);
+            console.log("Keyword response:", response.data);
+            if (response.data && response.data.data) {
                 setKeywords(response.data.data);
                 if (response.data.data.length > 0) {
                     setSelectedKeyword(response.data.data[0]);
                     await fetchWikiData(response.data.data[0]);
                 }
-            } catch (error) {
-                setError(error);
-            } finally {
-                setKeywordLoading(false);
+            } else {
+                throw new Error('No keywords data in response');
             }
-        };
-        fetchKeywords();
-    }, [pdf_id, setKeywordLoading]);
+        } catch (error) {
+            console.error("Error fetching keywords:", error);
+            setError(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const fetchWikiData = async (keyword) => {
-        setWikiLoading(true);
+        setIsLoading(true);
         try {
             const response = await axios.get(`${MainFastAPI}/api/search/wikiSearch?keyword=${keyword}`);
+            console.log("Wiki response:", response.data);
             if (response.data.resultCode === 200) {
                 setWikiResult(response.data.data.text);
             } else {
                 throw new Error(response.data.data.message || 'No data found in wiki response');
             }
         } catch (error) {
+            console.error("Error fetching wiki data:", error);
             setError(error);
         } finally {
-            setWikiLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -60,34 +67,20 @@ function Keyword({ pdfState, setKeywordLoading, setWikiLoading }) {
         fetchWikiData(keyword);
     };
 
-    const renderWikiText = () => {
-        if (!wikiResult) return null;
-        const textToShow = wikiResult;
+    if (isLoading) {
         return (
-            <div>
-                <Typography variant="body1">{textToShow}</Typography>
-            </div>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <CircularProgress />
+                <Typography variant="body1" sx={{ ml: 2 }}>키워드 추출 중...</Typography>
+            </Box>
         );
-    };
+    }
 
-    // 데이터 로딩 중이면 로딩 표시
-    // if (loading || wikiLoading) {
-    //     return (
-    //         <div>
-    //             <Typography variant="body1">Loading...</Typography>
-    //             <ClipLoader size={50} />
-    //         </div>
-    //     );
-    // }
-
-    // 에러가 발생하면 에러 메시지 표시
     if (error) {
         return <div>Error: {error.message}</div>;
     }
 
-    // UI 렌더링
     return (
-        
         <Box className='drive-container' sx={{ height: '80vh', display: 'flex', flexDirection: 'column', p: 2 }}>
             <h1>Keywords</h1>
             <Box sx={{ display: 'flex', alignItems: 'center', maxWidth: '100%', mb: 2 }}>
@@ -107,10 +100,9 @@ function Keyword({ pdfState, setKeywordLoading, setWikiLoading }) {
                     </Select>
                 </FormControl>
             </Box>
-            <Box>
-                {renderWikiText()}
+            <Box className='drive-container' sx={{ maxHeight: 550, overflowY: 'auto',overflowX: 'hidden', justifyContent: 'center', alignItems: 'center', p: 4 }}>
+                <Typography variant="body1">{wikiResult}</Typography>
             </Box>
-            {wikiError && <div>Error: {wikiError}</div>}
         </Box>
     );
 }
