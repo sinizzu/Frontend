@@ -124,7 +124,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState }) {
         ))}
         <div ref={messagesEndRef} />
       </Box>
-      <Box sx={{ display: 'flex', mt: 2 }}>
+      <Box sx={{ display: 'flex', mt: 2, alignItems: 'center' }}>
         <TextField
           fullWidth
           variant="outlined"
@@ -133,12 +133,31 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState }) {
           onKeyPress={handleKeyPress}
           placeholder="메시지를 입력하세요..."
           disabled={!ocrCompleted}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '8px',
+              height: '45px', // 세로 길이 조정
+            },
+            '& .MuiOutlinedInput-input': {
+              padding: '10px 14px', // 내부 패딩 조정
+            }
+          }}
         />
         <Button 
-          variant="contained" 
-          color="primary" 
+          variant="contained"
           onClick={handleSendMessage} 
-          sx={{ ml: 2 }}
+          sx={{ 
+            ml: 1,
+            backgroundColor: '#4677F0',
+            borderRadius: '20px',
+            height: '45px', // 세로 길이 조정
+            minWidth: '60px', // 최소 너비 설정
+            padding: '0 16px', // 좌우 패딩 추가
+            whiteSpace: 'nowrap', // 텍스트가 한 줄로 유지되도록 설정
+            '&:hover': {
+              backgroundColor: '#3a63c8'
+            }
+          }}
           disabled={!ocrCompleted}
         >
           전송
