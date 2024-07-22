@@ -6,6 +6,8 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import '../styles/main.css';
 
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
+const SubFastAPI = process.env.REACT_APP_SubFastAPI;
+
 const ChatBubble = ({ message, isUser }) => (
   <Box
     sx={{
@@ -71,7 +73,11 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState }) {
     setInput('');
     
     try {
-      console.log(`Sending message to chatbot: ${input}`);
+      const request = await axios.post(`${SubFastAPI}/api/translate/transelateToEnglish`,
+        { text: input },
+        { headers: { 'Content-Type': 'application/json' } }
+      )
+      console.log(`Sending message to chatbot: ${request.data.data}`);
       const response = await fetchChatbotResponse(pdfId, input);
       console.log('Response from chatbot:', response);
 
