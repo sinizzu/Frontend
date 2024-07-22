@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Typography, Box, Button, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Typography, Box, Button, ToggleButton, ToggleButtonGroup, CircularProgress } from '@mui/material';
 import { ClipLoader } from 'react-spinners';
 import '../styles/main.css';
 
@@ -46,10 +46,10 @@ function Summary({ pdfState }) {
     // 데이터 로딩 중이면 로딩 표시
     if (loading) {
         return (
-            <div>
-                <Typography variant="body1">Loading...</Typography>
-                <ClipLoader size={50} />
-            </div>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <CircularProgress />
+            <Typography variant="body1" sx={{ ml: 2 }}>요약 진행 중...</Typography>
+        </Box>
         );
     }
 
@@ -92,8 +92,10 @@ function Summary({ pdfState }) {
                         </ToggleButton>
                     </ToggleButtonGroup>
                 </Box>
-            </Box>
+            </Box >
+            <Box className='drive-container' sx={{ maxHeight: 550, overflowY: 'auto',overflowX: 'hidden', justifyContent: 'center', alignItems: 'center', p: 4 }}>
             <Typography variant="body1">{summary}</Typography>
+            </Box>
         </div>
     );
 }
