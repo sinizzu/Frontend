@@ -34,8 +34,30 @@ const Login = () => {
     } catch (error) {
       console.error('Login failed:', error);
       console.log('Full API URL:', `${process.env.REACT_APP_API_BASE_URL}/api/auth/login`);
+
+      if (error.response) {
+
+        switch(error.response.status) {
+          case 401:
+            alert('해당 정보로 로그인할 수 없습니다.');
+            break;
+          case 400:
+            alert('유효하지 않은 ID 및 PW 형태입니다.');
+          default:
+            alert('Login failed');
+        } 
+      } else if (error.request) {
+        // 요청이 이루어졌으나 응답을 받지 못한 경우
+        console.error('No response received:', error.request);
+        alert('서버로부터 응답을 받지 못했습니다.');
+      } else {
+        // 요청을 설정하는 중에 문제가 발생한 경우
+        console.error('Error setting up request:', error.message);
+        alert('요청 설정 중 오류가 발생했습니다.');
+      }
     }
-  }
+  };
+  
   return (
     <Box 
       display="flex" 

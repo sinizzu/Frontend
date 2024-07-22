@@ -37,7 +37,7 @@ const ChatBubble = ({ message, isUser }) => (
   </Box>
 );
 
-function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language}) {
+function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language }) {
   
   const location = useLocation();
   const [messages, setMessages] = useState([
@@ -73,12 +73,12 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language})
     setInput('');
     
     try {
-      // const request = await axios.post(`${SubFastAPI}/api/translate/transelateToEnglish`,
-      //   { text: input },
-      //   { headers: { 'Content-Type': 'application/json' } }
-      // )
-      // console.log(`Sending message to chatbot: ${request.data.data}`);
-      const response = await fetchChatbotResponse(pdfId, input, language);
+      const request = await axios.post(`${SubFastAPI}/api/translate/transelateToEnglish`,
+        { text: input },
+        { headers: { 'Content-Type': 'application/json' } }
+      )
+      console.log(`Sending message to chatbot: ${request.data.data}`);
+      const response = await fetchChatbotResponse(pdfId, request.data.data, language);
       console.log('Response from chatbot:', response);
 
       const botResponse = response.data.data || '챗봇 응답을 가져오지 못했습니다.';
@@ -91,7 +91,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language})
   
   const fetchChatbotResponse = async (pdfId, query, language) => {
     try {
-      console.log(`Making API request with pdfId: ${pdfId}, query: ${query}, language: ${language}`);
+      console.log(`Making API request with pdfId: ${pdfId}, query: ${query}`);
       const response = await axios.post(
         `${MAIN_FASTAPI}/api/chatbot/useChatbot`,
         { pdfId: pdfId, query: query, language: language },
