@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Typography, Box, Button, ToggleButton, ToggleButtonGroup, CircularProgress } from '@mui/material';
-import { ClipLoader } from 'react-spinners';
+import { Typography, Box, CircularProgress, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import '../styles/main.css';
 
 // env에 IP 가져오기
@@ -20,6 +19,9 @@ function Summary({ pdfState }) {
         setLoading(true);
         try {
             let response = null;
+            let languageResponse = await axios.get(`${SubFastAPI}/api/weaviate/searchFulltext?pdf_id=${pdf_id}`);
+            const detectedLanguage = languageResponse.data.language;
+            setLanguage(detectedLanguage);
             if (lang === 'en') {
                 if (region === 'search') {
                     response = await axios.get(`${SubFastAPI}/api/summary/summaryPaper?pdf_id=${pdf_id}`);
@@ -28,9 +30,15 @@ function Summary({ pdfState }) {
                 }
             } else if (lang === 'ko') {
                 response = await axios.get(`${SubFastAPI}/api/translate/transelateSummary?pdf_id=${pdf_id}`);
+            } else if (detectedLanguage === "kr") {
+                response = await axios.get(`${SubFastAPI}/api/summary/summaryPdf?pdf_id=${pdf_id}`);
             }
-            console.log("Summary Data:", response.data.data);
-            setSummary(response.data.summary || response.data.data); // Adjust based on response structure
+            if (response && response.data) {
+                console.log("Summary Response:", response.data.summary);
+                setSummary(response.data.summary); // Adjust based on response structure
+            } else {
+                throw new Error('Unexpected response structure');
+            }
         } catch (error) {
             setError(error);
         } finally {
@@ -47,9 +55,9 @@ function Summary({ pdfState }) {
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-            <CircularProgress />
-            <Typography variant="body1" sx={{ ml: 2 }}>요약 진행 중...</Typography>
-        </Box>
+                <CircularProgress />
+                <Typography variant="body1" sx={{ ml: 2 }}>요약 진행 중...</Typography>
+            </Box>
         );
     }
 
@@ -78,23 +86,25 @@ function Summary({ pdfState }) {
                     <h1 style={{ margin: 0 }}>Summary</h1>
                 </Box>
                 <Box display="flex" justifyContent="flex-end" alignItems="center" width="100%">
-                    <ToggleButtonGroup
-                        value={language}
-                        exclusive
-                        onChange={handleLanguageChange}
-                        aria-label="language"
-                    >
-                        <ToggleButton value="en" aria-label="english">
-                            English
-                        </ToggleButton>
-                        <ToggleButton value="ko" aria-label="korean">
-                            한국어
-                        </ToggleButton>
-                    </ToggleButtonGroup>
+                    {language !== 'kr' && (
+                        <ToggleButtonGroup
+                            value={language}
+                            exclusive
+                            onChange={handleLanguageChange}
+                            aria-label="language"
+                        >
+                            <ToggleButton value="en" aria-label="english">
+                                English
+                            </ToggleButton>
+                            <ToggleButton value="ko" aria-label="korean">
+                                한국어
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                    )}
                 </Box>
             </Box >
-            <Box className='drive-container' sx={{ maxHeight: 550, overflowY: 'auto',overflowX: 'hidden', justifyContent: 'center', alignItems: 'center', p: 4 }}>
-            <Typography variant="body1">{summary}</Typography>
+            <Box className='drive-container' sx={{ maxHeight: 550, overflowY: 'auto', overflowX: 'hidden', justifyContent: 'center', alignItems: 'center', p: 4 }}>
+                <Typography variant="body1">{summary}</Typography>
             </Box>
         </div>
     );

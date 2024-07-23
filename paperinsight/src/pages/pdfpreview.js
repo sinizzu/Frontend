@@ -25,6 +25,7 @@ const PDFPreview = ({ pdfUrl }) => {
   const [translateAnchorEl, setTranslateAnchorEl] = useState(null);
   const viewerRef = useRef(null);
   const [wikiResult, setWikiResult] = useState({ text: '', link: '' });
+  const [language, setLanguage] = useState(''); // language 상태 추가
 
   useEffect(() => {
     const handleLinkClick = (event) => {
@@ -42,7 +43,7 @@ const PDFPreview = ({ pdfUrl }) => {
     };
   }, [selectedText]);
 
-  const handleTextSelection = (event) => {
+  const handleTextSelection = async (event) => {
     const selection = window.getSelection();
     const text = selection.toString().trim();
     if (text) {
@@ -59,9 +60,21 @@ const PDFPreview = ({ pdfUrl }) => {
       });
 
       setAnchorEl(event.target);
+
+      try {
+        const response = await axios.post(`${SubFastAPI}/api/translate/checkLanguage`, 
+          { text },
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+        setLanguage(response.data.lang);
+      } catch (error) {
+        console.error('Error fetching language:', error);
+      }
+
     } else {
       setReferenceElement(null);
       setAnchorEl(null);
+      setLanguage(''); // 선택 해제 시 language 초기화
     }
   };
 
@@ -109,12 +122,13 @@ const PDFPreview = ({ pdfUrl }) => {
       console.error('Error fetching data:', error);
     }
   };
+
   const handleWikiSearch = async () => {
     setSearchResult(''); // 새 요청 전 검색 결과 초기화
   
     try {
       const response = await axios.get(`${MainFastAPI}/api/search/wikiSearch`, {
-        params: { keyword: selectedText },
+        params: { keyword: selectedText, lang: language },
         headers: { 'Content-Type': 'application/json' }
       });
       
@@ -194,7 +208,7 @@ const PDFPreview = ({ pdfUrl }) => {
 
     try {
       const response = await axios.post(`${SubFastAPI}/api/summary/summaryScroll`,
-        { text: selectedText },
+        { text: selectedText, lang: language },
         { headers: { 'Content-Type': 'application/json' } }
       );
 
@@ -219,8 +233,8 @@ const PDFPreview = ({ pdfUrl }) => {
     setTranslateResult(''); // Reset translate result before making a new request
 
     try {
-      const response = await axios.post(`${SubFastAPI}/api/translate/transelateToKorean`,
-        { text: selectedText },
+      const response = await axios.post(`${SubFastAPI}/api/translate/transelate`,
+        { text: selectedText, lang: language },
         { headers: { 'Content-Type': 'application/json' } }
       );
 
