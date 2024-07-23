@@ -330,6 +330,7 @@ const PDFPreview = ({ pdfUrl }) => {
           id="wiki-search-button"
           variant="text"
           onClick={handleWikiSearch}
+          disabled={tokenCount > 2}
         >
           위키
         </Button>
