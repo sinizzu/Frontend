@@ -22,6 +22,10 @@ const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
 
 const AppContent = () => {
+
+  // 업로드용 상태 
+  const [uploadedFileUrl, setUploadedFileUrl] = useState('');
+  const [uploadedFileId, setUploadedFileId] = useState('');
   
   // 드라이브용 상태
   const [driveSelectedPdf, setDriveSelectedPdf] = useState(null);
@@ -39,6 +43,7 @@ const AppContent = () => {
   const [showFileMessage, setShowFileMessage] = useState(true);
   const [fullText, setFullText] = useState('');
   const [pdfId, setPdfId] = useState('');
+  const [pdfUrl, setPdfUrl] = useState('');
   const [value, setValue] = useState(null);
   const [ocrCompleted, setOcrCompleted] = useState(false);
   const [ocrInProgress, setOcrInProgress] = useState(false);
@@ -69,6 +74,30 @@ const AppContent = () => {
       }
     }
   };
+  const handleFileUploadComplete = async (fileUrl, uuid) => {
+    console.log('File upload completed:', fileUrl, uuid); // 로그 추가
+    setUploadedFileUrl(fileUrl);
+    setUploadedFileId(uuid);
+    setOcrCompleted(false);
+    setOcrInProgress(true);
+    setValue(0);
+  
+    try {
+      const result = await performOCR(fileUrl, uuid);
+      console.log('OCR result:', result);
+      setFullText(result.full_text);
+      setPdfId(result.pdf_id);
+      setLanguage(result.language);
+      
+      // OCR 완료 후 handleChange 함수 실행
+      await handleChange(null, 0);
+    } catch (error) {
+      console.error('OCR 처리 중 오류 발생:', error);
+    } finally {
+      setOcrInProgress(false);
+    }
+  };
+
   const handleDrivePdfSelection = async (pdfUrl, pdfId, region) => {
     setDriveSelectedPdf(pdfUrl);
     setDriveFileName(pdfId);
@@ -78,8 +107,12 @@ const AppContent = () => {
     setValue(0); // 챗봇 탭을 자동으로 선택
   
     try {
-      await performOCR(pdfUrl, pdfId);
-      setOcrCompleted(true);
+      const result = await performOCR(pdfUrl, pdfId);
+      console.log(pdfUrl, pdfId, result);
+      setFullText(result.full_text);
+      setPdfId(result.pdf_id);
+      setLanguage(result.language);
+      
       // OCR 완료 후 handleChange 함수 호출
       await handleChange(null, 0);
     } catch (error) {
@@ -108,6 +141,12 @@ const AppContent = () => {
   
   const performOCR = async (pdfUrl, pdfId) => {
     try {
+
+      console.log("Performing OCR with:", { pdfUrl, pdfId });
+      if (!pdfUrl || !pdfId) {
+        throw new Error('pdfUrl 또는 pdfId가 누락되었습니다.');
+      }
+      
       console.log("Performing OCR on PDF URL:", pdfUrl);
       console.log("PDF ID during OCR:", pdfId);
       const formData = new FormData();
@@ -122,13 +161,12 @@ const AppContent = () => {
       if (response.status === 200) {
         const { pdf_id, full_text, language } = response.data.data;
         setOcrCompleted(true);
-        setFullText(full_text);
-        setPdfId(pdf_id);
-        setLanguage(language);  // 이 부분이 제대로 실행되는지 확인
   
         console.log("OCR 결과:", { pdf_id, full_text, language });  // 로그 추가
   
         await divideChunk(pdf_id, full_text, language);
+  
+        return { pdf_id, full_text, language };  // OCR 결과 반환
       } else {
         throw new Error('OCR 요청 실패');
       }
@@ -137,6 +175,7 @@ const AppContent = () => {
       if (error.response) {
         console.error('Error response:', error.response.data);
       }
+      throw error;  // 에러를 다시 던져서 상위에서 처리할 수 있게 함
     }
   };
   
@@ -227,6 +266,7 @@ const AppContent = () => {
                           setIsDriveVisible={setIsDriveVisible}
                           handleButtonClick={handleDrivePdfSelection} 
                           handlePdfSelection={handleDrivePdfSelection}
+                          onFileUpload={handleFileUploadComplete}
                         />} />
                       <Route path="/chatbot" element={<Home setSelectedPdf={setDriveSelectedPdf} setFileName={setDriveFileName} />} />
                       <Route path="/search" element={<Search 
@@ -277,6 +317,7 @@ const AppContent = () => {
                       ) : ocrCompleted ? (
                         <Chatbot 
                           pdfId={pdfId}
+                          pdfUrl={pdfUrl}
                           fullText={fullText}
                           ocrCompleted={ocrCompleted}
                           pdfState={location.pathname === "/" ? drivePdfState : searchPdfState}

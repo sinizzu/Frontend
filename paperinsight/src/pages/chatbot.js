@@ -37,7 +37,7 @@ const ChatBubble = ({ message, isUser }) => (
   </Box>
 );
 
-function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language }) {
+function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, uploadedFileId, language }) {
   
   const location = useLocation();
   const [messages, setMessages] = useState([
@@ -54,6 +54,15 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language }
       ]);
     }
   }, [ocrCompleted, fullText, pdfId]);
+
+  useEffect(() => {
+    if (uploadedFileUrl && uploadedFileId) {
+      setMessages(prevMessages => [
+        ...prevMessages,
+        { text: '파일이 업로드 되었습니다. 질문해 주세요!', sender: 'bot' }
+      ]);
+    }
+  }, [uploadedFileUrl, uploadedFileId]);
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
@@ -91,10 +100,12 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language }
   
   const fetchChatbotResponse = async (pdfId, query, language) => {
     try {
-      console.log(`Making API request with pdfId: ${pdfId}, query: ${query}`);
+
+      const usePdfId = uploadedFileId || pdfId;
+      console.log(`Making API request with pdfId: ${usePdfId}, query: ${query}`);
       const response = await axios.post(
         `${MAIN_FASTAPI}/api/chatbot/useChatbot`,
-        { pdfId: pdfId, query: query, language: language },
+        { pdfId: usePdfId, query: query, language: language },
         { headers: { 'Content-Type': 'application/json' } }
       );
       if (response.status === 200) {

@@ -12,10 +12,11 @@ import api from '../services/api.js';
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
-function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisible, handlePdfSelection, id, password }) {
+function Home({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelection, onFileUpload }) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfId, setPdfId] = useState(null);
   const [thumbnails, setThumbnails] = useState([]);
   const navigate = useNavigate();
   const [selectedThumbnail, setSelectedThumbnail] = useState(null);
@@ -151,6 +152,8 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
       }
 
       setPdfUrl(fileUrl);
+      setPdfId(uuid);
+      onFileUpload(fileUrl, uuid);
       const res = await api.post(`/api/auth/saveS3`, req, {  
         headers: {
           'authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -168,13 +171,13 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
     }
   };
 
-  const handleThumbnailClick = (fileUrl, thumbnailName) => {
-    console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", thumbnailName);
+  const handleThumbnailClick = (fileUrl, thumbnailName, thumbnailKey) => {
+    console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", thumbnailName, "thumbnailKey:", thumbnailKey);
     setSelectedPdf(fileUrl);
     setFileName(thumbnailName);
-    handlePdfSelection(fileUrl, thumbnailName);
+    handlePdfSelection(fileUrl, thumbnailKey); // thumbnailName 대신 thumbnailKey를 전달
     console.log("Selected PDF URL:", fileUrl);
-    console.log("Selected Thumbnail Data:", thumbnailName);
+    console.log("Selected Thumbnail Key:", thumbnailKey);
   };
 
 
@@ -213,7 +216,7 @@ function Home({ setSelectedPdf, setFileName, handleButtonClick, setIsDriveVisibl
               width: '180px',
               maxWidth: '180px'
             }} 
-            onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name)}
+            onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name, thumbnail.key)}
           >
             <Typography variant="body2" sx={{ fontSize: '14px', mb: 1, width: '100%', wordBreak: 'break-word'}}>{thumbnail.name}</Typography>
             <Box 
