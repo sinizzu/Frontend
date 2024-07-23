@@ -25,7 +25,7 @@ function Menu() {
                 arrow: { sx: tooltipStyles.arrow }
               }}
       >
-      <ListItem button component={Link} to="/">
+      <ListItem button component={Link} to="/drive">
         <ListItemIcon>
           <CloudUploadIcon sx={{ fontSize: 40 }}/>
         </ListItemIcon>

@@ -3,10 +3,11 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { Tabs, Tab, Typography, Drawer, Box, Grid, List, ListItem, ListItemIcon, CircularProgress, IconButton } from '@mui/material';
 import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutlined';
 import Menu from './components/menu';
+import Main from './pages/main';
 import Login from './pages/login';
 import Register from './pages/register';
 import Search from './pages/search';
-import Home from './pages/driver';
+import Drive from './pages/drive';
 import PDFPreview from './pages/pdfpreview';
 import Chatbot from './pages/chatbot';
 import Keyword from './pages/keyword';
@@ -26,6 +27,7 @@ const AppContent = () => {
   // 업로드용 상태 
   const [uploadedFileUrl, setUploadedFileUrl] = useState('');
   const [uploadedFileId, setUploadedFileId] = useState('');
+  const [uploadFileState, setUploadFileState] = useState({ pdf_id: '', region: '' });
   
   // 드라이브용 상태
   const [driveSelectedPdf, setDriveSelectedPdf] = useState(null);
@@ -51,21 +53,21 @@ const AppContent = () => {
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [wikiLoading, setWikiLoading] = useState(false);
   const [language, setLanguage] = useState('');
-  
+
+
   const handleChange = async (event, newValue) => {
     setValue(newValue);
     if (newValue !== null) {
       setShowMessage(false);
     }
-    if (driveSelectedPdf || searchSelectedPdf) {
+    if (driveSelectedPdf || searchSelectedPdf || uploadedFileUrl) {
       setShowFileMessage(false);
     }
-    if (newValue === 0 && (driveSelectedPdf || searchSelectedPdf) && !ocrCompleted) {
+    if (newValue === 0 && (driveSelectedPdf || searchSelectedPdf || uploadedFileUrl) && !ocrCompleted) {
       setOcrInProgress(true);
       try {
-        // 이미 OCR이 완료되었다면 다시 수행하지 않음
         if (!ocrCompleted) {
-          await performOCR(driveSelectedPdf || searchSelectedPdf, drivePdfState.pdf_id || searchPdfState.pdf_id);
+          await performOCR(driveSelectedPdf || searchSelectedPdf || uploadedFileUrl, uploadedFileId || drivePdfState.pdf_id || searchPdfState.pdf_id);
         }
       } catch (error) {
         console.error('OCR 처리 중 오류 발생:', error);
@@ -74,15 +76,17 @@ const AppContent = () => {
       }
     }
   };
-  const handleFileUploadComplete = async (fileUrl, uuid) => {
+  const handleFileUploadComplete = async (fileUrl, uuid, region) => {
     console.log('File upload completed:', fileUrl, uuid); // 로그 추가
     setUploadedFileUrl(fileUrl);
     setUploadedFileId(uuid);
     setOcrCompleted(false);
     setOcrInProgress(true);
+    setUploadFileState({pdf_id: uuid, region});
     setValue(0);
   
     try {
+      console.log('pdf_id:', uuid, 'region:', region, 'file_url', );
       const result = await performOCR(fileUrl, uuid);
       console.log('OCR result:', result);
       setFullText(result.full_text);
@@ -141,11 +145,6 @@ const AppContent = () => {
   
   const performOCR = async (pdfUrl, pdfId) => {
     try {
-
-      console.log("Performing OCR with:", { pdfUrl, pdfId });
-      if (!pdfUrl || !pdfId) {
-        throw new Error('pdfUrl 또는 pdfId가 누락되었습니다.');
-      }
       
       console.log("Performing OCR on PDF URL:", pdfUrl);
       console.log("PDF ID during OCR:", pdfId);
@@ -211,8 +210,6 @@ const AppContent = () => {
   }, [driveSelectedPdf, searchSelectedPdf]);
 
   return (
- 
-      
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
         <Header fileName={driveFileName || searchFileName} />
         <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden', marginTop: `${appBarHeight}px` }}>
@@ -260,15 +257,15 @@ const AppContent = () => {
                       transition: '0.5s ease' }}>
                     {isDriveVisible ? (
                     <Routes>
-                      <Route path="/" element={<Home 
-                          setSelectedPdf={setDriveSelectedPdf}
+                      <Route path="/drive" element={<Drive 
+                          setSelectedPdf={setDriveSelectedPdf} // pdfurl을 drive에서 받아옴 
                           setFileName={setDriveFileName}
                           setIsDriveVisible={setIsDriveVisible}
                           handleButtonClick={handleDrivePdfSelection} 
                           handlePdfSelection={handleDrivePdfSelection}
                           onFileUpload={handleFileUploadComplete}
                         />} />
-                      <Route path="/chatbot" element={<Home setSelectedPdf={setDriveSelectedPdf} setFileName={setDriveFileName} />} />
+                      <Route path="/chatbot" element={<Drive setSelectedPdf={setDriveSelectedPdf} setFileName={setDriveFileName} />} />
                       <Route path="/search" element={<Search 
                         setSelectedPdf={setSearchSelectedPdf}
                         setFileName={setSearchFileName}
@@ -276,8 +273,8 @@ const AppContent = () => {
                         handlePdfSelection={handleSearchPdfSelection}
                       />} />
                       <Route path="/paper" element={<div>Paper Page</div>} />
-                      <Route path="/keyword" element={<Keyword pdfState={drivePdfState} />} />
-                      <Route path="/summary" element={<Summary pdfState={drivePdfState} />} />
+                      <Route path="/keyword" element={<Keyword pdfState={drivePdfState || uploadFileState} />} />
+                      <Route path="/summary" element={<Summary pdfState={drivePdfState || uploadFileState} />} />
                     </Routes>
                     ) : (
                       <Box 
@@ -334,27 +331,32 @@ const AppContent = () => {
                       )}
                     </>
                   )}
-                  {value === 1 && (driveSelectedPdf || searchSelectedPdf) && (
-                    keywordLoading || wikiLoading ? (
-                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                        <CircularProgress />
-                        <Typography variant="body1" sx={{ ml: 2 }}>{keywordLoading ? '키워드 추출 중...' : '위키 데이터 로딩 중...'}</Typography>
-                      </Box>
-                    ) : (
-                      <Keyword 
-                        setSelectedPdf={location.pathname === "/" ? setDriveSelectedPdf : setSearchSelectedPdf} 
-                        handleButtonClick={location.pathname === "/" ? handleDrivePdfSelection : handleSearchPdfSelection} 
-                        pdfState={location.pathname === "/" ? drivePdfState : searchPdfState} 
-                        setKeywordLoading={setKeywordLoading}
-                        setWikiLoading={setWikiLoading}
-                      />
-                    )
-                  )}
-                  {value === 2 && (driveSelectedPdf || searchSelectedPdf) && (
+                  {value === 1 && (driveSelectedPdf || searchSelectedPdf || uploadFileState) && (
+                      (() => {
+                        console.log('Current uploadFileState:', driveSelectedPdf);
+                        
+                        return keywordLoading || wikiLoading ? (
+                          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                            <CircularProgress />
+                            <Typography variant="body1" sx={{ ml: 2 }}>{keywordLoading ? '키워드 추출 중...' : '위키 데이터 로딩 중...'}</Typography>
+                          </Box>
+                        ) : (
+                          <Keyword 
+                            setSelectedPdf={location.pathname === "/drive" ? setDriveSelectedPdf || setUploadedFileUrl : setSearchSelectedPdf} 
+                            handleButtonClick={location.pathname === "/drive" ? handleDrivePdfSelection || handleFileUploadComplete : handleSearchPdfSelection} 
+                            pdfState={location.pathname === "/drive" ? drivePdfState || uploadFileState : searchPdfState} 
+                            setKeywordLoading={setKeywordLoading}
+                            setWikiLoading={setWikiLoading}
+                          />
+                        );
+                      })()
+                    )}
+                  {value === 2 && (driveSelectedPdf || searchSelectedPdf || uploadFileState) && (
+                    
                     <Summary 
-                      setSelectedPdf={location.pathname === "/" ? setDriveSelectedPdf : setSearchSelectedPdf} 
-                      handleButtonClick={location.pathname === "/" ? handleDrivePdfSelection : handleSearchPdfSelection} 
-                      pdfState={location.pathname === "/" ? drivePdfState : searchPdfState}
+                      setSelectedPdf={location.pathname === "/drive" ? setDriveSelectedPdf || setUploadedFileUrl : setSearchSelectedPdf} 
+                      handleButtonClick={location.pathname === "/drive" ? handleDrivePdfSelection || handleFileUploadComplete : handleSearchPdfSelection} 
+                      pdfState={location.pathname === "/drive" ? drivePdfState || uploadFileState : searchPdfState}
                     />
                   )}
                     {!(driveSelectedPdf || searchSelectedPdf) && (
@@ -371,7 +373,7 @@ const AppContent = () => {
                     sx={{ height: '100%' }}
                   >
                     <Routes>
-                      <Route path="/" element={
+                      <Route path="/drive" element={
                         driveSelectedPdf ? (
                           <PDFPreview pdfUrl={driveSelectedPdf} />
                         ) : (
@@ -404,6 +406,7 @@ const App = () => {
   return (
     <Router>
       <Routes>
+      <Route path="/" element={<Main />} />
         <Route path="*" element={<AppContent />} />
       </Routes>
     </Router>
