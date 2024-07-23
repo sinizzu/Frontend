@@ -17,7 +17,7 @@ api.interceptors.request.use(
       const currentTime = Date.now() / 1000; // 현재 시간 (초 단위)
 
       // 토큰이 만료된 경우 갱신
-      if (decodedToken && decodedToken.exp < currentTime-60) {
+      if (decodedToken && decodedToken.exp < currentTime-300) {
         token = await getNewAccessToken();
         localStorage.setItem('accessToken', token.accessToken);
         localStorage.setItem('refreshToken', token.refreshToken);
