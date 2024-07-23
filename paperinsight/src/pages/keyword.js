@@ -46,7 +46,10 @@ function Keyword({ pdfState }) {
     const fetchWikiData = async (keyword) => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${MainFastAPI}/api/search/wikiSearch?keyword=${keyword}`);
+            let language = await axios.get(`${SubFastAPI}/api/weaviate/searchFulltext?pdf_id=${pdfState.pdf_id}`);
+            language = language.data.language;
+            console.log("Language:", language);
+            const response = await axios.get(`${MainFastAPI}/api/search/wikiSearch?keyword=${keyword}&lang=${language}`);
             console.log("Wiki response:", response.data);
             if (response.data.resultCode === 200) {
                 setWikiResult(response.data.data.text);
