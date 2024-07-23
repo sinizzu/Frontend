@@ -37,7 +37,7 @@ const ChatBubble = ({ message, isUser }) => (
   </Box>
 );
 
-function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language}) {
+function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, uploadedFileId, language }) {
   
   const location = useLocation();
   const [messages, setMessages] = useState([
@@ -54,6 +54,15 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language})
       ]);
     }
   }, [ocrCompleted, fullText, pdfId]);
+
+  useEffect(() => {
+    if (uploadedFileUrl && uploadedFileId) {
+      setMessages(prevMessages => [
+        ...prevMessages,
+        { text: '파일이 업로드 되었습니다. 질문해 주세요!', sender: 'bot' }
+      ]);
+    }
+  }, [uploadedFileUrl, uploadedFileId]);
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
@@ -73,12 +82,12 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language})
     setInput('');
     
     try {
-      // const request = await axios.post(`${SubFastAPI}/api/translate/transelateToEnglish`,
-      //   { text: input },
-      //   { headers: { 'Content-Type': 'application/json' } }
-      // )
-      // console.log(`Sending message to chatbot: ${request.data.data}`);
-      const response = await fetchChatbotResponse(pdfId, input, language);
+      const request = await axios.post(`${SubFastAPI}/api/translate/transelateToEnglish`,
+        { text: input },
+        { headers: { 'Content-Type': 'application/json' } }
+      )
+      console.log(`Sending message to chatbot: ${request.data.data}`);
+      const response = await fetchChatbotResponse(pdfId, request.data.data, language);
       console.log('Response from chatbot:', response);
 
       const botResponse = response.data.data || '챗봇 응답을 가져오지 못했습니다.';
@@ -91,10 +100,12 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language})
   
   const fetchChatbotResponse = async (pdfId, query, language) => {
     try {
-      console.log(`Making API request with pdfId: ${pdfId}, query: ${query}, language: ${language}`);
+
+      const usePdfId = uploadedFileId || pdfId;
+      console.log(`Making API request with pdfId: ${usePdfId}, query: ${query}`);
       const response = await axios.post(
         `${MAIN_FASTAPI}/api/chatbot/useChatbot`,
-        { pdfId: pdfId, query: query, language: language },
+        { pdfId: usePdfId, query: query, language: language },
         { headers: { 'Content-Type': 'application/json' } }
       );
       if (response.status === 200) {
@@ -146,7 +157,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, fileName, pdfState, language})
         <Button 
           variant="contained"
           onClick={handleSendMessage} 
-          sx={{ 
+          sx={{
             ml: 1,
             backgroundColor: '#4677F0',
             borderRadius: '20px',

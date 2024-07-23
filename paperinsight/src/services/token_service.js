@@ -1,21 +1,30 @@
 import axios from 'axios';
 
+export const decodeToken = (token) => {
+  if (!token) return null;
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+};
+
+
 export const getNewAccessToken = async () => {
-  const refreshToken = localStorage.getItem('refreshToken');
-  if (!refreshToken) throw new Error('No refresh token available');
-
-  const response = await axios.post('/api/auth/refresh-token', { refreshToken });
-  const { accessToken } = response.data.data;
-  localStorage.setItem('accessToken', accessToken);
-  return accessToken;
-};
-
-export const scheduleTokenRefresh = (interval = 15 * 60 * 1000) => { // 15분마다 갱신
-  setInterval(async () => {
-    try {
-      await getNewAccessToken();
-    } catch (error) {
-      console.error('Failed to refresh access token', error);
-    }
-  }, interval);
-};
+  let refreshToken = {
+    refreshToken: localStorage.getItem('refreshToken')
+  };
+  const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/refresh`, refreshToken ,{
+    headers: {
+      'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+    }});
+  return {
+    accessToken: response.data.accessToken,
+    refreshToken: response.data.refreshToken
+  };
+}
