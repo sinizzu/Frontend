@@ -142,10 +142,9 @@ const PDFPreview = ({ pdfUrl }) => {
         
         const formattedResult = `
           <li class="search-item">
-            <div class="search-item-header">
-              <div class="search-item-content">
-                <a href="${data.link}" class="search-link" target="_blank">Wikipedia: ${selectedText}</a>
-              </div>
+            <div class="search-item-content">
+              <p >Wikipedia: ${selectedText}</p>
+              <a href="${data.link}" class="search-snippet" target="_blank">${data.link}</a>
             </div>
             <div>
               <p class="search-snippet" id="wikiText">${initialText}</p>

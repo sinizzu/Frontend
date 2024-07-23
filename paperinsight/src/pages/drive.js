@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Container, Paper, Typography, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import { pdfjs } from 'react-pdf';
 import { getDocument } from 'pdfjs-dist';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import 'pdfjs-dist/build/pdf.worker.entry';
 import ArrowBackIosNewOutlinedIcon from '@mui/icons-material/ArrowBackIosNewOutlined';
@@ -12,7 +11,7 @@ import api from '../services/api.js';
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
-function Home({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelection, onFileUpload }) {
+function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelection, onFileUpload }) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -49,108 +48,88 @@ function Home({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelecti
 
 
   const fetchPdfFiles = async () => {
-
-  try {
-    console.log( `Bearer ${localStorage.getItem('accessToken')}`);
-    const response = await api.get(`/api/auth/importS3`, {
-      params: {
-        email: localStorage.getItem('email'),
-      },
-      headers: {
-        'Content-Type': 'application/json',
-        'authorization': `Bearer ${localStorage.getItem('accessToken')}`
-      }
-    });
-
-    const pdfFiles = response.data.data;  // 응답에서 'data' 필드를 추출합니다.
-
-    const thumbnails = await Promise.all(pdfFiles.map(async (pdf) => {
-      const thumbnailUrl = await createThumbnail(pdf.url);
-
-      return {
-        name: pdf.url.split('/').pop(),  // URL에서 파일 이름을 추출합니다.
-        url: thumbnailUrl,               // 생성된 썸네일 URL
-        file_url: pdf.url,               // PDF 파일의 원본 URL
-        key: pdf.uuid,                   // PDF 파일의 UUID를 키로 사용합니다.
-        lastModified: pdf.uploadedAt,    // 업로드된 날짜를 마지막 수정 날짜로 사용합니다.
-        ocrCompleted: false              // OCR 작업 완료 여부 (초기값 false)
-      };
-    }));
-
-    setThumbnails(thumbnails);
-  } catch (error) {
-    console.error('Error fetching PDF files:', error);
-    throw error;
-  }
-};
+    try {
+      console.log(`Bearer ${localStorage.getItem('accessToken')}`);
+      const response = await api.get(`/api/auth/importS3`, {
+        params: {
+          email: localStorage.getItem('email'),
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+      console.log('Response:', response.data);
+  
+      const pdfFiles = response.data.data;
+  
+      const thumbnails = await Promise.all(pdfFiles.map(async (pdf) => {
+        // 이미 썸네일 URL이 있다면 그것을 사용하고, 없다면 새로 생성합니다.
+        const thumbnailUrl = pdf.thumbnailUrl || await createThumbnail(pdf.url);
+  
+        return {
+          name: pdf.url.split('/').pop(),
+          url: thumbnailUrl,
+          file_url: pdf.url,
+          key: pdf.uuid,
+          lastModified: pdf.uploadedAt,
+          ocrCompleted: pdf.ocrCompleted || false
+        };
+      }));
+  
+      setThumbnails(thumbnails);
+    } catch (error) {
+      console.error('Error fetching PDF files:', error);
+    }
+  };
 
   const handleClickOpen = () => {
     setOpen(true);
-    navigate('/');
+    navigate('/drive');
   };
 
   const handleClose = () => {
     setOpen(false);
   };
 
-  const handleFileChange = async (event) => {
+  const handleFileChange = (event) => {
     const uploadedFile = event.target.files[0];
-    const url = URL.createObjectURL(uploadedFile);
     setFile(uploadedFile);
-    setPdfUrl(url);
-    setSelectedPdf(url);
-
-    const thumbnailUrl = await createThumbnail(url);
-    
-    // 새로운 PDF 미리보기를 기존의 미리보기와 함께 쌓기, OCR 미완료 상태로 초기화
-    setThumbnails((prevThumbnails) => [
-      { name: uploadedFile.name, url: thumbnailUrl, ocrCompleted: false },
-      ...prevThumbnails
-    ]);
+    setPdfUrl(URL.createObjectURL(uploadedFile));
+    setSelectedPdf(URL.createObjectURL(uploadedFile));
   };
 
   const handleFileUpload = async () => {
     if (!file) return;
-
+  
     const formData = new FormData();
     formData.append('file', file);
-
+  
     try {
-      console.log( `Bearer ${localStorage.getItem('accessToken')}`);
-
+      console.log(`Bearer ${localStorage.getItem('accessToken')}`);
+  
       const response = await api.post(`/api/auth/uploadS3`, formData, {
         headers: {
           'authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                }
+        }
       });
-
+  
       const data = response.data.data;
       console.log('Full server response:', data);
-
+  
       const fileUrl = data.file_url;
       const key = data.key;
       const uuid = data.uuid;
       console.log('File uploaded to S3:', fileUrl);
       console.log('File key:', key);
       console.log('UUID:', uuid);
-
-      const thumbnailUrl = await createThumbnail(fileUrl);
-
-      setThumbnails((prevThumbnails) => [{
-        name: uuid,
-        url: thumbnailUrl,
-        file_url: fileUrl,
-        key: key,
-        lastModified: new Date().toISOString(),
-        ocrCompleted: false
-      }, ...prevThumbnails]);
-
+  
       const req = {
-        uuid : uuid,
-        url : fileUrl,
+        uuid: uuid,
+        url: fileUrl,
         email: localStorage.getItem('email')
-      }
-
+      };
+  
       setPdfUrl(fileUrl);
       setPdfId(uuid);
       onFileUpload(fileUrl, uuid);
@@ -160,11 +139,10 @@ function Home({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelecti
         }
       });
       console.log(res.data.message);
-
-
+  
       handleClose();
       
-      // 파일 업로드 후 OCR 처리 실행
+      // S3에서 최신 파일 목록을 가져옵니다.
       await fetchPdfFiles();
     } catch (error) {
       console.error('Error:', error);
@@ -174,7 +152,7 @@ function Home({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelecti
   const handleThumbnailClick = (fileUrl, thumbnailName, thumbnailKey) => {
     console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", thumbnailName, "thumbnailKey:", thumbnailKey);
     setSelectedPdf(fileUrl);
-    setFileName(thumbnailName);
+    setFileName(thumbnailName); 
     handlePdfSelection(fileUrl, thumbnailKey); // thumbnailName 대신 thumbnailKey를 전달
     console.log("Selected PDF URL:", fileUrl);
     console.log("Selected Thumbnail Key:", thumbnailKey);
@@ -202,9 +180,9 @@ function Home({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelecti
         justifyContent: 'center', 
         gap: 2 
       }}>
-        {thumbnails.slice(-10).map((thumbnail, index) => (
+        {thumbnails.map((thumbnail) => (
           <Paper 
-            key={index} 
+            key={thumbnail.key} 
             sx={{ 
               p: 2, 
               mb: 2, 
@@ -270,4 +248,4 @@ function Home({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelecti
   );
 }
 
-export default Home;
+export default Drive;

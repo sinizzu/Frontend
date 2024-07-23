@@ -38,13 +38,21 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response.status === 401 && !originalRequest._retry) {
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const token = await getNewAccessToken();
-      localStorage.setItem('accessToken', token.accessToken); // 새 토큰 저장
-      localStorage.setItem('refreshToken', token.refreshToken);
-      originalRequest.headers.authorization = `Bearer ${token}`;
-      return api(originalRequest);
+
+      try {
+        const newTokens = await getNewAccessToken();
+        localStorage.setItem('accessToken', newTokens.accessToken); // 새 토큰 저장
+        localStorage.setItem('refreshToken', newTokens.refreshToken);
+        originalRequest.headers.authorization = `Bearer ${newTokens.accessToken}`;
+        return api(originalRequest);
+      } catch (error) {
+        console.error("Failed to refresh token:", error);
+        // 토큰 갱신 실패 시 로그인 페이지로 리다이렉트
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
     }
     return Promise.reject(error);
   }
