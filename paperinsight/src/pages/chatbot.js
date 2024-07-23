@@ -5,8 +5,7 @@ import axios from 'axios';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import '../styles/main.css';
 
-const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
-const SubFastAPI = process.env.REACT_APP_SubFastAPI;
+const MainFastAPI = process.env.REACT_APP_MainFastAPI;
 
 const ChatBubble = ({ message, isUser }) => (
   <Box
@@ -82,7 +81,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, uploadedFileI
     setInput('');
     
     try {
-      const request = await axios.post(`${SubFastAPI}/api/translate/transelateToEnglish`,
+      const request = await axios.post(`${MainFastAPI}/api/translate/transelateToEnglish`,
         { text: input },
         { headers: { 'Content-Type': 'application/json' } }
       )
@@ -104,7 +103,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, uploadedFileI
       const usePdfId = uploadedFileId || pdfId;
       console.log(`Making API request with pdfId: ${usePdfId}, query: ${query}`);
       const response = await axios.post(
-        `${MAIN_FASTAPI}/api/chatbot/useChatbot`,
+        `${MainFastAPI}/api/chatbot/useChatbot`,
         { pdfId: usePdfId, query: query, language: language },
         { headers: { 'Content-Type': 'application/json' } }
       );

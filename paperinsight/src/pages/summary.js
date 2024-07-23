@@ -4,6 +4,7 @@ import { Typography, Box, CircularProgress, ToggleButton, ToggleButtonGroup } fr
 import '../styles/main.css';
 
 // env에 IP 가져오기
+const MainFastAPI = process.env.REACT_APP_MainFastAPI;
 const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
 function Summary({ pdfState }) {
@@ -19,7 +20,7 @@ function Summary({ pdfState }) {
         setLoading(true);
         try {
             let response = null;
-            let languageResponse = await axios.get(`${SubFastAPI}/api/weaviate/searchFulltext?pdf_id=${pdf_id}`);
+            let languageResponse = await axios.get(`${MainFastAPI}/api/weaviate/searchFulltext?pdf_id=${pdf_id}`);
             const detectedLanguage = languageResponse.data.language;
             setLanguage(detectedLanguage);
             if (lang === 'en') {
@@ -29,7 +30,7 @@ function Summary({ pdfState }) {
                     response = await axios.get(`${SubFastAPI}/api/summary/summaryPdf?pdf_id=${pdf_id}`);
                 }
             } else if (lang === 'ko') {
-                response = await axios.get(`${SubFastAPI}/api/translate/transelateSummary?pdf_id=${pdf_id}`);
+                response = await axios.get(`${MainFastAPI}/api/translate/transelateSummary?pdf_id=${pdf_id}`);
             } else if (detectedLanguage === "kr") {
                 response = await axios.get(`${SubFastAPI}/api/summary/summaryPdf?pdf_id=${pdf_id}`);
             }

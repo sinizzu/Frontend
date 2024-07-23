@@ -3,7 +3,6 @@ import axios from 'axios';
 import { MenuItem, FormControl, Select, Typography, Box, CircularProgress } from '@mui/material';
 
 const MainFastAPI = process.env.REACT_APP_MainFastAPI;
-const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
 function Keyword({ pdfState }) {
     const [pdf_id, setPdf_id] = useState('');
@@ -24,7 +23,7 @@ function Keyword({ pdfState }) {
         setIsLoading(true);
         try {
             console.log("Fetching keywords for pdf_id:", id);
-            const response = await axios.get(`${SubFastAPI}/api/topic/keywordExtract?pdf_id=${id}`);
+            const response = await axios.get(`${MainFastAPI}/api/topic/keywordExtract?pdf_id=${id}`);
             console.log("Keyword response:", response.data);
             if (response.data && response.data.data) {
                 setKeywords(response.data.data);
@@ -46,7 +45,7 @@ function Keyword({ pdfState }) {
     const fetchWikiData = async (keyword) => {
         setIsLoading(true);
         try {
-            let language = await axios.get(`${SubFastAPI}/api/weaviate/searchFulltext?pdf_id=${pdfState.pdf_id}`);
+            let language = await axios.get(`${MainFastAPI}/api/weaviate/searchFulltext?pdf_id=${pdfState.pdf_id}`);
             language = language.data.language;
             console.log("Language:", language);
             const response = await axios.get(`${MainFastAPI}/api/search/wikiSearch?keyword=${keyword}&lang=${language}`);

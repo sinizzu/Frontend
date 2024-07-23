@@ -3,7 +3,6 @@ import { Container, Paper, Typography, Box, TextField, Select, MenuItem, FormCon
 import axios from 'axios';
 
 const MainFastAPI = process.env.REACT_APP_MainFastAPI;
-const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
 const Search = ({ setSelectedPdf, setFileName, handleButtonClick, handlePdfSelection }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,7 +25,7 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick, handlePdfSelec
 
 
       const MainFastAPI = process.env.REACT_APP_MainFastAPI || process.env.MAIN_FASTAPI;
-      const id = await axios.get(`${SubFastAPI}/api/weaviate/searchPaperId?pdf_url=${pdfLink}`);
+      const id = await axios.get(`${MainFastAPI}/api/weaviate/searchPaperId?pdf_url=${pdfLink}`);
       const pdf_id = id.data.data;
       handlePdfSelection(pdfLink, pdf_id, 'search');
       const formData = new URLSearchParams();
@@ -51,7 +50,7 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick, handlePdfSelec
     } catch (error) {
       console.error('에러 상세:', error.response ? error.response.data : 'No response data');
       console.error('IP:', `${MainFastAPI}/api/ocr/ocrTest`);
-      console.error('IP:', `${SubFastAPI}/api/weaviate/searchPaperId`);
+      console.error('IP:', `${MainFastAPI}/api/weaviate/searchPaperId`);
     }
   };
 
