@@ -62,7 +62,7 @@ const PDFPreview = ({ pdfUrl }) => {
       setAnchorEl(event.target);
 
       try {
-        const response = await axios.post(`${SubFastAPI}/api/translate/checkLanguage`, 
+        const response = await axios.post(`${MainFastAPI}/api/translate/checkLanguage`, 
           { text },
           { headers: { 'Content-Type': 'application/json' } }
         );
@@ -232,7 +232,7 @@ const PDFPreview = ({ pdfUrl }) => {
     setTranslateResult(''); // Reset translate result before making a new request
 
     try {
-      const response = await axios.post(`${SubFastAPI}/api/translate/transelate`,
+      const response = await axios.post(`${MainFastAPI}/api/translate/transelate`,
         { text: selectedText, lang: language },
         { headers: { 'Content-Type': 'application/json' } }
       );
