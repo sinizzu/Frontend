@@ -54,7 +54,6 @@ const AppContent = () => {
   const [wikiLoading, setWikiLoading] = useState(false);
   const [language, setLanguage] = useState('');
 
-
   const handleChange = async (event, newValue) => {
     setValue(newValue);
     if (newValue !== null) {
@@ -317,7 +316,7 @@ const AppContent = () => {
                           pdfUrl={pdfUrl}
                           fullText={fullText}
                           ocrCompleted={ocrCompleted}
-                          pdfState={location.pathname === "/" ? drivePdfState : searchPdfState}
+                          pdfState={location.pathname === "/drive" ? drivePdfState : searchPdfState}
                           language={language} 
                         />
                       ) : driveSelectedPdf || searchSelectedPdf ? (
