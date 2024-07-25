@@ -121,7 +121,8 @@ function Summary({ pdfState }) {
     if (loading) {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                <Typography variant="body1" sx={{ ml: 2 }}>요약 진행 중... (예상 시간: {estimatedTime.toFixed(2)} 초)</Typography>
+                {/* <Typography variant="body1" sx={{ ml: 2 }}>요약 진행 중... (예상 시간: {estimatedTime.toFixed(2)} 초)</Typography> */}
+                <Typography variant="body1" sx={{ ml: 2 }}>요약 진행 중...</Typography>
                 <Box sx={{ width: '70%', mt: 2 }}>
                     <LinearProgress variant="determinate" value={progress} />
                     <Typography variant="body2" sx={{ textAlign: 'center' }}>{Math.round(progress)}%</Typography>
