@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Typography, Box, CircularProgress, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Typography, Box, CircularProgress, LinearProgress, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import '../styles/main.css';
 
-// env에 IP 가져오기
 const MainFastAPI = process.env.REACT_APP_MainFastAPI;
 const SubFastAPI = process.env.REACT_APP_SubFastAPI;
 
@@ -12,17 +11,30 @@ function Summary({ pdfState }) {
     const region = pdfState.region || '';
     const [summary, setSummary] = useState(''); // summary 데이터를 저장할 상태
     const [loading, setLoading] = useState(true); // 데이터 로딩 상태
+    const [loadingPercentage, setLoadingPercentage] = useState(0); // 로딩 퍼센트
     const [error, setError] = useState(null); // 에러 상태
     const [language, setLanguage] = useState('en'); // 언어 상태
+    const [detectedLanguage, setDetectedLanguage] = useState(''); // 감지된 언어 상태
+
+    // Fetch the detected language for the document
+    const fetchDetectedLanguage = async () => {
+        try {
+            const response = await axios.get(`${MainFastAPI}/api/weaviate/searchFulltext?pdf_id=${pdf_id}`);
+            setDetectedLanguage(response.data.language);
+            setLoadingPercentage(30); // Detected language fetched, 30% progress
+        } catch (error) {
+            console.error("Error detecting language:", error);
+            setError(error);
+            setLoadingPercentage(100); // Error occurred, complete loading
+        }
+    };
 
     // Fetch the summary based on the selected language
     const fetchSummary = async (lang) => {
         setLoading(true);
+        setLoadingPercentage(50); // Starting summary fetch, 50% progress
         try {
             let response = null;
-            let languageResponse = await axios.get(`${MainFastAPI}/api/weaviate/searchFulltext?pdf_id=${pdf_id}`);
-            const detectedLanguage = languageResponse.data.language;
-            setLanguage(detectedLanguage);
             if (lang === 'en') {
                 if (region === 'search') {
                     response = await axios.get(`${SubFastAPI}/api/summary/summaryPaper?pdf_id=${pdf_id}`);
@@ -31,33 +43,46 @@ function Summary({ pdfState }) {
                 }
             } else if (lang === 'ko') {
                 response = await axios.get(`${MainFastAPI}/api/translate/transelateSummary?pdf_id=${pdf_id}`);
-            } else if (detectedLanguage === "kr") {
+            } else if (detectedLanguage === 'kr') {
                 response = await axios.get(`${SubFastAPI}/api/summary/summaryPdf?pdf_id=${pdf_id}`);
             }
+            setLoadingPercentage(80); // Summary fetch response received, 80% progress
             if (response && response.data) {
-                console.log("Summary Response:", response.data.summary);
+                console.log("Summary React Response:", response.data.summary);
                 setSummary(response.data.summary); // Adjust based on response structure
+                setLoadingPercentage(100); // Complete loading
             } else {
                 throw new Error('Unexpected response structure');
             }
         } catch (error) {
             setError(error);
+            setLoadingPercentage(100); // Error occurred, complete loading
         } finally {
             setLoading(false);
         }
     };
 
-    // Fetch the summary on component mount or when language changes
+    // Fetch the detected language and summary on component mount
     useEffect(() => {
-        fetchSummary(language);
+        fetchDetectedLanguage();
+    }, [pdf_id]);
+
+    // Fetch the summary when language, pdf_id, or region changes
+    useEffect(() => {
+        if (pdf_id) {
+            fetchSummary(language);
+        }
     }, [pdf_id, region, language]);
 
     // 데이터 로딩 중이면 로딩 표시
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                 <CircularProgress />
-                <Typography variant="body1" sx={{ ml: 2 }}>요약 진행 중...</Typography>
+                <Typography variant="body1" sx={{ ml: 2 }}>요약 진행 중... {loadingPercentage}%</Typography>
+                <Box sx={{ width: '100%', mt: 2 }}>
+                    <LinearProgress variant="determinate" value={loadingPercentage} />
+                </Box>
             </Box>
         );
     }
@@ -87,7 +112,7 @@ function Summary({ pdfState }) {
                     <h1 style={{ margin: 0 }}>Summary</h1>
                 </Box>
                 <Box display="flex" justifyContent="flex-end" alignItems="center" width="100%">
-                    {language !== 'kr' && (
+                    {detectedLanguage !== 'kr' && (
                         <ToggleButtonGroup
                             value={language}
                             exclusive
@@ -103,7 +128,7 @@ function Summary({ pdfState }) {
                         </ToggleButtonGroup>
                     )}
                 </Box>
-            </Box >
+            </Box>
             <Box className='drive-container' sx={{ maxHeight: 550, overflowY: 'auto', overflowX: 'hidden', justifyContent: 'center', alignItems: 'center', p: 4 }}>
                 <Typography variant="body1">{summary}</Typography>
             </Box>
