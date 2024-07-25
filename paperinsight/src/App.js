@@ -259,7 +259,7 @@ const AppContent = () => {
               <Grid container sx={{ flexGrow: 1, height: 'calc(100vh - 64px)' }}>
                 <Grid className='drive-container' data-label="1-container" item xs={isDriveVisible ? 2.5 : 0.5} padding={isDriveVisible ? 3 : 0}
                   sx={{
-                    height: '100%', backgroundColor: '#F7F9FB',
+                    height: '100%', backgroundColor: '#f9fafb',
                     borderRight: '1px solid #ccc', position: 'relative',
                     transition: '0.5s ease'
                   }}>

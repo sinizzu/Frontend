@@ -86,6 +86,7 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
         const thumbnailUrl = pdf.thumbnailUrl || await createThumbnail(pdf.url);
 
         return {
+          filename: pdf.fileName,
           name: pdf.url.split('/').pop(),
           url: thumbnailUrl,
           file_url: pdf.url,
@@ -167,8 +168,8 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
     }
   };
 
-  const handleThumbnailClick = (fileUrl, thumbnailName, thumbnailKey) => {
-    console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", thumbnailName, "thumbnailKey:", thumbnailKey);
+  const handleThumbnailClick = (fileUrl, thumbnail, thumbnailKey) => {
+    console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", thumbnail.name, "thumbnailKey:", thumbnailKey);
     setSelectedPdf(fileUrl);
     setFileName(thumbnailName);
     handlePdfSelection(fileUrl, thumbnailKey); // thumbnailName 대신 thumbnailKey를 전달
@@ -244,6 +245,7 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
         <DialogTitle>Upload PDF</DialogTitle>
         <DialogContent>
           <input
+
             accept="application/pdf"
             style={{ display: 'none' }}
             id="upload-file"
