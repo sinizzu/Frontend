@@ -83,7 +83,7 @@ function Keyword({ pdfState }) {
             <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                 <CircularProgress />
                 <Typography variant="body1" sx={{ ml: 2 }}>키워드 추출 중... {loadingPercentage}%</Typography>
-                <Box sx={{ width: '100%', mt: 2 }}>
+                <Box sx={{ width: '70%', mt: 2 }}>
                     <LinearProgress variant="determinate" value={loadingPercentage} />
                 </Box>
             </Box>
