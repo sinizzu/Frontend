@@ -41,6 +41,7 @@ const Login = () => {
     
     } catch (error) {
       console.error('Login failed:', error);
+      console.log("바뀔까? ㅎㅎ");
       console.log('Full API URL:', `${process.env.REACT_APP_API_BASE_URL}/api/auth/login`);
 
       if (error.response) {
