@@ -41,29 +41,41 @@ const CardOverlay = styled('div')({
   color: 'white',
 });
 
-const FeatureSwiper = ({ setActiveFeature, features, onUserInteraction }) => {
+const expandedBoxStyle = {
+  maxHeight: '300px',
+  transition: 'max-height 0.3s ease-in-out, background-color 0.3s ease',
+  overflow: 'hidden',
+};
+
+const collapsedBoxStyle = {
+  maxHeight: '100px',
+  transition: 'max-height 0.3s ease-in-out, background-color 0.3s ease',
+  overflow: 'hidden',
+};
+
+const FeatureSwiper = ({ setActiveFeature, features, onUserInteraction, featureRefs }) => {
   const [swiper, setSwiper] = useState(null);
   const [userInteracted, setUserInteracted] = useState(false);
 
-  const handleSlideChange = useCallback((swiper) => {
-    if (userInteracted) {
-      onUserInteraction();
-      if (swiper && typeof swiper.realIndex === 'number' && features[swiper.realIndex]) {
-        setActiveFeature(features[swiper.realIndex]);
-      }
-    }
-  }, [features, setActiveFeature, onUserInteraction, userInteracted]);
+  // const handleSlideChange = useCallback((swiper) => {
+  //   if (userInteracted) {
+  //     onUserInteraction();
+  //     if (swiper && typeof swiper.realIndex === 'number' && features[swiper.realIndex]) {
+  //       setActiveFeature(features[swiper.realIndex]);
+  //     }
+  //   }
+  // }, [features, setActiveFeature, onUserInteraction, userInteracted]);
 
-  const handleSwiper = (swiper) => {
-    setSwiper(swiper);
-  };
+  // const handleSwiper = (swiper) => {
+  //   setSwiper(swiper);
+  // };
 
-  const handleSlideChangeTransitionStart = () => {
-    if (!userInteracted) {
-      setUserInteracted(true);
-      onUserInteraction();
-    }
-  };
+  // const handleSlideChangeTransitionStart = () => {
+  //   if (!userInteracted) {
+  //     setUserInteracted(true);
+  //     onUserInteraction();
+  //   }
+  // };
 
 const totalSlides = features.length; // features 배열의 길이
 const initialSlideIndex = Math.floor(totalSlides / 2);
@@ -72,7 +84,7 @@ const initialSlideIndex = Math.floor(totalSlides / 2);
 
     <Swiper
       modules={[Navigation, Pagination, EffectCoverflow]}
-      spaceBetween={300} // 슬라이드 간 간격을 50px로 조정
+      spaceBetween={30} // 슬라이드 간 간격을 100px로 조정
       slidesPerView={3} // 'auto'로 설정하여 각 슬라이드의 너비에 따라 표시
       initialSlide={initialSlideIndex}
       centeredSlides={true}
@@ -87,14 +99,14 @@ const initialSlideIndex = Math.floor(totalSlides / 2);
       }}
       pagination={{ clickable: true }}
       navigation
-      onSwiper={handleSwiper}
-      onSlideChange={handleSlideChange}
-      onSlideChangeTransitionStart={handleSlideChangeTransitionStart}
+      // onSwiper={handleSwiper}
+      // onSlideChange={handleSlideChange}
+      // onSlideChangeTransitionStart={handleSlideChangeTransitionStart}
     >
       {features.map((feature, index) => (
         <SwiperSlide key={index}>
           {({ isActive }) => (
-            <FeatureCard active={isActive.toString()} style={{ width: '420px', height: '230px' }}>
+            <FeatureCard active={isActive.toString()} style={{ width: '450px', height: '300px' }}>
               <CardMedia
                 component="img"
                 height="100%"
@@ -110,11 +122,19 @@ const initialSlideIndex = Math.floor(totalSlides / 2);
                 </Typography>
                 <Button 
                   variant="contained" 
-                  color="primary" 
                   size="small"
-                  style={{ marginTop: '10px' }}
-                  onClick={() => feature.onClick && feature.onClick()}>
-                  기능 시작하기
+                  style={{ marginTop: '10px', backgroundColor: 'white', color:'black', fontWeight:'bold' }}
+                  onClick={() => {
+                    setActiveFeature(feature);
+                    // onUserInteraction();
+                    if (featureRefs.current[index]) {
+                      featureRefs.current[index].scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                      });
+                    }
+                  }}>
+                  상세보기
                 </Button>
               </CardOverlay>
             </FeatureCard>
@@ -138,36 +158,32 @@ function Main() {
       title: '드라이브', 
       image: '/drive.jpeg', 
       description: '학습자료를 업로드하여 스터디 할 수 있어요.', 
-      detail: '원하는 자료를 업로드 할 수 있습니다. 자료들을 기반으로 챗봇, 키워드, 요약 기능을 활용해보세요. PDF뷰어를 지원하여 직접 자료를 분석해볼 수 있습니다.',
-      onClick: () => navigate('/drive')
+      detail: '원하는 자료를 업로드 할 수 있습니다. 자료들을 기반으로 챗봇, 키워드, 요약 기능을 활용해보세요. PDF뷰어를 지원하여 직접 자료를 분석해볼 수 있습니다.'
     },
     { 
       title: '챗봇', 
       image: '/chat.jpeg', 
       description: '챗봇과 대화할 수 있습니다.', 
-      detail: '챗봇과 대화하며 학습 내용을 복습하고 새로운 인사이트를 얻어보세요.',
-      onClick: () => navigate('/chatbot')
+      detail: '챗봇과 대화하며 학습 내용을 복습하고 새로운 인사이트를 얻어보세요.'
     },
     { 
-      title: '벡터 검색', 
+      title: '벡터 검색',
       image: '/search.jpeg', 
       description: '원하는 키워드를 검색해보세요.', 
-      detail: '벡터 검색을 통해서 검색한 쿼리에 대해 유사도가 가장 높은 논문들을 받아보세요.',
-      onClick: () => navigate('/search')
+      detail: '벡터 검색을 통해서 검색한 쿼리에 대해 유사도가 가장 높은 논문들을 받아보세요.'
+
     },
     { 
       title: '키워드 추출', 
       image: '/keyword.jpeg', 
       description: '문서에서 중요 키워드를 추출해보세요.', 
-      detail: '문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다.',
-      onClick: () => navigate('/keyword')
+      detail: '문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다.  \n문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다. \n문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다. \n문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다. \n문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다.\n문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다.\n문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다.'
     },
     { 
       title: '요약 기능', 
       image: '/summary.jpeg', 
       description: '긴 문서를 요약해보세요.', 
-      detail: '긴 문서를 간결하게 요약하여 핵심 내용을 쉽게 파악할 수 있습니다.',
-      onClick: () => navigate('/summary')
+      detail: '긴 문서를 간결하게 요약하여 핵심 내용을 쉽게 파악할 수 있습니다.'
     }
   ], [navigate]);
 
@@ -216,17 +232,18 @@ function Main() {
         </Toolbar>
       </StyledAppBar>
 
-      <Container maxWidth="lg" style={{ marginTop: '40px' }}>
+      <Container maxWidth="xl" style={{ marginTop: '40px' }}>
       <Box sx={{ 
         height: '400px', 
         mb: 4, 
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        width:'100%'
       }}>
         <div style={{
           width: '100%',
-          height: '300px',  // 스와이퍼의 높이를 지정합니다. 필요에 따라 조절하세요.
+          height: '400px',  // 스와이퍼의 높이를 지정합니다. 필요에 따라 조절하세요.
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
@@ -235,39 +252,39 @@ function Main() {
             setActiveFeature={handleFeatureChange} 
             features={features}
             onUserInteraction={handleUserInteraction}
+            featureRefs={featureRefs}
           />
         </div>
       </Box>
         
-        <Box sx={{ display: 'flex', flexDirection: 'column', mt: 4 }}>
-          {features.map((feature, index) => (
-            <Box 
-              key={index} 
-              ref={el => featureRefs.current[index] = el}
-              sx={{ 
-                border: '1px solid #ddd', 
-                borderRadius: '8px', 
-                p: 2, 
-                mb: 2,
-                cursor: 'pointer',
-                backgroundColor: activeFeature?.title === feature.title ? '#f0f0f0' : 'transparent',
-                '&:hover': { backgroundColor: '#f5f5f5' }
-              }}
-              onClick={() => {
-                handleUserInteraction();
-                handleFeatureChange(feature);
-              }}
-            >
-              <Typography variant="h6">{feature.title}</Typography>
-              <Typography variant="body2">{feature.description}</Typography>
-              {activeFeature?.title === feature.title && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body1">{feature.detail}</Typography>
-                </Box>
-              )}
+      <Box sx={{ display: 'flex', flexDirection: 'column', mt: 4 }}>
+        {features.map((feature, index) => (
+          <Box 
+            key={index} 
+            ref={el => featureRefs.current[index] = el}
+            sx={{ 
+              border: '1px solid #ddd', 
+              borderRadius: '8px', 
+              p: 2, 
+              mb: 2,
+              cursor: 'pointer',
+              backgroundColor: activeFeature?.title === feature.title ? '#f0f0f0' : 'transparent',
+              '&:hover': { backgroundColor: '#f5f5f5' },
+              ...(activeFeature?.title === feature.title ? expandedBoxStyle : collapsedBoxStyle),
+            }}
+            onClick={() => {
+              handleUserInteraction();
+              handleFeatureChange(feature);
+            }}
+          >
+            <Typography variant="h6">{feature.title}</Typography>
+            <Typography variant="body2">{feature.description}</Typography>
+            <Box sx={{ mt: 2, opacity: activeFeature?.title === feature.title ? 1 : 0, transition: 'opacity 0.3s ease' }}>
+              <Typography variant="body1">{feature.detail}</Typography>
             </Box>
-          ))}
-        </Box>
+          </Box>
+        ))}
+      </Box>
       </Container>
     </div>
   );
