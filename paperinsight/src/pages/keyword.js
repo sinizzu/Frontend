@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { MenuItem, FormControl, Select, Typography, Box, CircularProgress, LinearProgress } from '@mui/material';
+import { MenuItem, FormControl, Select, Typography, Box, LinearProgress } from '@mui/material';
 
 const MainFastAPI = process.env.REACT_APP_MainFastAPI;
 
@@ -81,9 +81,8 @@ function Keyword({ pdfState }) {
     if (isLoading) {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                <CircularProgress />
                 <Typography variant="body1" sx={{ ml: 2 }}>키워드 추출 중... {loadingPercentage}%</Typography>
-                <Box sx={{ width: '100%', mt: 2 }}>
+                <Box sx={{ width: '70%', mt: 2 }}>
                     <LinearProgress variant="determinate" value={loadingPercentage} />
                 </Box>
             </Box>
