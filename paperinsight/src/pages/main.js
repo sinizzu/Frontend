@@ -4,6 +4,8 @@ import { styled } from '@mui/system';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, EffectCoverflow } from 'swiper/modules';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { AuthProvider } from '../contexts/authcontext';
+
 
 // Swiper styles
 import 'swiper/css';
@@ -65,8 +67,8 @@ const FeatureSwiper = ({ setActiveFeature, features, onUserInteraction }) => {
     }
   };
 
-const totalSlides = features.length; // features 배열의 길이
-const initialSlideIndex = Math.floor(totalSlides / 2);
+  const totalSlides = features.length; // features 배열의 길이
+  const initialSlideIndex = Math.floor(totalSlides / 2);
 
   return (
 
@@ -108,9 +110,9 @@ const initialSlideIndex = Math.floor(totalSlides / 2);
                 <Typography variant="body2">
                   {feature.description}
                 </Typography>
-                <Button 
-                  variant="contained" 
-                  color="primary" 
+                <Button
+                  variant="contained"
+                  color="primary"
                   size="small"
                   style={{ marginTop: '10px' }}
                   onClick={() => feature.onClick && feature.onClick()}>
@@ -128,44 +130,45 @@ const initialSlideIndex = Math.floor(totalSlides / 2);
 
 function Main() {
   const navigate = useNavigate();
+  // const { setAccessToken, setRefreshToken, setEmail } = useContext(AuthContext);
   const featureRefs = useRef([]);
   const [initialLoad, setInitialLoad] = useState(true);
   const [activeFeature, setActiveFeature] = useState(null);
   const [userInteracted, setUserInteracted] = useState(false);
 
   const features = useMemo(() => [
-    { 
-      title: '드라이브', 
-      image: '/drive.jpeg', 
-      description: '학습자료를 업로드하여 스터디 할 수 있어요.', 
+    {
+      title: '드라이브',
+      image: '/drive.jpeg',
+      description: '학습자료를 업로드하여 스터디 할 수 있어요.',
       detail: '원하는 자료를 업로드 할 수 있습니다. 자료들을 기반으로 챗봇, 키워드, 요약 기능을 활용해보세요. PDF뷰어를 지원하여 직접 자료를 분석해볼 수 있습니다.',
       onClick: () => navigate('/drive')
     },
-    { 
-      title: '챗봇', 
-      image: '/chat.jpeg', 
-      description: '챗봇과 대화할 수 있습니다.', 
+    {
+      title: '챗봇',
+      image: '/chat.jpeg',
+      description: '챗봇과 대화할 수 있습니다.',
       detail: '챗봇과 대화하며 학습 내용을 복습하고 새로운 인사이트를 얻어보세요.',
       onClick: () => navigate('/chatbot')
     },
-    { 
-      title: '벡터 검색', 
-      image: '/search.jpeg', 
-      description: '원하는 키워드를 검색해보세요.', 
+    {
+      title: '벡터 검색',
+      image: '/search.jpeg',
+      description: '원하는 키워드를 검색해보세요.',
       detail: '벡터 검색을 통해서 검색한 쿼리에 대해 유사도가 가장 높은 논문들을 받아보세요.',
       onClick: () => navigate('/search')
     },
-    { 
-      title: '키워드 추출', 
-      image: '/keyword.jpeg', 
-      description: '문서에서 중요 키워드를 추출해보세요.', 
+    {
+      title: '키워드 추출',
+      image: '/keyword.jpeg',
+      description: '문서에서 중요 키워드를 추출해보세요.',
       detail: '문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다.',
       onClick: () => navigate('/keyword')
     },
-    { 
-      title: '요약 기능', 
-      image: '/summary.jpeg', 
-      description: '긴 문서를 요약해보세요.', 
+    {
+      title: '요약 기능',
+      image: '/summary.jpeg',
+      description: '긴 문서를 요약해보세요.',
       detail: '긴 문서를 간결하게 요약하여 핵심 내용을 쉽게 파악할 수 있습니다.',
       onClick: () => navigate('/summary')
     }
@@ -183,9 +186,9 @@ function Main() {
     if (!initialLoad && userInteracted) {
       const index = features.findIndex(f => f.title === feature.title);
       if (index !== -1 && featureRefs.current[index]) {
-        featureRefs.current[index].scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
+        featureRefs.current[index].scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
         });
       }
     }
@@ -195,6 +198,16 @@ function Main() {
     setInitialLoad(false);
     setUserInteracted(true);
   }, []);
+
+  // console.log(`api: ${api}`);
+  const handleLoginClick = () => {
+    navigate('/login');
+  };
+
+
+  const handleDriveClick = () => {
+    navigate('/drive');
+  };
 
   return (
     <div>
@@ -206,48 +219,48 @@ function Main() {
             </RouterLink>
             <Typography variant="h6" mx={2} noWrap sx={{ color: 'black', fontWeight: 'bold' }}>PaperInsight</Typography>
           </Box>
-          <Box sx={{ flexGrow: 1 }} /> 
+          <Box sx={{ flexGrow: 1 }} />
           <Box>
-            <StyledButton color="inherit" onClick={() => navigate('/search')} sx={{fontWeight: 'bold'}}>벡터 검색</StyledButton>
-            <StyledButton color="inherit" onClick={() => navigate('/drive')} sx={{fontWeight: 'bold'}}>학습하기</StyledButton>
-            <StyledButton variant="outlined" color="inherit" onClick={() => navigate('/login')}>Login</StyledButton>
-            <StyledButton variant="contained" sx={{backgroundColor: 'black', color: 'white'}} onClick={() => navigate('/signup')}>Signup</StyledButton>
+            <StyledButton color="inherit" onClick={() => navigate('/search')} sx={{ fontWeight: 'bold' }}>벡터 검색</StyledButton>
+            <StyledButton color="inherit" onClick={handleDriveClick} sx={{ fontWeight: 'bold' }}>학습하기</StyledButton>
+            <StyledButton variant="outlined" color="inherit" onClick={handleLoginClick}>Login</StyledButton>
+            <StyledButton variant="contained" sx={{ backgroundColor: 'black', color: 'white' }} onClick={() => navigate('/signup')}>Signup</StyledButton>
           </Box>
         </Toolbar>
       </StyledAppBar>
 
       <Container maxWidth="lg" style={{ marginTop: '40px' }}>
-      <Box sx={{ 
-        height: '400px', 
-        mb: 4, 
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{
-          width: '100%',
-          height: '300px',  // 스와이퍼의 높이를 지정합니다. 필요에 따라 조절하세요.
+        <Box sx={{
+          height: '400px',
+          mb: 4,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-          <FeatureSwiper 
-            setActiveFeature={handleFeatureChange} 
-            features={features}
-            onUserInteraction={handleUserInteraction}
-          />
-        </div>
-      </Box>
-        
+          <div style={{
+            width: '100%',
+            height: '300px',  // 스와이퍼의 높이를 지정합니다. 필요에 따라 조절하세요.
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <FeatureSwiper
+              setActiveFeature={handleFeatureChange}
+              features={features}
+              onUserInteraction={handleUserInteraction}
+            />
+          </div>
+        </Box>
+
         <Box sx={{ display: 'flex', flexDirection: 'column', mt: 4 }}>
           {features.map((feature, index) => (
-            <Box 
-              key={index} 
+            <Box
+              key={index}
               ref={el => featureRefs.current[index] = el}
-              sx={{ 
-                border: '1px solid #ddd', 
-                borderRadius: '8px', 
-                p: 2, 
+              sx={{
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                p: 2,
                 mb: 2,
                 cursor: 'pointer',
                 backgroundColor: activeFeature?.title === feature.title ? '#f0f0f0' : 'transparent',

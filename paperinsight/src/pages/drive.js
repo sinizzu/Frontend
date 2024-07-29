@@ -1,17 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Container, Paper, Typography, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import { pdfjs } from 'react-pdf';
 import { getDocument } from 'pdfjs-dist';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import 'pdfjs-dist/build/pdf.worker.entry';
 import ArrowBackIosNewOutlinedIcon from '@mui/icons-material/ArrowBackIosNewOutlined';
 import '../styles/main.css';
-import api from '../services/api.js';
+import { AuthContext } from '../contexts/authcontext';
+import axios from 'axios';
+
+
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
 function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelection, onFileUpload }) {
+
+  const { email, accessToken, refreshToken } = useContext(AuthContext);
+
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -20,14 +26,18 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
   const navigate = useNavigate();
   const [selectedThumbnail, setSelectedThumbnail] = useState(null);
 
+
+  // console.log(`drive로 이동했을때의 api :  ${api}`);
   const handleCloseIcon = () => {
     setIsDriveVisible(false);
 
   }
 
   useEffect(() => {
-    fetchPdfFiles();
-  }, []);
+    if (email) {
+      fetchPdfFiles();
+    }
+  }, [email]);
 
   const createThumbnail = async (pdfUrl) => {
     const pdfDocument = await getDocument(pdfUrl).promise;
@@ -48,25 +58,33 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
 
 
   const fetchPdfFiles = async () => {
+    // if (!api) {
+    //   console.error('API is not initialized');
+    //   return;
+    // }
+
+
     try {
-      console.log(`Bearer ${localStorage.getItem('accessToken')}`);
-      const response = await api.get(`/api/auth/importS3`, {
+      // console.log(api);
+      // 여기서 api를 인식하지 못함
+      console.log(`Bearer ${accessToken}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/auth/importS3`, {
         params: {
-          email: localStorage.getItem('email'),
+          email: email,
         },
         headers: {
           'Content-Type': 'application/json',
-          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'authorization': `Bearer ${accessToken}`,
         }
       });
       console.log('Response:', response.data);
-  
+
       const pdfFiles = response.data.data;
-  
+
       const thumbnails = await Promise.all(pdfFiles.map(async (pdf) => {
         // 이미 썸네일 URL이 있다면 그것을 사용하고, 없다면 새로 생성합니다.
         const thumbnailUrl = pdf.thumbnailUrl || await createThumbnail(pdf.url);
-  
+
         return {
           name: pdf.url.split('/').pop(),
           url: thumbnailUrl,
@@ -76,7 +94,7 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
           ocrCompleted: pdf.ocrCompleted || false
         };
       }));
-  
+
       setThumbnails(thumbnails);
     } catch (error) {
       console.error('Error fetching PDF files:', error);
@@ -101,47 +119,47 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
 
   const handleFileUpload = async () => {
     if (!file) return;
-  
+
     const formData = new FormData();
     formData.append('file', file);
-  
+
     try {
-      console.log(`Bearer ${localStorage.getItem('accessToken')}`);
-  
-      const response = await api.post(`/api/auth/uploadS3`, formData, {
+      console.log(`Bearer ${accessToken}`);
+
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/uploadS3`, formData, {
         headers: {
-          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'authorization': `Bearer ${accessToken}`
         }
       });
-  
+
       const data = response.data.data;
       console.log('Full server response:', data);
-  
+
       const fileUrl = data.file_url;
       const key = data.key;
       const uuid = data.uuid;
       console.log('File uploaded to S3:', fileUrl);
       console.log('File key:', key);
       console.log('UUID:', uuid);
-  
+
       const req = {
         uuid: uuid,
         url: fileUrl,
-        email: localStorage.getItem('email')
+        email: email
       };
-  
+
       setPdfUrl(fileUrl);
       setPdfId(uuid);
       onFileUpload(fileUrl, uuid);
-      const res = await api.post(`/api/auth/saveS3`, req, {  
+      const res = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/saveS3`, req, {
         headers: {
-          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'authorization': `Bearer ${accessToken}`
         }
       });
       console.log(res.data.message);
-  
+
       handleClose();
-      
+
       // S3에서 최신 파일 목록을 가져옵니다.
       await fetchPdfFiles();
     } catch (error) {
@@ -152,71 +170,73 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
   const handleThumbnailClick = (fileUrl, thumbnailName, thumbnailKey) => {
     console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", thumbnailName, "thumbnailKey:", thumbnailKey);
     setSelectedPdf(fileUrl);
-    setFileName(thumbnailName); 
+    setFileName(thumbnailName);
     handlePdfSelection(fileUrl, thumbnailKey); // thumbnailName 대신 thumbnailKey를 전달
     console.log("Selected PDF URL:", fileUrl);
     console.log("Selected Thumbnail Key:", thumbnailKey);
   };
 
 
+
+
   return (
-    
-    <Box className = "drive-container" sx={{ height: '85vh', overflow: 'auto', pr: 1, position: 'relative'  }}>
+
+    <Box className="drive-container" sx={{ height: '85vh', overflow: 'auto', pr: 1, position: 'relative' }}>
       <IconButton
         sx={{ position: 'absolute', top: 8, right: 8 }}
         onClick={handleCloseIcon}>
         <ArrowBackIosNewOutlinedIcon />
       </IconButton>
       <h1>Drive</h1>
-        <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-        <Button variant="contained" size="small" onClick={handleClickOpen}>
-          +Add PDF
-        </Button>
-      </Box>
-      <Box sx={{ 
-        display: 'flex', 
-        flexWrap: 'wrap', 
-        justifyContent: 'center', 
-        gap: 2 
-      }}>
-        {thumbnails.map((thumbnail) => (
-          <Paper 
-            key={thumbnail.key} 
-            sx={{ 
-              p: 2, 
-              mb: 2, 
-              backgroundColor: selectedThumbnail === thumbnail.key ? '#e3f2fd' : 'white',
-              border: selectedThumbnail === thumbnail.key ? '2px solid #2196f3' : 'none',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              flexDirection: 'column',
-              width: '180px',
-              maxWidth: '180px'
-            }} 
-            onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name, thumbnail.key)}
-          >
-            <Typography variant="body2" sx={{ fontSize: '14px', mb: 1, width: '100%', wordBreak: 'break-word'}}>{thumbnail.name}</Typography>
-            <Box 
+      <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <Button variant="contained" size="small" onClick={handleClickOpen}>
+            +Add PDF
+          </Button>
+        </Box>
+        <Box sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: 2
+        }}>
+          {thumbnails.map((thumbnail) => (
+            <Paper
+              key={thumbnail.key}
               sx={{
-                width: '100%',
+                p: 2,
+                mb: 2,
+                backgroundColor: selectedThumbnail === thumbnail.key ? '#e3f2fd' : 'white',
+                border: selectedThumbnail === thumbnail.key ? '2px solid #2196f3' : 'none',
+                transition: 'all 0.3s ease',
                 display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
+                flexDirection: 'column',
+                width: '180px',
+                maxWidth: '180px'
               }}
+              onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name, thumbnail.key)}
             >
-              <img 
-                src={thumbnail.url} 
-                alt={thumbnail.name} 
-                style={{
-                  width: '100%',  // 이미지 너비를 100%로 설정
-                  height: 'auto',  // 비율 유지
-                  objectFit: 'contain'  // 이미지 비율 유지하면서 컨테이너에 맞춤
+              <Typography variant="body2" sx={{ fontSize: '14px', mb: 1, width: '100%', wordBreak: 'break-word' }}>{thumbnail.name}</Typography>
+              <Box
+                sx={{
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
-              />
-            </Box>
-          </Paper>
-      ))}
+              >
+                <img
+                  src={thumbnail.url}
+                  alt={thumbnail.name}
+                  style={{
+                    width: '100%',  // 이미지 너비를 100%로 설정
+                    height: 'auto',  // 비율 유지
+                    objectFit: 'contain'  // 이미지 비율 유지하면서 컨테이너에 맞춤
+                  }}
+                />
+              </Box>
+            </Paper>
+          ))}
         </Box>
       </Container>
 
