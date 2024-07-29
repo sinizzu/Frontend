@@ -15,16 +15,15 @@ export const decodeToken = (token) => {
 };
 
 
-export const getNewAccessToken = async () => {
-  let refreshToken = {
-    refreshToken: localStorage.getItem('refreshToken')
-  };
-  const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/refresh`, refreshToken ,{
+export const getNewAccessToken = async (refreshToken, accessToken) => {
+
+  const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/refresh`, refreshToken, {
     headers: {
-      'authorization': `Bearer ${localStorage.getItem('accessToken')}`
-    }});
+      'authorization': `Bearer ${accessToken}`
+    }
+  });
   return {
     accessToken: response.data.accessToken,
     refreshToken: response.data.refreshToken
   };
-}
+} 

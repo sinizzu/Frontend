@@ -16,6 +16,9 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Header from './components/header';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
+import { AuthProvider } from './contexts/authcontext';
+
+
 
 const drawerWidth = 80;
 const appBarHeight = 64;
@@ -24,11 +27,12 @@ const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
 const AppContent = () => {
 
+
   // 업로드용 상태 
   const [uploadedFileUrl, setUploadedFileUrl] = useState('');
   const [uploadedFileId, setUploadedFileId] = useState('');
   const [uploadFileState, setUploadFileState] = useState({ pdf_id: '', region: '' });
-  
+
   // 드라이브용 상태
   const [driveSelectedPdf, setDriveSelectedPdf] = useState(null);
   const [driveFileName, setDriveFileName] = useState('');
@@ -53,6 +57,8 @@ const AppContent = () => {
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [wikiLoading, setWikiLoading] = useState(false);
   const [language, setLanguage] = useState('');
+
+
 
   const handleChange = async (event, newValue) => {
     setValue(newValue);
@@ -81,18 +87,18 @@ const AppContent = () => {
     setUploadedFileId(uuid);
     setOcrCompleted(false);
     setOcrInProgress(true);
-    setUploadFileState({pdf_id: uuid, region});
+    setUploadFileState({ pdf_id: uuid, region });
     setValue(0);
-  
+
     try {
-      console.log('pdf_id:', uuid, 'region:', region, 'file_url', );
+      console.log('pdf_id:', uuid, 'region:', region, 'file_url',);
       const result = await performOCR(fileUrl, uuid);
       console.log('OCR result:', result);
       setFullText(result.full_text);
       setPdfId(result.pdf_id);
       setLanguage(result.language);
-      
-      // OCR 완료 후 handleChange 함수 실행
+
+      // OCR 완료 후 handleChange 함수 실행 
       await handleChange(null, 0);
     } catch (error) {
       console.error('OCR 처리 중 오류 발생:', error);
@@ -108,14 +114,14 @@ const AppContent = () => {
     setOcrInProgress(true);
     setDrivePdfState({ pdf_id: pdfId, region });
     setValue(0); // 챗봇 탭을 자동으로 선택
-  
+
     try {
       const result = await performOCR(pdfUrl, pdfId);
       console.log(pdfUrl, pdfId, result);
       setFullText(result.full_text);
       setPdfId(result.pdf_id);
       setLanguage(result.language);
-      
+
       // OCR 완료 후 handleChange 함수 호출
       await handleChange(null, 0);
     } catch (error) {
@@ -132,7 +138,7 @@ const AppContent = () => {
     setOcrInProgress(true);
     setSearchPdfState({ pdf_id: pdfId, region });
     setValue(0); // 챗봇 탭을 자동으로 선택
-  
+
     try {
       await performOCR(pdfUrl, pdfId);
     } catch (error) {
@@ -141,10 +147,10 @@ const AppContent = () => {
       setOcrInProgress(false);
     }
   };
-  
+
   const performOCR = async (pdfUrl, pdfId) => {
     try {
-      
+
       console.log("Performing OCR on PDF URL:", pdfUrl);
       console.log("PDF ID during OCR:", pdfId);
       const formData = new FormData();
@@ -155,15 +161,15 @@ const AppContent = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-  
+
       if (response.status === 200) {
         const { pdf_id, full_text, language } = response.data.data;
         setOcrCompleted(true);
-  
+
         console.log("OCR 결과:", { pdf_id, full_text, language });  // 로그 추가
-  
+
         await divideChunk(pdf_id, full_text, language);
-  
+
         return { pdf_id, full_text, language };  // OCR 결과 반환
       } else {
         throw new Error('OCR 요청 실패');
@@ -176,17 +182,17 @@ const AppContent = () => {
       throw error;  // 에러를 다시 던져서 상위에서 처리할 수 있게 함
     }
   };
-  
+
   const divideChunk = async (pdfId, fullText, language) => {
     try {
       console.log("Divide Chunk 요청 데이터:", { pdfId, fullText, language });  // 로그 추가
-  
+
       const response = await axios.post(
         `${MAIN_FASTAPI}/api/chatbot/divideChunk`,
         { pdfId, fullText, language },
         { headers: { 'Content-Type': 'application/json' } }
       );
-  
+
       if (response.data.resultCode === 201) {
         console.log('divideChunk 요청 성공:', response.data);
       } else {
@@ -208,64 +214,66 @@ const AppContent = () => {
     }
   }, [driveSelectedPdf, searchSelectedPdf]);
 
+
+
   return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-        <Header fileName={driveFileName || searchFileName} />
-        <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden', marginTop: `${appBarHeight}px` }}>
-          <Drawer
-            variant="permanent"
-            sx={{
-              width: drawerWidth,
-              flexShrink: 0,
-              [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
-            }}
-          >
-            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 10 }}>
-              <Menu />
-            </Box>
-            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pb: 5 }}>
-              <List>
-                <ListItem button component={Link} to="/login">
-                  <ListItemIcon>
-                    <AccountCircleIcon sx={{ fontSize: 40 }} />
-                  </ListItemIcon>
-                </ListItem>
-              </List>
-            </Box>
-          </Drawer>
-          <Box
-            component="main"
-            sx={{
-              flexGrow: 1,
-              bgcolor: 'background.default',
-              display: 'flex',
-              flexDirection: 'row',
-              overflow: 'hidden',
-              height: 'calc(100vh - 64px)',
-            }}
-          >
-            <Routes>
-              <Route path="/login" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Login /></Grid></Grid>} />
-              <Route path="/register" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Register /></Grid></Grid>} />
-              <Route path="*" element={
-                <Grid container sx={{ flexGrow: 1, height: 'calc(100vh - 64px)' }}>
-                  <Grid className='drive-container' data-label="1-container" item xs={isDriveVisible ? 2.5 : 0.5} padding={isDriveVisible ? 3 : 0}
-                    sx={{ 
-                      height: '100%', backgroundColor: '#f9fafb', 
-                      borderRight: '1px solid #ccc', position: 'relative',
-                      transition: '0.5s ease' }}>
-                    {isDriveVisible ? (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <Header fileName={driveFileName || searchFileName} />
+      <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden', marginTop: `${appBarHeight}px` }}>
+        <Drawer
+          variant="permanent"
+          sx={{
+            width: drawerWidth,
+            flexShrink: 0,
+            [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+          }}
+        >
+          <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 10 }}>
+            <Menu />
+          </Box>
+          <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pb: 5 }}>
+            <List>
+              <ListItem button component={Link} to="/login">
+                <ListItemIcon>
+                  <AccountCircleIcon sx={{ fontSize: 40 }} />
+                </ListItemIcon>
+              </ListItem>
+            </List>
+          </Box>
+        </Drawer>
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            bgcolor: 'background.default',
+            display: 'flex',
+            flexDirection: 'row',
+            overflow: 'hidden',
+            height: 'calc(100vh - 64px)',
+          }}
+        >
+          <Routes>
+            <Route path="/login" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Login /></Grid></Grid>} />
+            <Route path="/register" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Register /></Grid></Grid>} />
+            <Route path="*" element={
+              <Grid container sx={{ flexGrow: 1, height: 'calc(100vh - 64px)' }}>
+                <Grid className='drive-container' data-label="1-container" item xs={isDriveVisible ? 2.5 : 0.5} padding={isDriveVisible ? 3 : 0}
+                  sx={{
+                    height: '100%', backgroundColor: '#f9fafb',
+                    borderRight: '1px solid #ccc', position: 'relative',
+                    transition: '0.5s ease'
+                  }}>
+                  {isDriveVisible ? (
                     <Routes>
-                      <Route path="/drive" element={<Drive 
-                          setSelectedPdf={setDriveSelectedPdf} // pdfurl을 drive에서 받아옴 
-                          setFileName={setDriveFileName}
-                          setIsDriveVisible={setIsDriveVisible}
-                          handleButtonClick={handleDrivePdfSelection} 
-                          handlePdfSelection={handleDrivePdfSelection}
-                          onFileUpload={handleFileUploadComplete}
-                        />} />
-                      <Route path="/chatbot" element={<Drive setSelectedPdf={setDriveSelectedPdf} setFileName={setDriveFileName} />} />
-                      <Route path="/search" element={<Search 
+                      <Route path="/drive" element={<Drive
+                        setSelectedPdf={setDriveSelectedPdf} // pdfurl을 drive에서 받아옴 
+                        setFileName={setDriveFileName}
+                        setIsDriveVisible={setIsDriveVisible}
+                        handleButtonClick={handleDrivePdfSelection}
+                        handlePdfSelection={handleDrivePdfSelection}
+                        onFileUpload={handleFileUploadComplete}
+                      />} />
+                      <Route path="/search" element={<Search
                         setSelectedPdf={setSearchSelectedPdf}
                         setFileName={setSearchFileName}
                         handleButtonClick={handleSearchPdfSelection}
@@ -275,35 +283,36 @@ const AppContent = () => {
                       <Route path="/keyword" element={<Keyword pdfState={drivePdfState || uploadFileState} />} />
                       <Route path="/summary" element={<Summary pdfState={drivePdfState || uploadFileState} />} />
                     </Routes>
-                    ) : (
-                      <Box 
-                        sx={{ 
-                          position: 'absolute',
-                          top: '33px',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          width: '100%',
-                          display: 'flex',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        <IconButton onClick={() => setIsDriveVisible(true)}>
-                          <ArrowForwardIosOutlinedIcon/>
-                        </IconButton>
-                      </Box>
-                    )}
-                  </Grid>
-                  <Grid data-label="2-container" item xs={isDriveVisible ? 4 : 4.5} padding={isDriveVisible ? 3 : 1}
-                    sx={{ height: '100%', borderRight: '1px solid #ccc',
-                      display: 'flex', flexDirection: 'column'
-                    }}>
-                    <Tabs value={value} onChange={handleChange} aria-label="basic tabs example"
-                      sx={{ width: '100%' }}>
-                      <Tab label="챗봇" sx={{ flexGrow: 1, textAlign: 'center' }} />
-                      <Tab label="키워드" sx={{ flexGrow: 1, textAlign: 'center' }} />
-                      <Tab label="요약" sx={{ flexGrow: 1, textAlign: 'center' }} />
-                    </Tabs>
-                    {value === 0 && (
+                  ) : (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: '33px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: '100%',
+                        display: 'flex',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <IconButton onClick={() => setIsDriveVisible(true)}>
+                        <ArrowForwardIosOutlinedIcon />
+                      </IconButton>
+                    </Box>
+                  )}
+                </Grid>
+                <Grid data-label="2-container" item xs={isDriveVisible ? 4 : 4.5} padding={isDriveVisible ? 3 : 1}
+                  sx={{
+                    height: '100%', borderRight: '1px solid #ccc',
+                    display: 'flex', flexDirection: 'column'
+                  }}>
+                  <Tabs value={value} onChange={handleChange} aria-label="basic tabs example"
+                    sx={{ width: '100%' }}>
+                    <Tab label="챗봇" sx={{ flexGrow: 1, textAlign: 'center' }} />
+                    <Tab label="키워드" sx={{ flexGrow: 1, textAlign: 'center' }} />
+                    <Tab label="요약" sx={{ flexGrow: 1, textAlign: 'center' }} />
+                  </Tabs>
+                  {value === 0 && (
                     <>
                       {ocrInProgress ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -311,13 +320,13 @@ const AppContent = () => {
                           <Typography variant="body1" sx={{ ml: 2 }}>분석중...</Typography>
                         </Box>
                       ) : ocrCompleted ? (
-                        <Chatbot 
+                        <Chatbot
                           pdfId={pdfId}
-                          pdfUrl={pdfUrl}
                           fullText={fullText}
                           ocrCompleted={ocrCompleted}
-                          pdfState={location.pathname === "/drive" ? drivePdfState : searchPdfState}
-                          language={language} 
+                          uploadedFileUrl={pdfUrl}
+                          // pdfState={location.pathname === "/drive" ? drivePdfState : searchPdfState}
+                          language={language}
                         />
                       ) : driveSelectedPdf || searchSelectedPdf ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -331,84 +340,87 @@ const AppContent = () => {
                     </>
                   )}
                   {value === 1 && (driveSelectedPdf || searchSelectedPdf || uploadFileState) && (
-                      (() => {
-                        console.log('Current uploadFileState:', driveSelectedPdf);
-                        
-                        return keywordLoading || wikiLoading ? (
-                          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                            <CircularProgress />
-                            <Typography variant="body1" sx={{ ml: 2 }}>{keywordLoading ? '키워드 추출 중...' : '위키 데이터 로딩 중...'}</Typography>
-                          </Box>
-                        ) : (
-                          <Keyword 
-                            setSelectedPdf={location.pathname === "/drive" ? setDriveSelectedPdf || setUploadedFileUrl : setSearchSelectedPdf} 
-                            handleButtonClick={location.pathname === "/drive" ? handleDrivePdfSelection || handleFileUploadComplete : handleSearchPdfSelection} 
-                            pdfState={location.pathname === "/drive" ? drivePdfState || uploadFileState : searchPdfState} 
-                            setKeywordLoading={setKeywordLoading}
-                            setWikiLoading={setWikiLoading}
-                          />
-                        );
-                      })()
-                    )}
+                    (() => {
+                      console.log('Current uploadFileState:', driveSelectedPdf);
+
+                      return keywordLoading || wikiLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                          <CircularProgress />
+                          <Typography variant="body1" sx={{ ml: 2 }}>{keywordLoading ? '키워드 추출 중...' : '위키 데이터 로딩 중...'}</Typography>
+                        </Box>
+                      ) : (
+                        <Keyword
+                          setSelectedPdf={location.pathname === "/drive" ? setDriveSelectedPdf || setUploadedFileUrl : setSearchSelectedPdf}
+                          handleButtonClick={location.pathname === "/drive" ? handleDrivePdfSelection || handleFileUploadComplete : handleSearchPdfSelection}
+                          pdfState={location.pathname === "/drive" ? drivePdfState || uploadFileState : searchPdfState}
+                          setKeywordLoading={setKeywordLoading}
+                          setWikiLoading={setWikiLoading}
+                        />
+                      );
+                    })()
+                  )}
                   {value === 2 && (driveSelectedPdf || searchSelectedPdf || uploadFileState) && (
-                    
-                    <Summary 
-                      setSelectedPdf={location.pathname === "/drive" ? setDriveSelectedPdf || setUploadedFileUrl : setSearchSelectedPdf} 
-                      handleButtonClick={location.pathname === "/drive" ? handleDrivePdfSelection || handleFileUploadComplete : handleSearchPdfSelection} 
+
+                    <Summary
+                      setSelectedPdf={location.pathname === "/drive" ? setDriveSelectedPdf || setUploadedFileUrl : setSearchSelectedPdf}
+                      handleButtonClick={location.pathname === "/drive" ? handleDrivePdfSelection || handleFileUploadComplete : handleSearchPdfSelection}
                       pdfState={location.pathname === "/drive" ? drivePdfState || uploadFileState : searchPdfState}
                     />
                   )}
-                    {!(driveSelectedPdf || searchSelectedPdf) && (
-                      <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        <Typography variant="subtitle1">파일을 업로드 해주세요📁</Typography>
-                      </Box>
-                    )}
-                  </Grid>
-                  <Grid 
-                    data-label="3-container" 
-                    item 
-                    xs={isDriveVisible ? 5.5 : 7.5} 
-                    padding={3} 
-                    sx={{ height: '100%' }}
-                  >
-                    <Routes>
-                      <Route path="/drive" element={
-                        driveSelectedPdf ? (
-                          <PDFPreview pdfUrl={driveSelectedPdf} />
-                        ) : (
-                          <Box sx={{ flexGrow: 1, height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                            <Typography variant="subtitle1">드라이브 pdf 뷰어</Typography>
-                          </Box>
-                        )
-                      } />
-                      <Route path="/search" element={
-                        searchSelectedPdf ? (
-                          <PDFPreview pdfUrl={searchSelectedPdf} />
-                        ) : (
-                          <Box sx={{ flexGrow: 1, height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                            <Typography variant="subtitle1">검색 pdf 뷰어</Typography>
-                          </Box>
-                        )
-                      } />
-                    </Routes>
-                  </Grid>
+                  {!(driveSelectedPdf || searchSelectedPdf) && (
+                    <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      <Typography variant="subtitle1">파일을 업로드 해주세요📁</Typography>
+                    </Box>
+                  )}
                 </Grid>
-              } />
-            </Routes>
-          </Box>
+                <Grid
+                  data-label="3-container"
+                  item
+                  xs={isDriveVisible ? 5.5 : 7.5}
+                  padding={3}
+                  sx={{ height: '100%' }}
+                >
+                  <Routes>
+                    <Route path="/drive" element={
+                      driveSelectedPdf ? (
+                        <PDFPreview pdfUrl={driveSelectedPdf} />
+                      ) : (
+                        <Box sx={{ flexGrow: 1, height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                          <Typography variant="subtitle1">드라이브 pdf 뷰어</Typography>
+                        </Box>
+                      )
+                    } />
+                    <Route path="/search" element={
+                      searchSelectedPdf ? (
+                        <PDFPreview pdfUrl={searchSelectedPdf} />
+                      ) : (
+                        <Box sx={{ flexGrow: 1, height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                          <Typography variant="subtitle1">검색 pdf 뷰어</Typography>
+                        </Box>
+                      )
+                    } />
+                  </Routes>
+                </Grid>
+              </Grid>
+            } />
+          </Routes>
         </Box>
       </Box>
+    </Box>
   );
 };
 
 const App = () => {
   return (
-    <Router>
-      <Routes>
-      <Route path="/" element={<Main />} />
-        <Route path="*" element={<AppContent />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Main />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<AppContent />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 };
 

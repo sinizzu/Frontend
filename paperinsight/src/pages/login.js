@@ -1,44 +1,45 @@
 // src/pages/login.js
-import React, { useState} from 'react';
-import { Box, Button, TextField, Typography, Divider, Link as MuiLink  } from '@mui/material';
+import React, { useState, useContext } from 'react';
+import { Box, Button, TextField, Typography, Divider, Link as MuiLink } from '@mui/material';
 import { Google as GoogleIcon } from '@mui/icons-material';
 import kakaoIcon from '../assets/kakao.png'; // Kakao 아이콘을 이미지 파일로 임포트
 import Logo from '../assets/logo.png';
-import { Link as RouterLink, useNavigate  } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import api from '../services/api.js';
+import { AuthContext } from '../contexts/authcontext';
+import createApi from '../services/api';
+
+
 
 const Login = () => {
- 
+  const { accessToken, refreshToken, setAccessToken, setRefreshToken, setEmail } = useContext(AuthContext);
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
-      const response = await api.post('/api/auth/login', { 
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/login`, {
         email: id,
-        password: password 
+        password: password
       });
       console.log('Login successful:', response.data);
-      
-      // 토큰 저장
-      localStorage.setItem('accessToken', response.data.accessToken);
+
+      setAccessToken(response.data.accessToken);
       if (response.data.refreshToken) {
-        localStorage.setItem('refreshToken', response.data.refreshToken);
+        setRefreshToken(response.data.refreshToken);
       }
-      localStorage.setItem('email', id);
+
+      setEmail(id);
+      // 새로운 API 인스턴스 생성
+      // initializeApi(response.data.accessToken, response.data.refreshToken); // api 초기화 기다리기
+      console.log(`authcontext api : ${accessToken}`);
+      console.log(`authcontext refreshToken : ${refreshToken}`);
+
 
       // handle successful login
-      navigate('/',{ 
-        state : {
-          accessToken: response.data.accessToken,
-          refreshToken: response.data.refreshToken,
-          email: id
-        }
-      }
-      );
-    
+      navigate('/drive');
+
     } catch (error) {
       console.error('Login failed:', error);
       console.log("바뀔까? ㅎㅎ");
@@ -46,7 +47,7 @@ const Login = () => {
 
       if (error.response) {
 
-        switch(error.response.status) {
+        switch (error.response.status) {
           case 401:
             alert('해당 정보로 로그인할 수 없습니다.');
             break;
@@ -54,7 +55,7 @@ const Login = () => {
             alert('유효하지 않은 ID 및 PW 형태입니다.');
           default:
             alert('Login failed');
-        } 
+        }
       } else if (error.request) {
         // 요청이 이루어졌으나 응답을 받지 못한 경우
         console.error('No response received:', error.request);
@@ -66,19 +67,19 @@ const Login = () => {
       }
     }
   };
-  
+
   return (
-    <Box 
-      display="flex" 
-      flexDirection="column" 
-      alignItems="center" 
+    <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
       justifyContent="center"
       height="87vh"
     >
-      <Box 
-        display="flex" 
-        flexDirection="column" 
-        alignItems="center" 
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
         justifyContent="center"
         width={500}
         p={4}
@@ -86,52 +87,52 @@ const Login = () => {
         borderRadius={8}
         boxShadow={1}
       >
-        <img src={Logo} alt="Logo" style={{ width: '40px',height: '40px' }} />
+        <img src={Logo} alt="Logo" style={{ width: '40px', height: '40px' }} />
         <Typography variant="h4" sx={{ fontWeight: 'bold', fontSize: '24px' }} gutterBottom>
           Log In
         </Typography>
-        <TextField 
-          label="ID" 
-          variant="outlined" 
-          fullWidth 
+        <TextField
+          label="email"
+          variant="outlined"
+          fullWidth
           margin="normal"
           size="small"
           value={id}
           onChange={(e) => setId(e.target.value)}
         />
-        <TextField 
-          label="Password" 
-          type="password" 
-          variant="outlined" 
-          fullWidth 
+        <TextField
+          label="Password"
+          type="password"
+          variant="outlined"
+          fullWidth
           margin="normal"
           size="small"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <Button 
-          variant="contained" 
-          color="primary" 
+        <Button
+          variant="contained"
+          color="primary"
           fullWidth
           style={{ marginTop: '16px' }}
-          sx = {{fontWeight: 'bold'}}
+          sx={{ fontWeight: 'bold' }}
           onClick={handleLogin}>
-            Log in</Button>
+          Log in</Button>
         <Divider style={{ width: '100%', margin: '24px 0' }}>OR</Divider>
-        <Button 
-          variant="contained" 
-          startIcon={<GoogleIcon />} 
-          style={{ backgroundColor: '#4285F4', color: 'white', marginBottom: '8px' }} 
+        <Button
+          variant="contained"
+          startIcon={<GoogleIcon />}
+          style={{ backgroundColor: '#4285F4', color: 'white', marginBottom: '8px' }}
           fullWidth
-          sx = {{fontWeight: 'bold'}}
+          sx={{ fontWeight: 'bold' }}
         >
           Continue with Google
         </Button>
-        <Button 
+        <Button
           variant="contained"
-          style={{ backgroundColor: '#FEE500', color: 'black', display: 'flex', alignItems: 'center' }} 
+          style={{ backgroundColor: '#FEE500', color: 'black', display: 'flex', alignItems: 'center' }}
           fullWidth
-          sx = {{fontWeight: 'bold'}}
+          sx={{ fontWeight: 'bold' }}
         >
           <img src={kakaoIcon} alt="Kakao" style={{ width: '24px', height: '24px', marginRight: '8px' }} />
           Continue with Kakao
