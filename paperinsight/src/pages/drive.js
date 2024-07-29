@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Container, Paper, Typography, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import { pdfjs } from 'react-pdf';
 import { getDocument } from 'pdfjs-dist';
@@ -142,6 +143,7 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
       console.log('File uploaded to S3:', fileUrl);
       console.log('File key:', key);
       console.log('UUID:', uuid);
+      console.log('filename', file.name)
 
       const req = {
         uuid: uuid,
@@ -188,7 +190,7 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
         onClick={handleCloseIcon}>
         <ArrowBackIosNewOutlinedIcon />
       </IconButton>
-      <h1>Drive</h1>
+      <h1 class="smaller-heading">Drive</h1>
       <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
           <Button variant="contained" size="small" onClick={handleClickOpen}>
@@ -215,9 +217,9 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
                 width: '180px',
                 maxWidth: '180px'
               }}
-              onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name, thumbnail.key)}
+              onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name, thumbnail.key, thumbnail.filename)}
             >
-              <Typography variant="body2" sx={{ fontSize: '14px', mb: 1, width: '100%', wordBreak: 'break-word' }}>{thumbnail.name}</Typography>
+              <Typography variant="body2" sx={{ fontSize: '14px', mb: 1, width: '100%', wordBreak: 'break-word' }}>{thumbnail.filename || thumbnail.name}</Typography>
               <Box
                 sx={{
                   width: '100%',

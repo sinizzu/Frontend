@@ -128,7 +128,6 @@ const FeatureSwiper = ({ setActiveFeature, features, onUserInteraction, featureR
                 </Typography>
                 <Button
                   variant="contained"
-                  color="primary"
                   size="small"
                   style={{
                     position: 'absolute',
@@ -269,17 +268,18 @@ function Main() {
         </Toolbar>
       </StyledAppBar>
 
-      <Container maxWidth="lg" style={{ marginTop: '40px' }}>
+      <Container maxWidth="xl" style={{ marginTop: '40px' }}>
         <Box sx={{
           height: '400px',
           mb: 4,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          width: '100%'
         }}>
           <div style={{
             width: '100%',
-            height: '300px',  // 스와이퍼의 높이를 지정합니다. 필요에 따라 조절하세요.
+            height: '400px',  // 스와이퍼의 높이를 지정합니다. 필요에 따라 조절하세요.
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -288,6 +288,7 @@ function Main() {
               setActiveFeature={handleFeatureChange}
               features={features}
               onUserInteraction={handleUserInteraction}
+              featureRefs={featureRefs}
             />
           </div>
         </Box>
@@ -304,20 +305,45 @@ function Main() {
                 mb: 2,
                 cursor: 'pointer',
                 backgroundColor: activeFeature?.title === feature.title ? '#f0f0f0' : 'transparent',
-                '&:hover': { backgroundColor: '#f5f5f5' }
+                '&:hover': { backgroundColor: '#f5f5f5' },
+                ...(activeFeature?.title === feature.title ? expandedBoxStyle : collapsedBoxStyle),
               }}
               onClick={() => {
                 handleUserInteraction();
                 handleFeatureChange(feature);
               }}
             >
-              <Typography variant="h6">{feature.title}</Typography>
-              <Typography variant="body2">{feature.description}</Typography>
-              {activeFeature?.title === feature.title && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body1">{feature.detail}</Typography>
-                </Box>
+              <Typography variant="h6" sx={{ fontFamily: 'inherit' }}>{feature.title}</Typography>
+              {activeFeature?.title !== feature.title && (
+                <Typography variant="h6" sx={{ fontSize: '14px', marginBottom: '20px', fontFamily: 'inherit' }}>
+                  {feature.description}
+                </Typography>
               )}
+              <Box mt='2' sx={{ opacity: activeFeature?.title === feature.title ? 1 : 0, transition: 'opacity 0.3s ease', marginTop: '20px' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    gap: '10px', // 이미지 사이의 간격
+                  }}
+                >
+                  {feature.techimg && feature.techimg.map((img, index) => (
+                    <img
+                      key={index}
+                      src={img}
+                      alt={`${feature.title} 기술 이미지 ${index + 1}`}
+                      style={{
+                        width: '150px',
+                        height: '150px',
+                        objectFit: 'contain'
+                      }}
+                    />
+                  ))}
+                </Box>
+                <Typography variant="body1"
+                  sx={{ whiteSpace: 'pre-line', fontSize: '15px', fontStyle: 'a', fontFamily: 'inherit' }} >{feature.detail}</Typography>
+              </Box>
             </Box>
           ))}
         </Box>
