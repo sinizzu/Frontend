@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from 'react';
-import React, { useState, useEffect, useContext } from 'react';
 import { Container, Paper, Typography, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import { pdfjs } from 'react-pdf';
 import { getDocument } from 'pdfjs-dist';
@@ -173,8 +172,8 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
   const handleThumbnailClick = (fileUrl, thumbnail, thumbnailKey) => {
     console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", thumbnail.name, "thumbnailKey:", thumbnailKey);
     setSelectedPdf(fileUrl);
-    setFileName(thumbnailName);
-    handlePdfSelection(fileUrl, thumbnailKey); // thumbnailName 대신 thumbnailKey를 전달
+    setFileName(thumbnail.filename || thumbnail.name);
+    handlePdfSelection(fileUrl, thumbnailKey, thumbnail.filename || thumbnail.name); // thumbnailName 대신 thumbnailKey를 전달
     console.log("Selected PDF URL:", fileUrl);
     console.log("Selected Thumbnail Key:", thumbnailKey);
   };
