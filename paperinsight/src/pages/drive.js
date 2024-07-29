@@ -68,6 +68,7 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
         const thumbnailUrl = pdf.thumbnailUrl || await createThumbnail(pdf.url);
   
         return {
+          filename: pdf.fileName, 
           name: pdf.url.split('/').pop(),
           url: thumbnailUrl,
           file_url: pdf.url,
@@ -104,6 +105,7 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
   
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('fileName', file.name);
   
     try {
       console.log(`Bearer ${localStorage.getItem('accessToken')}`);
@@ -116,23 +118,24 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
   
       const data = response.data.data;
       console.log('Full server response:', data);
-  
       const fileUrl = data.file_url;
       const key = data.key;
       const uuid = data.uuid;
       console.log('File uploaded to S3:', fileUrl);
       console.log('File key:', key);
       console.log('UUID:', uuid);
+      console.log('filename', file.name)
   
       const req = {
         uuid: uuid,
         url: fileUrl,
-        email: localStorage.getItem('email')
+        email: localStorage.getItem('email'), 
+        fileName: file.name
       };
   
       setPdfUrl(fileUrl);
       setPdfId(uuid);
-      onFileUpload(fileUrl, uuid);
+      onFileUpload(fileUrl, uuid, file.name);
       const res = await api.post(`/api/auth/saveS3`, req, {  
         headers: {
           'authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -149,11 +152,11 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
     }
   };
 
-  const handleThumbnailClick = (fileUrl, thumbnailName, thumbnailKey) => {
-    console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", thumbnailName, "thumbnailKey:", thumbnailKey);
+  const handleThumbnailClick = (fileUrl, thumbnail, thumbnailKey) => {
+    console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", thumbnail.name, "thumbnailKey:", thumbnailKey);
     setSelectedPdf(fileUrl);
-    setFileName(thumbnailName); 
-    handlePdfSelection(fileUrl, thumbnailKey); // thumbnailName 대신 thumbnailKey를 전달
+    setFileName(thumbnail.filename || thumbnail.name); 
+    handlePdfSelection(fileUrl, thumbnailKey, thumbnail.filename || thumbnail.name); // thumbnailName 대신 thumbnailKey를 전달
     console.log("Selected PDF URL:", fileUrl);
     console.log("Selected Thumbnail Key:", thumbnailKey);
   };
@@ -167,7 +170,7 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
         onClick={handleCloseIcon}>
         <ArrowBackIosNewOutlinedIcon />
       </IconButton>
-      <h1>Drive</h1>
+      <h1 class="smaller-heading">Drive</h1>
         <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
         <Button variant="contained" size="small" onClick={handleClickOpen}>
@@ -194,9 +197,9 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
               width: '180px',
               maxWidth: '180px'
             }} 
-            onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name, thumbnail.key)}
+            onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name, thumbnail.key, thumbnail.filename)}
           >
-            <Typography variant="body2" sx={{ fontSize: '14px', mb: 1, width: '100%', wordBreak: 'break-word'}}>{thumbnail.name}</Typography>
+            <Typography variant="body2" sx={{ fontSize: '14px', mb: 1, width: '100%', wordBreak: 'break-word'}}>{thumbnail.filename || thumbnail.name}</Typography>
             <Box 
               sx={{
                 width: '100%',
@@ -224,6 +227,7 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
         <DialogTitle>Upload PDF</DialogTitle>
         <DialogContent>
           <input
+          
             accept="application/pdf"
             style={{ display: 'none' }}
             id="upload-file"

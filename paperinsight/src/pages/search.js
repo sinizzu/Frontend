@@ -106,18 +106,18 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick, handlePdfSelec
 
   return (
     <Box className='drive-container' sx={{ height: '87vh', overflow: 'auto', pr: 2 }}>
-      <h1>Paper Search</h1>
+      <h1 class="smaller-heading">Paper Search</h1>
       <Box sx={{ display: 'flex', mb: 3, maxWidth: '750px' }}>
-        <FormControl sx={{ mr: 1, flexGrow: 1 }}>
+        <FormControl sx={{ mr: 1, flexGrow: 1, minWidth:'90px' }}>
           <Select
             labelId="search-category-label"
             id="search-category"
             value={searchCategory}
             onChange={handleCategoryChange}
-            sx={{ fontSize: '12px' }}
+            sx={{ fontSize: '11px',  width: '100%' }}
           >
-            <MenuItem value="keyword" sx={{ fontSize: '12px' }}>키워드검색</MenuItem>
-            <MenuItem value="sentence" sx={{ fontSize: '12px' }}>구어체검색</MenuItem>
+            <MenuItem value="keyword" sx={{ fontSize: '11px' }}>키워드</MenuItem>
+            <MenuItem value="sentence" sx={{ fontSize: '11px' }}>구어체</MenuItem>
           </Select>
         </FormControl>
         <TextField
@@ -135,7 +135,7 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick, handlePdfSelec
         />
       </Box>
       <Box>
-        <Typography variant="subtitle1" sx={{ fontSize: '14px' }}>검색결과: {papers.length}</Typography>
+        <Typography variant="subtitle1" sx={{ fontSize: '14px' }}>검색 결과: {papers.length}</Typography>
       </Box>
       <Container sx={{ pl: '0px !important', pr: '0px !important', m: '0px !important' }}>
         {papers.map((paper, index) => (
