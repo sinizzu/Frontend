@@ -12,13 +12,16 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
 import '../styles/main.css';
 
+
 const StyledAppBar = styled(AppBar)({
   backgroundColor: 'white',
+  fontFamily: 'inherit',
   color: 'black',
   boxShadow: 'none',  // 그림자 제거
 });
 
 const StyledButton = styled(Button)({
+  fontFamily: 'inherit',
   margin: '0 5px',
 });
 
@@ -28,7 +31,7 @@ const FeatureCard = styled(Card)(({ theme, active }) => ({
   position: 'relative',
   overflow: 'hidden',
   borderRadius: '20px',
-  transition: 'all 0.3s ease',
+  transition: 'all 0.3s ease'
 }));
 
 const CardOverlay = styled('div')({
@@ -36,8 +39,8 @@ const CardOverlay = styled('div')({
   bottom: 0,
   left: 0,
   right: 0,
-  backgroundColor: 'rgba(0,0,0,0.6)',
-  padding: '20px',
+  backgroundColor: 'rgba(0,0,0,0.4)',
+  padding: '30px',
   color: 'white',
 });
 
@@ -99,6 +102,7 @@ const initialSlideIndex = Math.floor(totalSlides / 2);
       }}
       pagination={{ clickable: true }}
       navigation
+      style={{ background: 'transparent' }}
       // onSwiper={handleSwiper}
       // onSlideChange={handleSlideChange}
       // onSlideChangeTransitionStart={handleSlideChangeTransitionStart}
@@ -106,7 +110,7 @@ const initialSlideIndex = Math.floor(totalSlides / 2);
       {features.map((feature, index) => (
         <SwiperSlide key={index}>
           {({ isActive }) => (
-            <FeatureCard active={isActive.toString()} style={{ width: '450px', height: '300px' }}>
+            <FeatureCard active={isActive.toString()} style={{ width: '450px', height: '280px' }}>
               <CardMedia
                 component="img"
                 height="100%"
@@ -114,16 +118,24 @@ const initialSlideIndex = Math.floor(totalSlides / 2);
                 alt={feature.title}
               />
               <CardOverlay>
-                <Typography gutterBottom variant="h6" component="div">
+                <Typography gutterBottom variant="h6" component="div"sx={{ fontFamily: 'inherit',fontSize: '1.1rem'}} >
                   {feature.title}
                 </Typography>
-                <Typography variant="body2">
+                <Typography variant="body2" sx={{ fontSize: '0.8rem', fontFamily: 'inherit' }}>
                   {feature.description}
                 </Typography>
                 <Button 
                   variant="contained" 
                   size="small"
-                  style={{ marginTop: '10px', backgroundColor: 'white', color:'black', fontWeight:'bold' }}
+                  style={{ 
+                    position: 'absolute',
+                    bottom: '30px',
+                    right: '30px',
+                    backgroundColor: 'white', 
+                    color: 'black', 
+                    fontWeight: 'bold',
+                    fontFamily: 'inherit'
+                  }}
                   onClick={() => {
                     setActiveFeature(feature);
                     // onUserInteraction();
@@ -157,8 +169,9 @@ function Main() {
     { 
       title: '드라이브', 
       image: '/drive.jpeg', 
+      techimg: ['/s3.png', '/mongo.png'],  // 배열로 변경
       description: '학습자료를 업로드하여 스터디 할 수 있어요.', 
-      detail: '원하는 자료를 업로드 할 수 있습니다. 자료들을 기반으로 챗봇, 키워드, 요약 기능을 활용해보세요. PDF뷰어를 지원하여 직접 자료를 분석해볼 수 있습니다.'
+      detail: '원하는 자료를 업로드 할 수 있습니다. 자료들을 기반으로 챗봇, 키워드, 요약 기능을 활용해보세요. \nPDF뷰어를 지원하여 직접 자료를 분석해볼 수 있습니다.'
     },
     { 
       title: '챗봇', 
@@ -177,13 +190,19 @@ function Main() {
       title: '키워드 추출', 
       image: '/keyword.jpeg', 
       description: '문서에서 중요 키워드를 추출해보세요.', 
-      detail: '문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다.  \n문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다. \n문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다. \n문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다. \n문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다.\n문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다.\n문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다.'
+      detail: '문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다. \n 전체 텍스트에서 TextRazor를 통해 중요한 키워드를 추출하여 핵심 파악을 돕습니다.'
     },
     { 
       title: '요약 기능', 
       image: '/summary.jpeg', 
       description: '긴 문서를 요약해보세요.', 
-      detail: '긴 문서를 간결하게 요약하여 핵심 내용을 쉽게 파악할 수 있습니다.'
+      detail: '긴 문서를 간결하게 요약하여 핵심 내용을 쉽게 파악할 수 있습니다. \nHuggingFace와 의미론적 추출을 결합하여 정확하고 간결한 요약을 생성합니다. \n이 기술은 자연어 처리 모델을 활용하여 문서의 주요 개념과 핵심 문장을 식별하고, 의미론적 분석을 통해 문맥을 파악합니다. \n결과적으로 원문의 핵심 메시지를 유지하면서도 불필요한 세부사항을 제거한 간결한 요약을 제공합니다. \n이를 통해 사용자는 긴 문서의 내용을 빠르게 이해하고, 효율적으로 정보를 처리할 수 있습니다.'
+    },
+    { 
+      title: 'PDF 뷰어', 
+      image: '/pdf.jpg', 
+      description: '직접 업로드 한 PDF자료를 볼 수 있습니다.', 
+      detail: '사용자는 텍스트, 구문 등을 드래그하여 검색할 수 있습니다. 검색 내용은 툴팁 형식으로 페이지 안에서 곧바로 확인할 수 있으며, 이는 사용자가 원하는 정보를 직관적으로 파악하여 학습 효율을 높일 수 있습니다.'
     }
   ], [navigate]);
 
@@ -214,18 +233,22 @@ function Main() {
 
   return (
     <div>
+
       <StyledAppBar position="static">
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }} >
             <RouterLink to="/">
               <img src="/header.png" alt="Header Logo" style={{ height: '40px' }} />
             </RouterLink>
-            <Typography variant="h6" mx={2} noWrap sx={{ color: 'black', fontWeight: 'bold' }}>PaperInsight</Typography>
+            <Typography variant="h6" mx={2} noWrap sx={{ fontSize:'25px',color: 'black', fontWeight: 'bold' }}>PaperInsight</Typography>
           </Box>
           <Box sx={{ flexGrow: 1 }} /> 
           <Box>
-            <StyledButton color="inherit" onClick={() => navigate('/search')} sx={{fontWeight: 'bold'}}>벡터 검색</StyledButton>
-            <StyledButton color="inherit" onClick={() => navigate('/drive')} sx={{fontWeight: 'bold'}}>학습하기</StyledButton>
+            <StyledButton color="inherit" onClick={() => navigate('/search')} sx={{fontSize:'15px',fontWeight: 'bold'}}>벡터 검색</StyledButton>
+            <StyledButton color="inherit" onClick={() => navigate('/drive')} sx={{fontSize:'15px',fontWeight: 'bold'}}>학습하기</StyledButton>
+          </Box>
+          <Box sx={{ mx: 2 }} /> {/* 여백 추가 */}
+          <Box>
             <StyledButton variant="outlined" color="inherit" onClick={() => navigate('/login')}>Login</StyledButton>
             <StyledButton variant="contained" sx={{backgroundColor: 'black', color: 'white'}} onClick={() => navigate('/signup')}>Signup</StyledButton>
           </Box>
@@ -251,7 +274,7 @@ function Main() {
           <FeatureSwiper 
             setActiveFeature={handleFeatureChange} 
             features={features}
-            onUserInteraction={handleUserInteraction}
+            onUserInteraction={handleUserInteraction} 
             featureRefs={featureRefs}
           />
         </div>
@@ -277,10 +300,36 @@ function Main() {
               handleFeatureChange(feature);
             }}
           >
-            <Typography variant="h6">{feature.title}</Typography>
-            <Typography variant="body2">{feature.description}</Typography>
-            <Box sx={{ mt: 2, opacity: activeFeature?.title === feature.title ? 1 : 0, transition: 'opacity 0.3s ease' }}>
-              <Typography variant="body1">{feature.detail}</Typography>
+            <Typography variant="h6" sx={{fontFamily: 'inherit'}}>{feature.title}</Typography>
+            {activeFeature?.title !== feature.title && (
+            <Typography variant="h6" sx={{fontSize:'14px', marginBottom:'20px',fontFamily: 'inherit'}}>
+              {feature.description}
+            </Typography>
+          )}
+            <Box mt='2' sx={{ opacity: activeFeature?.title === feature.title ? 1 : 0, transition: 'opacity 0.3s ease', marginTop:'20px' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: '10px', // 이미지 사이의 간격
+              }}
+            >
+            {feature.techimg && feature.techimg.map((img, index) => (
+              <img 
+                key={index}
+                src={img} 
+                alt={`${feature.title} 기술 이미지 ${index + 1}`}
+                style={{
+                  width: '150px',
+                  height: '150px',
+                  objectFit: 'contain'
+                }}
+              />
+            ))}
+            </Box>
+              <Typography variant="body1"
+                          sx={{ whiteSpace: 'pre-line', fontSize:'15px', fontStyle:'a', fontFamily: 'inherit'}} >{feature.detail}</Typography>
             </Box>
           </Box>
         ))}
