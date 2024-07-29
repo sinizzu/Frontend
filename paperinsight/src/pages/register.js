@@ -6,7 +6,7 @@ import kakaoIcon from '../assets/kakao.png'; // Kakao 아이콘을 이미지 파
 import Logo from '../assets/logo.png';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import api from '../services/api.js';
+// import api from '../services/api.js';
 
 
 
@@ -18,7 +18,7 @@ const Register = () => {
 
   const handleRegister = async () => {
     try {
-      const response = await api.post(`/api/auth/signup`, {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/signup`, {
         email: id,
         password: password,
       }, {
@@ -27,15 +27,15 @@ const Register = () => {
         }
       });
       console.log('Registration successful:', response.data);
-  
-      alert('회원가입이 완료되었습니다.'); 
+
+      alert('회원가입이 완료되었습니다.');
       navigate('/login');
     } catch (error) {
       console.error('Registration failed:', error);
-  
+
       if (error.response) {
         // 서버가 2xx 범위를 벗어나는 상태 코드로 응답한 경우
-        switch(error.response.status) {
+        switch (error.response.status) {
           case 409:
             alert('중복된 email 입니다.');
             break;
