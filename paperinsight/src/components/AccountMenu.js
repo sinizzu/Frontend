@@ -1,7 +1,7 @@
 // src/components/AccountMenu.js
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { List, ListItem, IconButton, Menu, MenuItem, Avatar, Tooltip, ListItemIcon } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import LoginIcon from '@mui/icons-material/Login';
@@ -10,7 +10,6 @@ import Logout from '@mui/icons-material/Logout';
 const AccountMenu = ({ accessToken }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-  const navigate = useNavigate();
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -19,25 +18,10 @@ const AccountMenu = ({ accessToken }) => {
     setAnchorEl(null);
   };
 
-  const handleRegister = () => {
-    handleClose();
-    navigate('/register');
-  };
-
-  const handleLogin = () => {
-    handleClose();
-    navigate('/login');
-  };
-
-  const handleLogout = () => {
-    handleClose();
-    navigate('/logout');
-  };
-
   return (
     <List>
       {accessToken ? 
-      <ListItem>
+      <ListItem sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <Tooltip title="로그인 중" placement="top">
           <IconButton
             onClick={handleClick}
@@ -46,7 +30,7 @@ const AccountMenu = ({ accessToken }) => {
             aria-haspopup="true"
             aria-expanded={open ? 'true' : undefined}
           >
-            <Avatar sx={{ width: 32, height: 32 }}>M</Avatar>
+            <Avatar sx={{ width: 48, height: 48 }} src="/logout.png" />
           </IconButton>
         </Tooltip>
         <Menu
@@ -84,7 +68,7 @@ const AccountMenu = ({ accessToken }) => {
           transformOrigin={{ horizontal: 'left', vertical: 'bottom' }}
           anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
         >
-          <MenuItem onClick={handleLogout}>
+          <MenuItem button component={Link} to="/logout" onClick={handleClose}>
             <ListItemIcon>
               <Logout fontSize="small" />
             </ListItemIcon>
@@ -93,7 +77,7 @@ const AccountMenu = ({ accessToken }) => {
         </Menu>
       </ListItem>
       : 
-      <ListItem>
+      <ListItem sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} >
         <Tooltip title="사용자 정보 없음" placement="top">
           <IconButton
             onClick={handleClick}
@@ -102,7 +86,7 @@ const AccountMenu = ({ accessToken }) => {
             aria-haspopup="true"
             aria-expanded={open ? 'true' : undefined}
           >
-            <Avatar sx={{ width: 32, height: 32 }}>M</Avatar>
+            <Avatar sx={{ width: 45, height: 45 }} src="/logout.png" />
           </IconButton>
         </Tooltip>
         <Menu
@@ -139,13 +123,13 @@ const AccountMenu = ({ accessToken }) => {
           transformOrigin={{ horizontal: 'left', vertical: 'bottom' }}
           anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
         >
-          <MenuItem onClick={handleRegister}>
+          <MenuItem button component={Link} to="/register" onClick={handleClose}>
             <ListItemIcon>
               <PersonAddIcon fontSize="small" />
             </ListItemIcon>
             Add account
           </MenuItem>
-          <MenuItem onClick={handleLogin}>
+          <MenuItem button component={Link} to="/login" onClick={handleClose}>
             <ListItemIcon>
               <LoginIcon fontSize="small" />
             </ListItemIcon>
