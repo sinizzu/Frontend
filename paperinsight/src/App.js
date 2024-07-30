@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { Tabs, Tab, Typography, Drawer, Box, Grid, List, ListItem, ListItemIcon, CircularProgress, IconButton } from '@mui/material';
 import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutlined';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import Menu from './components/menu';
 import Main from './pages/main';
 import Login from './pages/login';
@@ -12,13 +14,12 @@ import PDFPreview from './pages/pdfpreview';
 import Chatbot from './pages/chatbot';
 import Keyword from './pages/keyword';
 import Summary from './pages/summary';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+
 import Header from './components/header';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/authcontext';
-
-
+import { AuthContext } from './contexts/authcontext';
 
 const drawerWidth = 80;
 const appBarHeight = 64;
@@ -27,7 +28,7 @@ const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
 const AppContent = () => {
 
-
+  const { accessToken } = useContext(AuthContext);
   // 업로드용 상태 
   const [uploadedFileUrl, setUploadedFileUrl] = useState('');
   const [uploadedFileId, setUploadedFileId] = useState('');
@@ -233,10 +234,16 @@ const AppContent = () => {
           </Box>
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pb: 5 }}>
             <List>
-              <ListItem button component={Link} to="/login">
-                <ListItemIcon>
-                  <AccountCircleIcon sx={{ fontSize: 40 }} />
+              <ListItem>
+              {accessToken ? 
+              <ListItemIcon button component={Link} to="/login">
+                <AccountCircleRoundedIcon sx={{ fontSize: 40 }} />
+              </ListItemIcon>
+              : 
+                <ListItemIcon button component={Link} to="/login">
+                  <AccountCircleOutlinedIcon sx={{ fontSize: 40 }} />
                 </ListItemIcon>
+              }
               </ListItem>
             </List>
           </Box>
