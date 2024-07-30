@@ -143,31 +143,31 @@ function Summary({ pdfState }) {
     // UI 렌더링
     return (
         <div>
-            <Box display="block" width="100%">
-                <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-                    <h1 style={{ margin: 0 }}>Summary</h1>
+        <Box className='drive-container' sx={{ height: '80vh', display: 'flex', flexDirection: 'column', p: 2}} mt={4}>
+            <Box display="flex" ml={4} justifyContent="space-between" alignItems="center" width="100%">
+                <h1>Summary</h1>
+                <Box display="flex" justifyContent="flex-end" mr={8}>
+                {language !== 'kr' && (
+                    <ToggleButtonGroup
+                        value={language}
+                        exclusive
+                        onChange={handleLanguageChange}
+                        aria-label="language"
+                    >
+                        <ToggleButton value="en" aria-label="english">
+                            English
+                        </ToggleButton>
+                        <ToggleButton value="ko" aria-label="korean">
+                            한국어
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+                )}
                 </Box>
-                <Box display="flex" justifyContent="flex-end" alignItems="center" width="100%">
-                    {language !== 'kr' && (
-                        <ToggleButtonGroup
-                            value={language}
-                            exclusive
-                            onChange={handleLanguageChange}
-                            aria-label="language"
-                        >
-                            <ToggleButton value="en" aria-label="english">
-                                English
-                            </ToggleButton>
-                            <ToggleButton value="ko" aria-label="korean">
-                                한국어
-                            </ToggleButton>
-                        </ToggleButtonGroup>
-                    )}
-                </Box>
-            </Box >
+            </Box>
             <Box className='drive-container' sx={{ maxHeight: 550, overflowY: 'auto', overflowX: 'hidden', justifyContent: 'center', alignItems: 'center', p: 4 }}>
                 <Typography variant="body1">{summary}</Typography>
             </Box>
+        </Box>
         </div>
     );
 }
