@@ -172,13 +172,14 @@ function Main() {
     {
       title: '드라이브',
       image: '/drive.jpeg',
-      techimg: ['/s3.png', '/mongo.png'],  // 배열로 변경
+      techimg: ['/s3.png', '/weaviate.png'],  // 배열로 변경
       description: '학습자료를 업로드하여 스터디 할 수 있어요.',
       detail: '원하는 자료를 업로드 할 수 있습니다. 자료들을 기반으로 챗봇, 키워드, 요약 기능을 활용해보세요. \nPDF뷰어를 지원하여 직접 자료를 분석해볼 수 있습니다.'
     },
     {
       title: '챗봇',
       image: '/chat.jpeg',
+      techimg : [''],
       description: '챗봇과 대화할 수 있습니다.',
       detail: '챗봇과 대화하며 학습 내용을 복습하고 새로운 인사이트를 얻어보세요.'
     },
@@ -293,7 +294,7 @@ function Main() {
           </div>
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', mt: 4 }}>
+        <Box data-label='설명 박스' sx={{ display: 'flex', flexDirection: 'column', mt: 4 }}>
           {features.map((feature, index) => (
             <Box
               key={index}
@@ -307,42 +308,45 @@ function Main() {
                 backgroundColor: activeFeature?.title === feature.title ? '#f0f0f0' : 'transparent',
                 '&:hover': { backgroundColor: '#f5f5f5' },
                 ...(activeFeature?.title === feature.title ? expandedBoxStyle : collapsedBoxStyle),
+                display :'flex',
+                flexDirection: 'column',
               }}
               onClick={() => {
                 handleUserInteraction();
                 handleFeatureChange(feature);
-              }}
-            >
+              }}>
               <Typography variant="h6" sx={{ fontFamily: 'inherit' }}>{feature.title}</Typography>
               {activeFeature?.title !== feature.title && (
                 <Typography variant="h6" sx={{ fontSize: '14px', marginBottom: '20px', fontFamily: 'inherit' }}>
                   {feature.description}
                 </Typography>
               )}
-              <Box mt='2' sx={{ opacity: activeFeature?.title === feature.title ? 1 : 0, transition: 'opacity 0.3s ease', marginTop: '20px' }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    gap: '10px', // 이미지 사이의 간격
-                  }}
-                >
-                  {feature.techimg && feature.techimg.map((img, index) => (
-                    <img
-                      key={index}
-                      src={img}
-                      alt={`${feature.title} 기술 이미지 ${index + 1}`}
-                      style={{
-                        width: '150px',
-                        height: '150px',
-                        objectFit: 'contain'
-                      }}
-                    />
-                  ))}
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'row', 
+                  height: '100%',
+                  opacity: activeFeature?.title === feature.title ? 1 : 0, 
+                  transition: 'opacity 0.3s ease',
+                  marginTop: '20px'
+                }}
+              >
+                <Box data-label='feature.detail' sx={{ flex: 1, marginBottom: 2 }}>
+                  <Typography 
+                    variant="body1"
+                    sx={{ 
+                      whiteSpace: 'pre-line', 
+                      fontSize: '15px', 
+                      fontStyle: 'normal', 
+                      fontFamily: 'inherit' 
+                    }}
+                  >
+                    {feature.detail}
+                  </Typography>
                 </Box>
-                <Typography variant="body1"
-                  sx={{ whiteSpace: 'pre-line', fontSize: '15px', fontStyle: 'a', fontFamily: 'inherit' }} >{feature.detail}</Typography>
+                <Box data-label='feature.img' sx={{ flex: 1 }}>
+                  {/* 이미지 내용을 여기에 추가하세요 */}
+                </Box>
               </Box>
             </Box>
           ))}

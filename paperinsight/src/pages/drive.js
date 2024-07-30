@@ -8,6 +8,7 @@ import ArrowBackIosNewOutlinedIcon from '@mui/icons-material/ArrowBackIosNewOutl
 import '../styles/main.css';
 import { AuthContext } from '../contexts/authcontext';
 import axios from 'axios';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 
@@ -82,12 +83,12 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
       const pdfFiles = response.data.data;
 
       const thumbnails = await Promise.all(pdfFiles.map(async (pdf) => {
-        // 이미 썸네일 URL이 있다면 그것을 사용하고, 없다면 새로 생성합니다.
-        const thumbnailUrl = pdf.thumbnailUrl || await createThumbnail(pdf.url);
+        const match = pdf.uuid.match(/^[^_]+_(.*)$/);
+        const filename = match ? match[1] : 'Unknown Filename';
+        const thumbnailUrl = await createThumbnail(pdf.url);
 
         return {
-          filename: pdf.fileName,
-          name: pdf.url.split('/').pop(),
+          filename: filename,
           url: thumbnailUrl,
           file_url: pdf.url,
           key: pdf.uuid,
@@ -127,55 +128,95 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
     try {
       console.log(`Bearer ${accessToken}`);
 
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/uploadS3`, formData, {
+      // const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/uploadS3`, formData, {
+      //   headers: {
+      //     'authorization': `Bearer ${accessToken}`
+      //   }
+      // });
+
+      // const data = response.data.data;
+
+
+      // Generate presigned URL
+      const presignedResponse = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/generateS3`, {
+        fileName: file.name,
+      }, {
         headers: {
           'authorization': `Bearer ${accessToken}`
         }
       });
 
-      const data = response.data.data;
-      console.log('Full server response:', data);
+      const { uuid, url: presignedUrl, key: filePath } = presignedResponse.data.data;
+      console.log('Presigned URL response:', presignedResponse.data);
 
-      const fileUrl = data.file_url;
-      const key = data.key;
-      const uuid = data.uuid;
-      console.log('File uploaded to S3:', fileUrl);
-      console.log('File key:', key);
-      console.log('UUID:', uuid);
-      console.log('filename', file.name)
+      // Upload the file to S3 using the presigned URL
+      await axios.put(presignedUrl, file, {
+        headers: {
+          'Content-Type': 'application/pdf'
+        }
+      });
 
-      const req = {
-        uuid: uuid,
-        url: fileUrl,
-        email: email
-      };
+      // Save the S3 file information to MongoDB
+      const saveResponse = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/saveS3`, {
+        uuid,
+        email
+      }, {
+        headers: {
+          'authorization': `Bearer ${accessToken}`
+        }
+      });
 
+      console.log(saveResponse.data.message);
+
+      const { url: fileUrl } = saveResponse.data.data;
       setPdfUrl(fileUrl);
       setPdfId(uuid);
       onFileUpload(fileUrl, uuid);
-      const res = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/saveS3`, req, {
-        headers: {
-          'authorization': `Bearer ${accessToken}`
-        }
-      });
-      console.log(res.data.message);
 
       handleClose();
 
-      // S3에서 최신 파일 목록을 가져옵니다.
+      // Fetch the latest files from S3
       await fetchPdfFiles();
+
     } catch (error) {
       console.error('Error:', error);
     }
   };
 
-  const handleThumbnailClick = (fileUrl, thumbnail, thumbnailKey) => {
-    console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", thumbnail.name, "thumbnailKey:", thumbnailKey);
+  const handleDeleteFile = async (uuid, email) =>  {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/auth/deleteS3`,
+        { 
+          uuid,
+          email
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}` // accessToken도 필요하다면 추가
+          }
+        }
+      );
+      if (response.status === 200) {
+        alert('삭제가 완료되었습니다.');
+        console.log('File deleted successfully');
+        // 썸네일 목록에서 해당 파일 제거
+        setThumbnails(prevThumbnails => prevThumbnails.filter(thumb => thumb.key !== uuid));
+      } else {
+        alert('파일 삭제에 실패했습니다.');
+        console.error('Failed to delete file');
+      }
+    } catch (error) {
+      alert('파일 삭제 중 오류가 발생했습니다.');
+      console.error('Error deleting file:', error);
+    }
+  };
+
+  const handleThumbnailClick = (fileUrl, name, thumbnailKey) => {
+    console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", name, "thumbnailKey:", thumbnailKey);
     setSelectedPdf(fileUrl);
-    setFileName(thumbnail.filename || thumbnail.name);
-    handlePdfSelection(fileUrl, thumbnailKey, thumbnail.filename || thumbnail.name); // thumbnailName 대신 thumbnailKey를 전달
-    console.log("Selected PDF URL:", fileUrl);
-    console.log("Selected Thumbnail Key:", thumbnailKey);
+    setFileName(name);
+    handlePdfSelection(fileUrl, thumbnailKey, name); // thumbnailName 대신 thumbnailKey를 전달
   };
 
 
@@ -214,11 +255,30 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
                 display: 'flex',
                 flexDirection: 'column',
                 width: '180px',
-                maxWidth: '180px'
+                maxWidth: '180px',
+                position: 'relative'
               }}
-              onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.name, thumbnail.key, thumbnail.filename)}
+              onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.filename, thumbnail.key)}
             >
-              <Typography variant="body2" sx={{ fontSize: '14px', mb: 1, width: '100%', wordBreak: 'break-word' }}>{thumbnail.filename || thumbnail.name}</Typography>
+                <IconButton
+                  sx={{
+                    position: 'absolute',
+                    top: 5,
+                    right: 5,
+                    padding: '4px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    },
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation(); // 이벤트 버블링 방지
+                    handleDeleteFile(thumbnail.key, email);
+                  }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              <Typography variant="body2" sx={{ fontSize: '14px', mb: 1, width: '100%', wordBreak: 'break-word' }}>{thumbnail.filename}</Typography>
               <Box
                 sx={{
                   width: '100%',
@@ -229,7 +289,7 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
               >
                 <img
                   src={thumbnail.url}
-                  alt={thumbnail.name}
+                  alt={thumbnail.filename}
                   style={{
                     width: '100%',  // 이미지 너비를 100%로 설정
                     height: 'auto',  // 비율 유지
