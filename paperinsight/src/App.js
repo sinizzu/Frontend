@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useNavigat, Link } from 'react-router-dom';
 import { Tabs, Tab, Typography, Drawer, Box, Grid, CircularProgress, IconButton } from '@mui/material';
 import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutlined';
 import SideMenu from './components/menu';
@@ -249,6 +249,7 @@ const handleFileUploadComplete = async (fileUrl, uuid, region) => {
           <Routes>
             <Route path="/login" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Login /></Grid></Grid>} />
             <Route path="/register" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Register /></Grid></Grid>} />
+            <Route path="/logout" element={<Grid container spacing={2} sx={{ height: '100%' }}><Grid item xs={12}><Logout /></Grid></Grid>} />
             <Route path="*" element={
               <Grid container sx={{ flexGrow: 1, height: 'calc(100vh - 64px)' }}>
                 <Grid className='drive-container' data-label="1-container" item xs={isDriveVisible ? 2.5 : 0.5} padding={isDriveVisible ? 3 : 0}
@@ -410,9 +411,6 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/" element={<Main />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/logout" element={<Logout />} />
-          <Route path="/register" element={<Register />} />
           <Route path="*" element={<AppContent />} />
         </Routes>
       </Router>
