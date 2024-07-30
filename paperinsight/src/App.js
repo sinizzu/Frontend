@@ -49,52 +49,64 @@ const AppContent = () => {
   const [wikiLoading, setWikiLoading] = useState(false);
   const [language, setLanguage] = useState('');
 
+
   const handleChange = async (event, newValue) => {
     setValue(newValue);
     if (newValue !== null) {
-      setShowMessage(false);
+        setShowMessage(false);
     }
-    if (driveSelectedPdf || searchSelectedPdf || uploadedFileUrl) {
-      setShowFileMessage(false);
+    if (driveSelectedPdf || searchSelectedPdf) {
+        setShowFileMessage(false);
     }
-    if (newValue === 0 && (driveSelectedPdf || searchSelectedPdf || uploadedFileUrl) && !ocrCompleted) {
-      setOcrInProgress(true);
-      try {
-        if (!ocrCompleted) {
-          await performOCR(driveSelectedPdf || searchSelectedPdf || uploadedFileUrl, uploadedFileId || drivePdfState.pdf_id || searchPdfState.pdf_id);
+    if (newValue === 0 && (driveSelectedPdf || searchSelectedPdf) && !ocrCompleted && !ocrInProgress) {
+        setOcrInProgress(true);
+        try {
+            await performOCR(driveSelectedPdf || searchSelectedPdf ,drivePdfState.pdf_id || searchPdfState.pdf_id);
+            setOcrCompleted(true);
+        } catch (error) {
+            console.error('OCR 처리 중 오류 발생:', error);
+        } finally {
+            setOcrInProgress(false);
         }
-      } catch (error) {
-        console.error('OCR 처리 중 오류 발생:', error);
-      } finally {
-        setOcrInProgress(false);
-      }
     }
-  };
+};
 
-  const handleFileUploadComplete = async (fileUrl, uuid, region) => {
-    console.log('File upload completed:', fileUrl, uuid); // 로그 추가
-    setUploadedFileUrl(fileUrl);
-    setUploadedFileId(uuid);
-    setOcrCompleted(false);
-    setOcrInProgress(true);
-    setUploadFileState({ pdf_id: uuid, region });
-    setValue(0);
+const handleFileUploadComplete = async (fileUrl, uuid, region) => {
+  console.log('File upload completed:', fileUrl, uuid);
+  
+  // 유효성 검사 추가
+  if (!fileUrl || !uuid) {
+      console.error('Invalid fileUrl or uuid:', fileUrl, uuid);
+      return;
+  }
 
-    try {
-      console.log('pdf_id:', uuid, 'region:', region, 'file_url',);
+  setOcrCompleted(false);
+  setOcrInProgress(true);
+  setValue(0);
+
+  try {
+      console.log('pdf_id:', uuid, 'region:', region, 'file_url:', fileUrl);
       const result = await performOCR(fileUrl, uuid);
       console.log('OCR result:', result);
-      setFullText(result.full_text);
-      setPdfId(result.pdf_id);
-      setLanguage(result.language);
-
-      await handleChange(null, 0);
-    } catch (error) {
+      if (result && result.pdf_id) {
+          console.log('pdf id', result.pdf_id);
+          setFullText(result.full_text);
+          setPdfId(result.pdf_id);
+          setLanguage(result.language);
+          setDriveFileName(result.pdf_id);
+          setDriveSelectedPdf(fileUrl);
+          setDrivePdfState({ pdf_id: result.pdf_id, region });
+          setOcrCompleted(true);
+          
+      } else {
+          console.error('Invalid OCR result:', result);
+      }
+  } catch (error) {
       console.error('OCR 처리 중 오류 발생:', error);
-    } finally {
+  } finally {
       setOcrInProgress(false);
-    }
-  };
+  }
+};
 
   const handleDrivePdfSelection = async (pdfUrl, pdfId, region) => {
     setDriveSelectedPdf(pdfUrl);
@@ -113,6 +125,7 @@ const AppContent = () => {
 
       await handleChange(null, 0);
     } catch (error) {
+      console.error('handleDrivePdfSelection 수행')
       console.error('OCR 처리 중 오류 발생:', error);
     } finally {
       setOcrInProgress(false);
@@ -152,8 +165,6 @@ const AppContent = () => {
       if (response.status === 200) {
         const { pdf_id, full_text, language } = response.data.data;
         setOcrCompleted(true);
-
-        console.log("OCR 결과:", { pdf_id, full_text, language });
 
         await divideChunk(pdf_id, full_text, language);
 
@@ -259,8 +270,8 @@ const AppContent = () => {
                         handlePdfSelection={handleSearchPdfSelection}
                       />} />
                       <Route path="/paper" element={<div>Paper Page</div>} />
-                      <Route path="/keyword" element={<Keyword pdfState={drivePdfState || uploadFileState} />} />
-                      <Route path="/summary" element={<Summary pdfState={drivePdfState || uploadFileState} />} />
+                      <Route path="/keyword" element={<Keyword pdfState={drivePdfState} />} />
+                      <Route path="/summary" element={<Summary pdfState={drivePdfState} />} />
                     </Routes>
                   ) : (
                     <Box
@@ -317,9 +328,9 @@ const AppContent = () => {
                       )}
                     </>
                   )}
-                  {value === 1 && (driveSelectedPdf || searchSelectedPdf || uploadFileState) && (
+                  {value === 1 && (driveSelectedPdf || searchSelectedPdf) && (
                     (() => {
-                      console.log('Current uploadFileState:', driveSelectedPdf);
+                      console.log('Current uploadFileState:',driveSelectedPdf);
 
                       return keywordLoading || wikiLoading ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -328,20 +339,21 @@ const AppContent = () => {
                         </Box>
                       ) : (
                         <Keyword
-                          setSelectedPdf={location.pathname === "/drive" ? setDriveSelectedPdf || setUploadedFileUrl : setSearchSelectedPdf}
+                          setSelectedPdf={location.pathname === "/drive" ? setDriveSelectedPdf : setSearchSelectedPdf}
                           handleButtonClick={location.pathname === "/drive" ? handleDrivePdfSelection || handleFileUploadComplete : handleSearchPdfSelection}
-                          pdfState={location.pathname === "/drive" ? drivePdfState || uploadFileState : searchPdfState}
+                          pdfState={location.pathname === "/drive" ? drivePdfState: searchPdfState}
                           setKeywordLoading={setKeywordLoading}
                           setWikiLoading={setWikiLoading}
                         />
                       );
                     })()
                   )}
-                  {value === 2 && (driveSelectedPdf || searchSelectedPdf || uploadFileState) && (
+                  {value === 2 && (driveSelectedPdf || searchSelectedPdf) && (
+
                     <Summary
-                      setSelectedPdf={location.pathname === "/drive" ? setDriveSelectedPdf || setUploadedFileUrl : setSearchSelectedPdf}
+                      setSelectedPdf={location.pathname === "/drive" ? setDriveSelectedPdf : setSearchSelectedPdf}
                       handleButtonClick={location.pathname === "/drive" ? handleDrivePdfSelection || handleFileUploadComplete : handleSearchPdfSelection}
-                      pdfState={location.pathname === "/drive" ? drivePdfState || uploadFileState : searchPdfState}
+                      pdfState={location.pathname === "/drive" ? drivePdfState: searchPdfState}
                     />
                   )}
                   {!(driveSelectedPdf || searchSelectedPdf) && (
