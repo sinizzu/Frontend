@@ -65,6 +65,7 @@ function Keyword({ pdfState }) {
         try {
             const lang = userSelectedLanguage || detectedLanguage;
             console.log("Fetching wiki data with language:", lang);
+            setLanguage(lang);
             const response = await axios.get(`${MainFastAPI}/api/search/wikiSearch?keyword=${keyword}&lang=${lang}`);
             setLoadingPercentage(80);
 
@@ -77,14 +78,12 @@ function Keyword({ pdfState }) {
                 .join('\n');
 
             if (lang === 'ko') {
-                console.log("Wiki data 이전 response:", formattedText);
                 const transResponse = await axios.post(`${MainFastAPI}/api/translate/transelate`, {
                     text: formattedText,
                     lang: 'ko'
                 });
                 formattedText = transResponse.data.data;
             }
-            console.log("Wiki data response:", formattedText);
             setWikiResult(formattedText);
             setLoadingPercentage(100);
         } catch (error) {
@@ -134,6 +133,7 @@ function Keyword({ pdfState }) {
             <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
                 <h1>Keywords</h1>
                 <Box display="flex" justifyContent="flex-end" mr={2}>
+                { (userSelectedLanguage || language) !== 'kr' && (
                     <ToggleButtonGroup
                         value={language}
                         exclusive
@@ -147,6 +147,7 @@ function Keyword({ pdfState }) {
                             한국어
                         </ToggleButton>
                     </ToggleButtonGroup>
+                )}
                 </Box>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', maxWidth: '100%', mb: 2 }}>
