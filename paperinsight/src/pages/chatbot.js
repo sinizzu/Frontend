@@ -30,6 +30,7 @@ const ChatBubble = ({ message, isUser }) => (
         borderRadius: isUser ? '20px 20px 0 20px' : '20px 20px 20px 0',
         backgroundColor: isUser ? '#4677F0' : '#E8E8E8',
         color: isUser ? 'white' : 'black',
+        whiteSpace: 'pre-wrap'
       }}
     >
       <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>{message}</Typography>
@@ -40,18 +41,16 @@ const ChatBubble = ({ message, isUser }) => (
 
 function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
   const { email, accessToken } = useContext(AuthContext); // AuthContext에서 값 가져오기
-
   // 채팅 메시지들을 저장하는 상태
   const [messages, setMessages] = useState([]);
-
   // 사용자 입력을 저장하는 상태
   const [input, setInput] = useState('');
-
   // 메시지
   const messagesEndRef = useRef(null);
-
   // 초기 메시지 설정
   const initialMessage = { text: '본문과 관련된 내용 분석을 도와드릴게요😄', sender: 'bot' };
+  // 채팅 입력 중 상태
+  const [isTyping, setIsTyping] = useState(false);
 
   // 페이지 로드 시 채팅 이력 불러오기
   useEffect(() => {
@@ -124,6 +123,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
     const newMessages = [...messages, { text: input, sender: 'client' }];
     setMessages(newMessages);
     setInput('');
+    setIsTyping(true);
 
     try {
       // 한국어로 전송된 쿼리를 영어로 변경
@@ -135,9 +135,14 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
 
       // 챗봇 응답값 반환
       const response = await fetchChatbotResponse(pdfId, request.data.data, language);
-      console.log('Response from chatbot:', response);
+      setIsTyping(false);
+      // const botResponse = response.data.data || '챗봇 응답을 가져오지 못했습니다.';
 
-      const botResponse = response.data.data || '챗봇 응답을 가져오지 못했습니다.';
+      let botResponse = response.data.data || '챗봇 응답을 가져오지 못했습니다.';
+      console.log("원본 데이터", botResponse);
+      
+      botResponse = botResponse.split('\n\n').map(paragraph => paragraph.trim()).join('\n\n');
+      console.log("줄바꿈 처리", botResponse);
       setMessages((prevMessages) => [...prevMessages, { text: botResponse, sender: 'bot' }]);
 
       // 동기적으로 saveChat API 호출
@@ -146,6 +151,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
 
     } catch (error) {
       console.error('Error:', error);
+      setIsTyping(false);
       setMessages((prevMessages) => [...prevMessages, { text: '챗봇 응답 중 오류가 발생했습니다.', sender: 'bot' }]);
     }
   };
@@ -196,6 +202,14 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const TypingAnimation = () => (
+    <div className="typing-animation">
+      <i className="fas fa-circle small-icon"></i>
+      <i className="fas fa-circle small-icon"></i>
+      <i className="fas fa-circle small-icon"></i>
+    </div>
+  );
+
   return (
     <Box className='drive-container' sx={{ height: '80vh', display: 'flex', flexDirection: 'column', p: 2 }}>
       <Box className='drive-container' sx={{ height: '100%', flexGrow: 1, overflow: 'auto', mb: 2 }}>
@@ -206,6 +220,13 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
             isUser={message.sender === 'client'}
           />
         ))}
+        {isTyping && (
+          <ChatBubble
+            message={<TypingAnimation />}
+            isUser={false}
+          />
+        )}
+
         <div ref={messagesEndRef} />
       </Box>
       <Box sx={{ display: 'flex', mt: 2, alignItems: 'center' }}>
