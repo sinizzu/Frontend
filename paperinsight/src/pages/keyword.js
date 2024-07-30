@@ -58,7 +58,8 @@ function Keyword({ pdfState }) {
             setLoadingPercentage(80);  // Percentage after wiki search response
             console.log("Wiki response:", response.data);
             if (response.data.resultCode === 200) {
-                setWikiResult(response.data.data.text);
+                const formattedText = response.data.data.text.split('\n\n').map(paragraph => paragraph.trim()).join('\n\n');
+                setWikiResult(formattedText);
                 setLoadingPercentage(100);  // Complete loading
             } else {
                 throw new Error(response.data.data.message || 'No data found in wiki response');
@@ -114,7 +115,7 @@ function Keyword({ pdfState }) {
                 </FormControl>
             </Box>
             <Box className='drive-container' sx={{ maxHeight: 550, overflowY: 'auto',overflowX: 'hidden', justifyContent: 'center', alignItems: 'center', p: 4 }}>
-                <Typography variant="body1">{wikiResult}</Typography>
+                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }} >{wikiResult}</Typography>
             </Box>
         </Box>
     );

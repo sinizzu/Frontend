@@ -8,6 +8,7 @@ import ArrowBackIosNewOutlinedIcon from '@mui/icons-material/ArrowBackIosNewOutl
 import '../styles/main.css';
 import { AuthContext } from '../contexts/authcontext';
 import axios from 'axios';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 
@@ -182,6 +183,35 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
     }
   };
 
+  const handleDeleteFile = async (uuid, email) =>  {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/auth/deleteS3`,
+        { 
+          uuid,
+          email
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}` // accessToken도 필요하다면 추가
+          }
+        }
+      );
+      if (response.status === 200) {
+        alert('삭제가 완료되었습니다.');
+        console.log('File deleted successfully');
+        // 썸네일 목록에서 해당 파일 제거
+        setThumbnails(prevThumbnails => prevThumbnails.filter(thumb => thumb.key !== uuid));
+      } else {
+        alert('파일 삭제에 실패했습니다.');
+        console.error('Failed to delete file');
+      }
+    } catch (error) {
+      alert('파일 삭제 중 오류가 발생했습니다.');
+      console.error('Error deleting file:', error);
+    }
+  };
+
   const handleThumbnailClick = (fileUrl, name, thumbnailKey) => {
     console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", name, "thumbnailKey:", thumbnailKey);
     setSelectedPdf(fileUrl);
@@ -225,10 +255,29 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
                 display: 'flex',
                 flexDirection: 'column',
                 width: '180px',
-                maxWidth: '180px'
+                maxWidth: '180px',
+                position: 'relative'
               }}
               onClick={() => handleThumbnailClick(thumbnail.file_url, thumbnail.filename, thumbnail.key)}
             >
+                <IconButton
+                  sx={{
+                    position: 'absolute',
+                    top: 5,
+                    right: 5,
+                    padding: '4px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    },
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation(); // 이벤트 버블링 방지
+                    handleDeleteFile(thumbnail.key, email);
+                  }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
               <Typography variant="body2" sx={{ fontSize: '14px', mb: 1, width: '100%', wordBreak: 'break-word' }}>{thumbnail.filename}</Typography>
               <Box
                 sx={{
