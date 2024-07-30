@@ -26,7 +26,7 @@ function Summary({ pdfState }) {
 
     // Function to estimate time based on token count
     const estimateTime = (tokenCount) => {
-        const averageTimePerToken = 85 / 6943; // seconds per token
+        const averageTimePerToken = 298 / 6943; // seconds per token
         return tokenCount * averageTimePerToken; // total estimated time in seconds
     };
 
@@ -37,7 +37,7 @@ function Summary({ pdfState }) {
             const startTime = performance.now();
             interval = setInterval(() => {
                 const elapsedTime = (performance.now() - startTime) / 1000; // convert to seconds
-                const newProgress = Math.min((elapsedTime / estimatedTime) * 100, 100); // calculate progress percentage
+                const newProgress = Math.min((elapsedTime / estimatedTime) * 100, 98); // calculate progress percentage
                 setProgress(newProgress);
                 if (newProgress >= 100) {
                     clearInterval(interval);
@@ -56,32 +56,31 @@ function Summary({ pdfState }) {
             let languageResponse = await axios.get(`${MainFastAPI}/api/weaviate/searchFulltext?pdf_id=${pdf_id}`);
             const detectedLanguage = languageResponse.data.language;
             const full_text = languageResponse.data.full_text;
-
+    
             const summary = (await axios.get(`${MainFastAPI}/api/weaviate/searchSummary?pdf_id=${pdf_id}`)).data.data;
-            const transelateSummary = (await axios.get(`${MainFastAPI}/api/weaviate/searchTranslateSummary?pdf_id=${pdf_id}`)).data.data;
-            console.log("Summary:", summary, "Transelate Summary:", transelateSummary);
-            if (summary.includes("No summary available") || transelateSummary.includes("No translated summary available")) {
+            console.log("Summary:", summary);
+            if (summary.includes("No summary available")) {
                 const tokens = countTokens(full_text);
                 setTokenCount(tokens); // Set token count
                 setEstimatedTime(estimateTime(tokens)); // Set estimated time
             } else {
-                setEstimatedTime(3.00);
+                if (lang === "kr") {
+                    setEstimatedTime(1.00);
+                } else {
+                    setEstimatedTime(3.00);
+                }
             }
-
+    
             if (!userSelectedLanguage) {
                 setLanguage(detectedLanguage);
             }
-
+    
             if (lang === 'en') {
-                const startTime = performance.now(); // Start timing
                 if (region === 'search') {
                     response = await axios.get(`${SubFastAPI}/api/summary/summaryPaper?pdf_id=${pdf_id}`);
                 } else {
                     response = await axios.get(`${SubFastAPI}/api/summary/summaryPdf?pdf_id=${pdf_id}`);
                 }
-                const endTime = performance.now(); // End timing
-                const duration = (endTime - startTime) / 1000; // Calculate duration in seconds
-                console.log(`Request to summaryPaper/summaryPdf took ${duration.toFixed(2)} seconds.`);
             } else if (lang === 'ko') {
                 response = await axios.get(`${MainFastAPI}/api/translate/transelateSummary?pdf_id=${pdf_id}`);
             } else if (detectedLanguage === "kr") {
@@ -98,7 +97,7 @@ function Summary({ pdfState }) {
         } finally {
             // Ensure progress is set to 100% when loading finishes
             setTimeout(() => {
-                setProgress(100);
+                setProgress(98);
                 setLoading(false);
             }, 1000); // 1 second delay before setting progress to 100%
         }

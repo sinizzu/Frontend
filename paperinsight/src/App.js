@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import { Tabs, Tab, Typography, Drawer, Box, Grid, List, ListItem, ListItemIcon, CircularProgress, IconButton } from '@mui/material';
+import React, { useState, useEffect, useContext } from 'react';
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import { Tabs, Tab, Typography, Drawer, Box, Grid, CircularProgress, IconButton } from '@mui/material';
 import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutlined';
-import Menu from './components/menu';
+import SideMenu from './components/menu';
 import Main from './pages/main';
 import Login from './pages/login';
 import Register from './pages/register';
@@ -12,18 +12,16 @@ import PDFPreview from './pages/pdfpreview';
 import Chatbot from './pages/chatbot';
 import Keyword from './pages/keyword';
 import Summary from './pages/summary';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Header from './components/header';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
-import { AuthProvider } from './contexts/authcontext';
-
-
+import { AuthProvider, AuthContext } from './contexts/authcontext';
+import AccountMenu from './components/AccountMenu'; // import AccountMenu
+import Logout from './pages/logout';
 
 const drawerWidth = 80;
 const appBarHeight = 64;
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
-
 
 const AppContent = () => {
 
@@ -51,6 +49,7 @@ const AppContent = () => {
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [wikiLoading, setWikiLoading] = useState(false);
   const [language, setLanguage] = useState('');
+  const { accessToken } = useContext(AuthContext);
 
 
   const handleChange = async (event, newValue) => {
@@ -217,7 +216,6 @@ const handleFileUploadComplete = async (fileUrl, uuid, region) => {
   }, [driveSelectedPdf, searchSelectedPdf]);
 
 
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <Header fileName={driveFileName || searchFileName} />
@@ -231,16 +229,10 @@ const handleFileUploadComplete = async (fileUrl, uuid, region) => {
           }}
         >
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 10 }}>
-            <Menu />
+            <SideMenu />
           </Box>
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pb: 5 }}>
-            <List>
-              <ListItem button component={Link} to="/login">
-                <ListItemIcon>
-                  <AccountCircleIcon sx={{ fontSize: 40 }} />
-                </ListItemIcon>
-              </ListItem>
-            </List>
+            <AccountMenu accessToken={accessToken} />
           </Box>
         </Drawer>
         <Box
@@ -419,6 +411,8 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/logout" element={<Logout />} />
+          <Route path="/register" element={<Register />} />
           <Route path="*" element={<AppContent />} />
         </Routes>
       </Router>
