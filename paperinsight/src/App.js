@@ -1,10 +1,10 @@
+// src/App.js
+
 import React, { useState, useEffect, useContext } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import { Tabs, Tab, Typography, Drawer, Box, Grid, List, ListItem, ListItemIcon, CircularProgress, IconButton } from '@mui/material';
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
+import { Tabs, Tab, Typography, Drawer, Box, Grid, CircularProgress, IconButton, Tooltip } from '@mui/material';
 import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutlined';
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
-import Menu from './components/menu';
+import SideMenu from './components/menu';
 import Main from './pages/main';
 import Login from './pages/login';
 import Register from './pages/register';
@@ -14,38 +14,28 @@ import PDFPreview from './pages/pdfpreview';
 import Chatbot from './pages/chatbot';
 import Keyword from './pages/keyword';
 import Summary from './pages/summary';
-
 import Header from './components/header';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
-import { AuthProvider } from './contexts/authcontext';
-import { AuthContext } from './contexts/authcontext';
+import { AuthProvider, AuthContext } from './contexts/authcontext';
+import AccountMenu from './components/AccountMenu'; // import AccountMenu
+import Logout from './pages/logout';
 
 const drawerWidth = 80;
 const appBarHeight = 64;
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
-
 const AppContent = () => {
-
   const { accessToken } = useContext(AuthContext);
-  // 업로드용 상태 
   const [uploadedFileUrl, setUploadedFileUrl] = useState('');
   const [uploadedFileId, setUploadedFileId] = useState('');
   const [uploadFileState, setUploadFileState] = useState({ pdf_id: '', region: '' });
-
-  // 드라이브용 상태
   const [driveSelectedPdf, setDriveSelectedPdf] = useState(null);
   const [driveFileName, setDriveFileName] = useState('');
   const [drivePdfState, setDrivePdfState] = useState({ pdf_id: '', region: '' });
-  const location = useLocation();
-
-  // 검색용 상태
+  const location = useNavigate();
   const [searchSelectedPdf, setSearchSelectedPdf] = useState(null);
   const [searchFileName, setSearchFileName] = useState('');
   const [searchPdfState, setSearchPdfState] = useState({ pdf_id: '', region: '' });
-
-  // 공통 상태
   const [showMessage, setShowMessage] = useState(true);
   const [showFileMessage, setShowFileMessage] = useState(true);
   const [fullText, setFullText] = useState('');
@@ -58,8 +48,6 @@ const AppContent = () => {
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [wikiLoading, setWikiLoading] = useState(false);
   const [language, setLanguage] = useState('');
-
-
 
   const handleChange = async (event, newValue) => {
     setValue(newValue);
@@ -82,6 +70,7 @@ const AppContent = () => {
       }
     }
   };
+
   const handleFileUploadComplete = async (fileUrl, uuid, region) => {
     console.log('File upload completed:', fileUrl, uuid); // 로그 추가
     setUploadedFileUrl(fileUrl);
@@ -99,7 +88,6 @@ const AppContent = () => {
       setPdfId(result.pdf_id);
       setLanguage(result.language);
 
-      // OCR 완료 후 handleChange 함수 실행 
       await handleChange(null, 0);
     } catch (error) {
       console.error('OCR 처리 중 오류 발생:', error);
@@ -114,7 +102,7 @@ const AppContent = () => {
     setOcrCompleted(false);
     setOcrInProgress(true);
     setDrivePdfState({ pdf_id: pdfId, region });
-    setValue(0); // 챗봇 탭을 자동으로 선택
+    setValue(0);
 
     try {
       const result = await performOCR(pdfUrl, pdfId);
@@ -123,7 +111,6 @@ const AppContent = () => {
       setPdfId(result.pdf_id);
       setLanguage(result.language);
 
-      // OCR 완료 후 handleChange 함수 호출
       await handleChange(null, 0);
     } catch (error) {
       console.error('OCR 처리 중 오류 발생:', error);
@@ -138,7 +125,7 @@ const AppContent = () => {
     setOcrCompleted(false);
     setOcrInProgress(true);
     setSearchPdfState({ pdf_id: pdfId, region });
-    setValue(0); // 챗봇 탭을 자동으로 선택
+    setValue(0);
 
     try {
       await performOCR(pdfUrl, pdfId);
@@ -151,7 +138,6 @@ const AppContent = () => {
 
   const performOCR = async (pdfUrl, pdfId) => {
     try {
-
       console.log("Performing OCR on PDF URL:", pdfUrl);
       console.log("PDF ID during OCR:", pdfId);
       const formData = new FormData();
@@ -167,11 +153,11 @@ const AppContent = () => {
         const { pdf_id, full_text, language } = response.data.data;
         setOcrCompleted(true);
 
-        console.log("OCR 결과:", { pdf_id, full_text, language });  // 로그 추가
+        console.log("OCR 결과:", { pdf_id, full_text, language });
 
         await divideChunk(pdf_id, full_text, language);
 
-        return { pdf_id, full_text, language };  // OCR 결과 반환
+        return { pdf_id, full_text, language };
       } else {
         throw new Error('OCR 요청 실패');
       }
@@ -180,13 +166,13 @@ const AppContent = () => {
       if (error.response) {
         console.error('Error response:', error.response.data);
       }
-      throw error;  // 에러를 다시 던져서 상위에서 처리할 수 있게 함
+      throw error;
     }
   };
 
   const divideChunk = async (pdfId, fullText, language) => {
     try {
-      console.log("Divide Chunk 요청 데이터:", { pdfId, fullText, language });  // 로그 추가
+      console.log("Divide Chunk 요청 데이터:", { pdfId, fullText, language });
 
       const response = await axios.post(
         `${MAIN_FASTAPI}/api/chatbot/divideChunk`,
@@ -215,8 +201,6 @@ const AppContent = () => {
     }
   }, [driveSelectedPdf, searchSelectedPdf]);
 
-
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <Header fileName={driveFileName || searchFileName} />
@@ -230,22 +214,10 @@ const AppContent = () => {
           }}
         >
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 10 }}>
-            <Menu />
+            <SideMenu />
           </Box>
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pb: 5 }}>
-            <List>
-              <ListItem>
-              {accessToken ? 
-              <ListItemIcon button component={Link} to="/login">
-                <AccountCircleRoundedIcon sx={{ fontSize: 40 }} />
-              </ListItemIcon>
-              : 
-                <ListItemIcon button component={Link} to="/login">
-                  <AccountCircleOutlinedIcon sx={{ fontSize: 40 }} />
-                </ListItemIcon>
-              }
-              </ListItem>
-            </List>
+            <AccountMenu accessToken={accessToken} />
           </Box>
         </Drawer>
         <Box
@@ -273,7 +245,7 @@ const AppContent = () => {
                   {isDriveVisible ? (
                     <Routes>
                       <Route path="/drive" element={<Drive
-                        setSelectedPdf={setDriveSelectedPdf} // pdfurl을 drive에서 받아옴 
+                        setSelectedPdf={setDriveSelectedPdf}
                         setFileName={setDriveFileName}
                         setIsDriveVisible={setIsDriveVisible}
                         handleButtonClick={handleDrivePdfSelection}
@@ -332,7 +304,6 @@ const AppContent = () => {
                           fullText={fullText}
                           ocrCompleted={ocrCompleted}
                           uploadedFileUrl={pdfUrl}
-                          // pdfState={location.pathname === "/drive" ? drivePdfState : searchPdfState}
                           language={language}
                         />
                       ) : driveSelectedPdf || searchSelectedPdf ? (
@@ -367,7 +338,6 @@ const AppContent = () => {
                     })()
                   )}
                   {value === 2 && (driveSelectedPdf || searchSelectedPdf || uploadFileState) && (
-
                     <Summary
                       setSelectedPdf={location.pathname === "/drive" ? setDriveSelectedPdf || setUploadedFileUrl : setSearchSelectedPdf}
                       handleButtonClick={location.pathname === "/drive" ? handleDrivePdfSelection || handleFileUploadComplete : handleSearchPdfSelection}
@@ -424,6 +394,8 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/logout" element={<Logout />} />
+          <Route path="/register" element={<Register />} />
           <Route path="*" element={<AppContent />} />
         </Routes>
       </Router>
