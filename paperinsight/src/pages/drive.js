@@ -15,7 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 const MAIN_FASTAPI = process.env.REACT_APP_MainFastAPI;
 
-function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelection, onFileUpload }) {
+function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelection, onFileUpload, setThumbnailFileName}) {
 
   const { email, accessToken, refreshToken } = useContext(AuthContext);
 
@@ -26,6 +26,8 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
   const [thumbnails, setThumbnails] = useState([]);
   const navigate = useNavigate();
   const [selectedThumbnail, setSelectedThumbnail] = useState(null);
+
+  
 
 
   // console.log(`drive로 이동했을때의 api :  ${api}`);
@@ -103,6 +105,16 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
     }
   };
 
+  
+  const handleThumbnailClick = (fileUrl, name, thumbnailKey) => {
+    console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", name, "thumbnailKey:", thumbnailKey);
+    setSelectedPdf(fileUrl);
+    setFileName(name);
+    setThumbnailFileName(name);
+    handlePdfSelection(fileUrl, thumbnailKey, name); // thumbnailName 대신 thumbnailKey를 전달
+  };
+
+
   const handleClickOpen = () => {
     setOpen(true);
     navigate('/drive');
@@ -120,6 +132,14 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
   };
 
   const handleFileUpload = async () => {
+    if (!accessToken) {
+      const goToLogin = window.confirm("이 기능을 사용하려면 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?");
+      if (goToLogin){
+        navigate('/login');
+      }
+      return;
+    }
+
     if (!file) return;
 
     const formData = new FormData();
@@ -127,15 +147,6 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
 
     try {
       console.log(`Bearer ${accessToken}`);
-
-      // const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/uploadS3`, formData, {
-      //   headers: {
-      //     'authorization': `Bearer ${accessToken}`
-      //   }
-      // });
-
-      // const data = response.data.data;
-
 
       // Generate presigned URL
       const presignedResponse = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/generateS3`, {
@@ -210,13 +221,6 @@ function Drive({ setSelectedPdf, setFileName, setIsDriveVisible, handlePdfSelect
       alert('파일 삭제 중 오류가 발생했습니다.');
       console.error('Error deleting file:', error);
     }
-  };
-
-  const handleThumbnailClick = (fileUrl, name, thumbnailKey) => {
-    console.log("Home component - Thumbnail clicked. fileUrl:", fileUrl, "thumbnailName:", name, "thumbnailKey:", thumbnailKey);
-    setSelectedPdf(fileUrl);
-    setFileName(name);
-    handlePdfSelection(fileUrl, thumbnailKey, name); // thumbnailName 대신 thumbnailKey를 전달
   };
 
 
