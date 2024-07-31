@@ -7,7 +7,29 @@ import '../styles/main.css';
 import { AuthContext } from '../contexts/authcontext';
 
 
+
 const MainFastAPI = process.env.REACT_APP_MainFastAPI;
+
+const ExampleButton = ({ text, onClick }) => (
+  <Button
+    variant="outlined"
+    size="small"
+    onClick={onClick}
+    sx={{
+      mr: 1,
+      mb: 1,
+      borderRadius: '16px',
+      borderColor: '#4677F0',
+      color: '#4677F0',
+      '&:hover': {
+        backgroundColor: '#4677F0',
+        color: 'white',
+      }
+    }}
+  >
+    {text}
+  </Button>
+);
 
 const ChatBubble = ({ message, isUser }) => (
   <Box
@@ -26,20 +48,20 @@ const ChatBubble = ({ message, isUser }) => (
       elevation={1}
       sx={{
         p: 2,
-        maxWidth: '80%',
+        maxWidth: '75%',
         borderRadius: isUser ? '20px 20px 0 20px' : '20px 20px 20px 0',
         backgroundColor: isUser ? '#4677F0' : '#E8E8E8',
         color: isUser ? 'white' : 'black',
         whiteSpace: 'pre-wrap'
       }}
     >
-      <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>{message}</Typography>
+      <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>{message}</Typography>
     </Paper>
     {isUser && <Avatar sx={{ ml: 1 }}>U</Avatar>}
   </Box>
 );
 
-function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
+function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language, pdfState }) {
   const { email, accessToken } = useContext(AuthContext); // AuthContext에서 값 가져오기
   // 채팅 메시지들을 저장하는 상태
   const [messages, setMessages] = useState([]);
@@ -52,36 +74,55 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
   // 채팅 입력 중 상태
   const [isTyping, setIsTyping] = useState(false);
 
+  const location = useLocation();
+  
+  // 채팅 예시
+  const exampleQuestions = [
+    "본문의 핵심 내용을 알려주세요",
+    "PDF를 요약해주세요",
+    "키워드를 추출해주세요"
+  ];
+
+  const handleExampleClick = async (input) => {
+    setInput(input);
+    await handleSendMessage(input);
+  };
   // 페이지 로드 시 채팅 이력 불러오기
   useEffect(() => {
     const fetchChatHistory = async () => {
-      try {
-        console.log('fetchChatHistory', pdfId, email);
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/auth/importChat`, {
-          params: {
-            uuid: pdfId,
-            email: email
-          },
-          headers: {
-            'authorization': `Bearer ${accessToken}`,
+      // Drive 페이지일 때만 채팅 이력을 불러옵니다.
+      if (location.pathname === '/drive') {
+        try {
+          console.log('fetchChatHistory', pdfId, email);
+          const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/auth/importChat`, {
+            params: {
+              uuid: pdfId,
+              email: email
+            },
+            headers: {
+              'authorization': `Bearer ${accessToken}`,
+            }
+          });
+          if (response.data && response.data.data.length > 0) {
+            setMessages(response.data.data.map(chat => ({
+              text: chat.message,
+              sender: chat.sender
+            })));
+          } else {
+            setMessages([initialMessage]);
           }
-        });
-        if (response.data && response.data.data.length > 0) {
-          setMessages(response.data.data.map(chat => ({
-            text: chat.message,
-            sender: chat.sender
-          })));
-        } else {
+        } catch (error) {
+          console.error('Error fetching chat history:', error);
           setMessages([initialMessage]);
         }
-      } catch (error) {
-        console.error('Error fetching chat history:', error);
+      } else {
+        // Search 페이지일 경우 초기 메시지만 설정합니다.
         setMessages([initialMessage]);
       }
     };
 
     fetchChatHistory();
-  }, [pdfId, email]);
+  }, [pdfId, email, location.pathname]);
 
   // OCR 완료 시 메시지 추가
   useEffect(() => {
@@ -117,10 +158,10 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
   };
 
   // 응답 메시지 핸들링
-  const handleSendMessage = async () => {
-    if (!input.trim()) return;
+  const handleSendMessage = async (messageInput = input) => {
+    if (!messageInput.trim()) return;
 
-    const newMessages = [...messages, { text: input, sender: 'client' }];
+    const newMessages = [...messages, { text: messageInput, sender: 'client' }];
     setMessages(newMessages);
     setInput('');
     setIsTyping(true);
@@ -128,7 +169,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
     try {
       // 한국어로 전송된 쿼리를 영어로 변경
       const request = await axios.post(`${MainFastAPI}/api/translate/transelateToEnglish`,
-        { text: input },
+        { text: messageInput },
         { headers: { 'Content-Type': 'application/json' } }
       )
       console.log(`Sending message to chatbot: ${request.data.data}`);
@@ -136,7 +177,6 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
       // 챗봇 응답값 반환
       const response = await fetchChatbotResponse(pdfId, request.data.data, language);
       setIsTyping(false);
-      // const botResponse = response.data.data || '챗봇 응답을 가져오지 못했습니다.';
 
       let botResponse = response.data.data || '챗봇 응답을 가져오지 못했습니다.';
       console.log("원본 데이터", botResponse);
@@ -146,7 +186,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
       setMessages((prevMessages) => [...prevMessages, { text: botResponse, sender: 'bot' }]);
 
       // 동기적으로 saveChat API 호출
-      await saveChatHistory(pdfId, input, 'client', email); // 사용자 메시지 저장
+      await saveChatHistory(pdfId, messageInput, 'client', email); // 사용자 메시지 저장
       await saveChatHistory(pdfId, botResponse, 'bot', email); // 챗봇 응답 저장
 
     } catch (error) {
@@ -154,7 +194,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
       setIsTyping(false);
       setMessages((prevMessages) => [...prevMessages, { text: '챗봇 응답 중 오류가 발생했습니다.', sender: 'bot' }]);
     }
-  };
+};
 
   const fetchChatbotResponse = async (pdfId, query, language) => {
     try {
@@ -175,27 +215,31 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
       console.error('useChatbot 요청 에러:', error);
     }
   };
-
-  // 챗봇 이력 저장 (비동기 방식)
+  // 채팅 이력 저장 (비동기 방식)
   const saveChatHistory = (uuid, message, sender, email) => {
-    return axios.post(
-      `${process.env.REACT_APP_API_BASE_URL}/api/auth/saveChat`,
-      { uuid, message, sender, email },
-      {
-        headers: {
-          'authorization': `Bearer ${accessToken}`
+    // Drive 페이지일 때만 채팅 이력을 저장합니다.
+    if (location.pathname === '/drive') {
+      return axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/auth/saveChat`,
+        { uuid, message, sender, email },
+        {
+          headers: {
+            'authorization': `Bearer ${accessToken}`
+          }
         }
-      }
-    )
-      .then(response => {
-        console.log('Chat history saved successfully');
-        console.log('Server response:', response.data.data); // 서버 응답 출력
-        return response.data.data; // 필요한 경우 응답 데이터 반환
-      })
-      .catch((error) => {
-        console.error('Error saving chat history:', error);
-        throw error; // 에러를 다시 던져서 호출자가 처리할 수 있게 함
-      });
+      )
+        .then(response => {
+          console.log('Chat history saved successfully');
+          console.log('Server response:', response.data.data);
+          return response.data.data;
+        })
+        .catch((error) => {
+          console.error('Error saving chat history:', error);
+          throw error;
+        });
+    }
+    // Search 페이지일 경우 아무것도 하지 않습니다.
+    return Promise.resolve();
   };
 
   useEffect(() => {
@@ -229,6 +273,15 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
 
         <div ref={messagesEndRef} />
       </Box>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+      {exampleQuestions.map((input, index) => (
+        <ExampleButton
+          key={index}
+          text={input}
+          onClick={() => handleExampleClick(input)}
+        />
+      ))}
+    </Box>
       <Box sx={{ display: 'flex', mt: 2, alignItems: 'center' }}>
         <TextField
           fullWidth
@@ -250,7 +303,7 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language }) {
         />
         <Button
           variant="contained"
-          onClick={handleSendMessage}
+          onClick={() => handleSendMessage()}
           sx={{
             ml: 1,
             backgroundColor: '#4677F0',

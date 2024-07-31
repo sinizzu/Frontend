@@ -49,6 +49,7 @@ const AppContent = () => {
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [wikiLoading, setWikiLoading] = useState(false);
   const [language, setLanguage] = useState('');
+  const [thumbnailFileName, setThumbnailFileName] = useState('');
   const { accessToken } = useContext(AuthContext);
 
 
@@ -218,7 +219,7 @@ const handleFileUploadComplete = async (fileUrl, uuid, region) => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <Header fileName={driveFileName || searchFileName} />
+      <Header fileName={thumbnailFileName}/>
       <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden', marginTop: `${appBarHeight}px` }}>
         <Drawer
           variant="permanent"
@@ -260,15 +261,18 @@ const handleFileUploadComplete = async (fileUrl, uuid, region) => {
                   }}>
                   {isDriveVisible ? (
                     <Routes>
-                      <Route path="/drive" element={<Drive
+                      <Route path="/drive" element={
+                        <Drive
                         setSelectedPdf={setDriveSelectedPdf} // pdfurl을 drive에서 받아옴 
                         setFileName={setDriveFileName}
                         setIsDriveVisible={setIsDriveVisible}
                         handleButtonClick={handleDrivePdfSelection}
                         handlePdfSelection={handleDrivePdfSelection}
                         onFileUpload={handleFileUploadComplete}
+                        setThumbnailFileName={setThumbnailFileName} 
                       />} />
-                      <Route path="/search" element={<Search
+                      <Route path="/search" element={
+                        <Search
                         setSelectedPdf={setSearchSelectedPdf}
                         setFileName={setSearchFileName}
                         handleButtonClick={handleSearchPdfSelection}
@@ -320,7 +324,7 @@ const handleFileUploadComplete = async (fileUrl, uuid, region) => {
                           fullText={fullText}
                           ocrCompleted={ocrCompleted}
                           uploadedFileUrl={pdfUrl}
-                          // pdfState={location.pathname === "/drive" ? drivePdfState : searchPdfState}
+                          pdfState={location.pathname === "/drive" ? drivePdfState : searchPdfState}
                           language={language}
                         />
                       ) : driveSelectedPdf || searchSelectedPdf ? (
