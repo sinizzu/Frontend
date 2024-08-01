@@ -30,7 +30,7 @@ const AccountMenu = ({ accessToken }) => {
             aria-haspopup="true"
             aria-expanded={open ? 'true' : undefined}
           >
-            <Avatar sx={{ width: 48, height: 48 }} src="/logout.png" />
+            <Avatar sx={{ width: 48, height: 48 }} src="/open_eye_robot.png" />
           </IconButton>
         </Tooltip>
         <Menu
