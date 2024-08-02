@@ -264,7 +264,7 @@ function Main() {
           <Box sx={{ mx: 2 }} /> {/* 여백 추가 */}
           <Box>
             <StyledButton variant="outlined" color="inherit" onClick={handleLoginClick}>Login</StyledButton>
-            <StyledButton variant="contained" sx={{ backgroundColor: 'black', color: 'white' }} onClick={() => navigate('/signup')}>Signup</StyledButton>
+            <StyledButton variant="contained" sx={{ backgroundColor: 'black', color: 'white' }} onClick={() => navigate('/register')}>Signup</StyledButton>
           </Box>
         </Toolbar>
       </StyledAppBar>
