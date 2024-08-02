@@ -145,7 +145,11 @@ const handleFileUploadComplete = async (fileUrl, uuid, region) => {
     setValue(0); // 챗봇 탭을 자동으로 선택
 
     try {
-      await performOCR(pdfUrl, pdfId);
+      const result = await performOCR(pdfUrl, pdfId);
+      console.log(pdfUrl, pdfId, result);
+      setFullText(result.full_text);
+      setPdfId(result.pdf_id);
+      setLanguage(result.language);
     } catch (error) {
       console.error('OCR 처리 중 오류 발생:', error);
     } finally {
