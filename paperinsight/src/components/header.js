@@ -16,7 +16,7 @@ function Header({ fileName }) {
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Link to="/">
           <img src="/header.png" alt="Header Logo" style={{ height: '40px' }} /></Link>
-          <Typography variant="h6" mx={2} noWrap sx={{ color: 'black', fontWeight: 'bold' }}>PaperInsight</Typography>
+          <Typography variant="h6" mx={2} noWrap sx={{ color: 'black', fontWeight: 'bold' }}>PDFast</Typography>
           </Box>
           {fileName && (
             <Typography variant="subtitle1" noWrap sx={{ color: 'black' }}>

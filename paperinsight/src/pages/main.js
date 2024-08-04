@@ -254,7 +254,7 @@ function Main() {
             <RouterLink to="/">
               <img src="/header.png" alt="Header Logo" style={{ height: '40px' }} />
             </RouterLink>
-            <Typography variant="h6" mx={2} noWrap sx={{ fontSize: '25px', color: 'black', fontWeight: 'bold' }}>PaperInsight</Typography>
+            <Typography variant="h6" mx={2} noWrap sx={{ fontSize: '25px', color: 'black', fontWeight: 'bold' }}>PDFast</Typography>
           </Box>
           <Box sx={{ flexGrow: 1 }} />
           <Box>
