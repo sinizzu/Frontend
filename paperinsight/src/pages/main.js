@@ -1,11 +1,12 @@
-import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useMemo, useCallback, useEffect, useContext } from 'react';
 import { Typography, Button, Card, Box, CardMedia, Container, AppBar, Toolbar } from '@mui/material';
 import { styled } from '@mui/system';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, EffectCoverflow } from 'swiper/modules';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { AuthProvider } from '../contexts/authcontext';
-
+import { Link } from 'react-router-dom';
+import Logout from '@mui/icons-material/Logout';
+import { AuthContext } from '../contexts/authcontext';
 
 // Swiper styles
 import 'swiper/css';
@@ -13,7 +14,6 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
 import '../styles/main.css';
-
 
 const StyledAppBar = styled(AppBar)({
   backgroundColor: 'white',
@@ -41,56 +41,23 @@ const CardOverlay = styled('div')({
   bottom: 0,
   left: 0,
   right: 0,
-  backgroundColor: 'rgba(0,0,0,0.4)',
+  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)',
   padding: '30px',
   color: 'white',
 });
 
-const expandedBoxStyle = {
-  maxHeight: '300px',
-  transition: 'max-height 0.3s ease-in-out, background-color 0.3s ease',
-  overflow: 'hidden',
-};
-
-const collapsedBoxStyle = {
-  maxHeight: '100px',
-  transition: 'max-height 0.3s ease-in-out, background-color 0.3s ease',
-  overflow: 'hidden',
-};
-
-const FeatureSwiper = ({ setActiveFeature, features, onUserInteraction, featureRefs }) => {
-  const [swiper, setSwiper] = useState(null);
-  const [userInteracted, setUserInteracted] = useState(false);
-
-  // const handleSlideChange = useCallback((swiper) => {
-  //   if (userInteracted) {
-  //     onUserInteraction();
-  //     if (swiper && typeof swiper.realIndex === 'number' && features[swiper.realIndex]) {
-  //       setActiveFeature(features[swiper.realIndex]);
-  //     }
-  //   }
-  // }, [features, setActiveFeature, onUserInteraction, userInteracted]);
-
-  // const handleSwiper = (swiper) => {
-  //   setSwiper(swiper);
-  // };
-
-  // const handleSlideChangeTransitionStart = () => {
-  //   if (!userInteracted) {
-  //     setUserInteracted(true);
-  //     onUserInteraction();
-  //   }
-  // };
+const FeatureSwiper = ({ handleFeatureChange, features, onUserInteraction, featureRefs, handleDetailView }) => {
+  console.log('handleFeatureChange type:', typeof handleFeatureChange);
 
   const totalSlides = features.length; // features 배열의 길이
   const initialSlideIndex = Math.floor(totalSlides / 2);
 
   return (
-
+    <Box sx={{ marginTop: '100px' }}>
     <Swiper
       modules={[Navigation, Pagination, EffectCoverflow]}
       spaceBetween={30} // 슬라이드 간 간격을 100px로 조정
-      slidesPerView={3} // 'auto'로 설정하여 각 슬라이드의 너비에 따라 표시
+      slidesPerView={'auto'} // 'auto'로 설정하여 각 슬라이드의 너비에 따라 표시
       initialSlide={initialSlideIndex}
       centeredSlides={true}
       loop={true}
@@ -110,9 +77,9 @@ const FeatureSwiper = ({ setActiveFeature, features, onUserInteraction, featureR
     // onSlideChangeTransitionStart={handleSlideChangeTransitionStart}
     >
       {features.map((feature, index) => (
-        <SwiperSlide key={index}>
+        <SwiperSlide key={index} style={{width:'auto'}}>
           {({ isActive }) => (
-            <FeatureCard active={isActive.toString()} style={{ width: '450px', height: '280px' }}>
+            <FeatureCard active={isActive.toString()} style={{ width: '600px', height: '400px' }}>
               <CardMedia
                 component="img"
                 height="100%"
@@ -120,7 +87,7 @@ const FeatureSwiper = ({ setActiveFeature, features, onUserInteraction, featureR
                 alt={feature.title}
               />
               <CardOverlay>
-                <Typography gutterBottom variant="h6" component="div" sx={{ fontFamily: 'inherit', fontSize: '1.1rem' }} >
+                <Typography gutterBottom variant="h6" component="div" sx={{ fontFamily: 'inherit', fontSize: '1.1rem', fontWeight: 'bold' }} >
                   {feature.title}
                 </Typography>
                 <Typography variant="body2" sx={{ fontSize: '0.8rem', fontFamily: 'inherit' }}>
@@ -129,23 +96,25 @@ const FeatureSwiper = ({ setActiveFeature, features, onUserInteraction, featureR
                 <Button
                   variant="contained"
                   size="small"
-                  style={{
+                  sx={{
                     position: 'absolute',
                     bottom: '30px',
                     right: '30px',
-                    backgroundColor: 'white',
-                    color: 'black',
-                    fontWeight: 'bold',
+                    border: '1px solid white',
+                    backgroundColor: 'transparent',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'white',
+                      color: 'black', // 배경색이 흰색으로 변할 때 텍스트 색상을 검정으로 변경
+                    },
                     fontFamily: 'inherit'
                   }}
                   onClick={() => {
-                    setActiveFeature(feature);
-                    // onUserInteraction();
-                    if (featureRefs.current[index]) {
-                      featureRefs.current[index].scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                      });
+                    if (typeof handleFeatureChange === 'function') {
+                      handleFeatureChange(feature);
+                    }
+                    if (typeof handleDetailView === 'function') {
+                      handleDetailView(feature);
                     }
                   }}>
                   상세보기
@@ -156,18 +125,59 @@ const FeatureSwiper = ({ setActiveFeature, features, onUserInteraction, featureR
         </SwiperSlide>
       ))}
     </Swiper>
-
+    </Box>
   );
 };
 
+const FeatureDetail = ({ feature, onBack }) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  if (!feature) {
+    return null; // 또는 로딩 표시기를 렌더링할 수 있습니다.
+  }
+
+  return (
+    <Box sx={{ padding: '20px' }}>
+      <Button onClick={onBack}>돌아가기</Button>
+      <Typography variant="h4" sx={{ mt: 2 }}>{feature.title}</Typography>
+      <Typography variant="body1" sx={{ mt: 2, whiteSpace: 'pre-line' }}>{feature.detail}</Typography>
+    </Box>
+  );
+};
 function Main() {
+
   const navigate = useNavigate();
   // const { setAccessToken, setRefreshToken, setEmail } = useContext(AuthContext);
   const featureRefs = useRef([]);
   const [initialLoad, setInitialLoad] = useState(true);
-  const [activeFeature, setActiveFeature] = useState(null);
   const [userInteracted, setUserInteracted] = useState(false);
+  const { accessToken, logoutStatus, setLogoutStatus } = useContext(AuthContext);
 
+  const [viewMode, setViewMode] = useState('main'); // 'main' 또는 'detail'
+  const [activeFeature, setActiveFeature] = useState(null);
+  const [selectedFeature, setSelectedFeature] = useState(null);
+
+  const handleDetailView = (feature) => {
+    setSelectedFeature(feature);
+    setTimeout(() => setViewMode('detail'), 0);
+  };
+  const handleBackToMain = () => {
+    setViewMode('main');
+    setSelectedFeature(null);
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }, 100);
+  };
+  useEffect(() => {
+    console.log("토큰", accessToken);
+  }, [accessToken]);
+
+  
   const features = useMemo(() => [
     {
       title: '드라이브',
@@ -201,12 +211,6 @@ function Main() {
       image: '/summary.jpeg',
       description: '긴 문서를 요약해보세요.',
       detail: '긴 문서를 간결하게 요약하여 핵심 내용을 쉽게 파악할 수 있습니다. \nHuggingFace와 의미론적 추출을 결합하여 정확하고 간결한 요약을 생성합니다. \n이 기술은 자연어 처리 모델을 활용하여 문서의 주요 개념과 핵심 문장을 식별하고, 의미론적 분석을 통해 문맥을 파악합니다. \n결과적으로 원문의 핵심 메시지를 유지하면서도 불필요한 세부사항을 제거한 간결한 요약을 제공합니다. \n이를 통해 사용자는 긴 문서의 내용을 빠르게 이해하고, 효율적으로 정보를 처리할 수 있습니다.'
-    },
-    {
-      title: 'PDF 뷰어',
-      image: '/pdf.jpg',
-      description: '직접 업로드 한 PDF자료를 볼 수 있습니다.',
-      detail: '사용자는 텍스트, 구문 등을 드래그하여 검색할 수 있습니다. 검색 내용은 툴팁 형식으로 페이지 안에서 곧바로 확인할 수 있으며, 이는 사용자가 원하는 정보를 직관적으로 파악하여 학습 효율을 높일 수 있습니다.'
     }
   ], [navigate]);
 
@@ -240,14 +244,11 @@ function Main() {
     navigate('/login');
   };
 
-
   const handleDriveClick = () => {
     navigate('/drive');
   };
-
   return (
-    <div>
-
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <StyledAppBar position="static">
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }} >
@@ -257,101 +258,54 @@ function Main() {
             <Typography variant="h6" mx={2} noWrap sx={{ fontSize: '25px', color: 'black', fontWeight: 'bold' }}>PDFast</Typography>
           </Box>
           <Box sx={{ flexGrow: 1 }} />
-          <Box>
+          {/* <Box>
             <StyledButton color="inherit" onClick={() => navigate('/search')} sx={{ fontSize: '15px', fontWeight: 'bold' }}>벡터 검색</StyledButton>
             <StyledButton color="inherit" onClick={handleDriveClick} sx={{ fontSize: '15px', fontWeight: 'bold' }}>학습하기</StyledButton>
-          </Box>
+          </Box> */}
           <Box sx={{ mx: 2 }} /> {/* 여백 추가 */}
           <Box>
+          {accessToken && logoutStatus !== 204 ? (
+            <StyledButton variant="outlined" color="inherit" component={Link} to="/logout">Logout</StyledButton>
+          ) : (
             <StyledButton variant="outlined" color="inherit" onClick={handleLoginClick}>Login</StyledButton>
+          )}
             <StyledButton variant="contained" sx={{ backgroundColor: 'black', color: 'white' }} onClick={() => navigate('/register')}>Signup</StyledButton>
           </Box>
         </Toolbar>
       </StyledAppBar>
-
-      <Container maxWidth="xl" style={{ marginTop: '40px' }}>
-        <Box sx={{
-          height: '400px',
-          mb: 4,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '100%'
-        }}>
-          <div style={{
-            width: '100%',
-            height: '400px',  // 스와이퍼의 높이를 지정합니다. 필요에 따라 조절하세요.
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
+      <Container maxWidth="xl" style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+          <Box
+            sx={{
+              height: '100%',
+              transition: 'transform 0.5s ease-in-out, opacity 0.5s ease-in-out',
+              transform: viewMode === 'main' ? 'translateY(0)' : 'translateY(-100%)',
+              opacity: viewMode === 'main' ? 1 : 0,
+              position: 'absolute',
+              width: '100%',
+            }}
+          >
             <FeatureSwiper
-              setActiveFeature={handleFeatureChange}
+              handleFeatureChange={handleFeatureChange}
               features={features}
               onUserInteraction={handleUserInteraction}
               featureRefs={featureRefs}
+              handleDetailView={handleDetailView}
             />
-          </div>
-        </Box>
-
-        <Box data-label='설명 박스' sx={{ display: 'flex', flexDirection: 'column', mt: 4 }}>
-          {features.map((feature, index) => (
-            <Box
-              key={index}
-              ref={el => featureRefs.current[index] = el}
-              sx={{
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                p: 2,
-                mb: 2,
-                cursor: 'pointer',
-                backgroundColor: activeFeature?.title === feature.title ? '#f0f0f0' : 'transparent',
-                '&:hover': { backgroundColor: '#f5f5f5' },
-                ...(activeFeature?.title === feature.title ? expandedBoxStyle : collapsedBoxStyle),
-                display :'flex',
-                flexDirection: 'column',
-              }}
-              onClick={() => {
-                handleUserInteraction();
-                handleFeatureChange(feature);
-              }}>
-              <Typography variant="h6" sx={{ fontFamily: 'inherit' }}>{feature.title}</Typography>
-              {activeFeature?.title !== feature.title && (
-                <Typography variant="h6" sx={{ fontSize: '14px', marginBottom: '20px', fontFamily: 'inherit' }}>
-                  {feature.description}
-                </Typography>
-              )}
-              <Box 
-                sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'row', 
-                  height: '100%',
-                  opacity: activeFeature?.title === feature.title ? 1 : 0, 
-                  transition: 'opacity 0.3s ease',
-                  marginTop: '20px'
-                }}
-              >
-                <Box data-label='feature.detail' sx={{ flex: 1, marginBottom: 2 }}>
-                  <Typography 
-                    variant="body1"
-                    sx={{ 
-                      whiteSpace: 'pre-line', 
-                      fontSize: '15px', 
-                      fontStyle: 'normal', 
-                      fontFamily: 'inherit' 
-                    }}
-                  >
-                    {feature.detail}
-                  </Typography>
-                </Box>
-                <Box data-label='feature.img' sx={{ flex: 1 }}>
-                  {/* 이미지 내용을 여기에 추가하세요 */}
-                </Box>
-              </Box>
-            </Box>
-          ))}
-        </Box>
-      </Container>
+          </Box>
+          <Box
+            sx={{
+              height: '100%',
+              transition: 'transform 0.5s ease-in-out, opacity 0.5s ease-in-out',
+              transform: viewMode === 'detail' ? 'translateY(0)' : 'translateY(100%)',
+              opacity: viewMode === 'detail' ? 1 : 0,
+              position: 'absolute',
+              width: '100%',
+              overflow: 'auto',
+            }}
+          >
+            {selectedFeature && <FeatureDetail feature={selectedFeature} onBack={handleBackToMain} />}
+          </Box>
+        </Container>
     </div>
   );
 }
