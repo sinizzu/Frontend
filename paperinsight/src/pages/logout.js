@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/authcontext';
 
 const Logout = () => {
-  const { accessToken, refreshToken, setAccessToken, setRefreshToken, setEmail } = useContext(AuthContext);
+  const { accessToken, refreshToken, setAccessToken, setRefreshToken, setEmail, setLogoutStatus } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,8 +22,8 @@ const Logout = () => {
             }
           }
         );
-
         if (response.status === 204) {
+          setLogoutStatus(204);
           alert('로그아웃 되었습니다.');
           navigate('/login');
         }
@@ -34,7 +34,7 @@ const Logout = () => {
     };
 
     logout();
-  }, [accessToken, refreshToken, setAccessToken, setRefreshToken, setEmail, navigate]);
+  }, [accessToken, refreshToken, setAccessToken, setRefreshToken, setEmail, setLogoutStatus, navigate]);
 
   return null;
 };
