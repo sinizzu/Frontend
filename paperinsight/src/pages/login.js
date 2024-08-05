@@ -117,8 +117,8 @@ const Login = () => {
           sx={{ fontWeight: 'bold' }}
           onClick={handleLogin}>
           Log in</Button>
-        <Divider style={{ width: '100%', margin: '24px 0' }}>OR</Divider>
-        <Button
+        <Divider style={{ width: '100%', margin: '24px 0' }}></Divider>
+        {/* <Button
           variant="contained"
           startIcon={<GoogleIcon />}
           style={{ backgroundColor: '#4285F4', color: 'white', marginBottom: '8px' }}
@@ -135,7 +135,7 @@ const Login = () => {
         >
           <img src={kakaoIcon} alt="Kakao" style={{ width: '24px', height: '24px', marginRight: '8px' }} />
           Continue with Kakao
-        </Button>
+        </Button> */}
         <Typography variant="body2" sx={{ marginTop: '16px' }}>
           Don't have an account?{' '}
           <MuiLink component={RouterLink} to="/register" underline="hover">
