@@ -26,6 +26,7 @@ const PDFPreview = ({ pdfUrl }) => {
   const viewerRef = useRef(null);
   const [wikiResult, setWikiResult] = useState({ text: '', link: '' });
   const [language, setLanguage] = useState(''); // language 상태 추가
+  const [isLoading, setIsLoading] = useState(false); // loading 상태 추가
 
   useEffect(() => {
     const handleLinkClick = (event) => {
@@ -42,6 +43,14 @@ const PDFPreview = ({ pdfUrl }) => {
       document.removeEventListener('click', handleLinkClick);
     };
   }, [selectedText]);
+
+  const TypingAnimation = ({color = 'white'}) => (
+    <div className="typing-animation">
+      <i className="fas fa-circle small-icon" style={{ color }}></i>
+      <i className="fas fa-circle small-icon" style={{ color }}></i>
+      <i className="fas fa-circle small-icon" style={{ color }}></i>
+    </div>
+  );
 
   const handleTextSelection = async (event) => {
     const selection = window.getSelection();
@@ -203,6 +212,7 @@ const PDFPreview = ({ pdfUrl }) => {
   };
 
   const handleSummary = async () => {
+    setIsLoading(true); // 로딩 시작
     setSummaryResult(''); // Reset summary result before making a new request
 
     try {
@@ -225,6 +235,8 @@ const PDFPreview = ({ pdfUrl }) => {
       }
     } catch (error) {
       console.error('Error fetching summary:', error);
+    } finally{
+      setIsLoading(false); // 로딩 종료
     }
   };
 
@@ -337,9 +349,9 @@ const PDFPreview = ({ pdfUrl }) => {
           id="summary-button"
           variant="text"
           onClick={handleSummary}
-          disabled={tokenCount < 50 || tokenCount > 512}
+          disabled={tokenCount < 50 || tokenCount > 512 || isLoading}
         >
-          요약
+          {isLoading ? <TypingAnimation /> : '요약'}
         </Button>
         <Button
           id="translate-button"
