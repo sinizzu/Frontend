@@ -18,6 +18,7 @@ import { useLocation } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './contexts/authcontext';
 import AccountMenu from './components/AccountMenu'; // import AccountMenu
 import Logout from './pages/logout';
+import createApi from './services/api';
 
 const drawerWidth = 80;
 const appBarHeight = 64;
@@ -50,7 +51,7 @@ const AppContent = () => {
   const [wikiLoading, setWikiLoading] = useState(false);
   const [language, setLanguage] = useState('');
   const [thumbnailFileName, setThumbnailFileName] = useState('');
-  const { accessToken } = useContext(AuthContext);
+  const { accessToken, setAccessToken, setEmail } = useContext(AuthContext);
 
 
   const handleChange = async (event, newValue) => {
@@ -220,7 +221,33 @@ const handleFileUploadComplete = async (fileUrl, uuid, region) => {
     }
   }, [driveSelectedPdf, searchSelectedPdf]);
 
+  useEffect(() => {
+    const email = localStorage.getItem('email');
+    const refreshToken = localStorage.getItem('refreshToken');
 
+    if (email && refreshToken) {
+        const refreshLogin = async () => {
+            try {
+                const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/refresh`, 
+                  { refreshToken, },
+                  { headers: { 'Content-Type': 'application/json' } });
+
+                setAccessToken(response.data.accessToken);
+                setEmail(email);
+
+                // API 인스턴스 생성
+                createApi(response.data.accessToken, setAccessToken);
+            } catch (error) {
+                console.error('Failed to refresh token:', error);
+                // 로그인이 실패하면 로컬 스토리지에서 정보 삭제
+                // localStorage.removeItem('email');
+                // localStorage.removeItem('refreshToken');
+            }
+        };
+
+        refreshLogin();
+    }
+}, [setAccessToken, setEmail]);
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <Header fileName={thumbnailFileName}/>

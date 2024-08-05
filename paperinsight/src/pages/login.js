@@ -31,6 +31,13 @@ const Login = () => {
       }
 
       setEmail(id);
+      // 로컬 스토리지에 저장
+      localStorage.setItem('email', id);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+
+      // API 인스턴스 생성
+      createApi(response.data.accessToken, setAccessToken);
+      
       // 새로운 API 인스턴스 생성
       // initializeApi(response.data.accessToken, response.data.refreshToken); // api 초기화 기다리기
       console.log(`authcontext api : ${accessToken}`);
