@@ -26,9 +26,7 @@ const AccountMenu = () => {
   useEffect(() => {
     if (logoutStatus === 204) {
       console.log('로그아웃 성공');
-      setStateLogin(false);
-      // 로그아웃 후 필요한 추가 작업 수행
-      setLogoutStatus(null); // 상태 리셋
+      setLogoutStatus(204); // 상태 리셋
     } else if (logoutStatus === 'error') {
       console.log('로그아웃 실패');
       // 로그아웃 실패 시 필요한 작업 수행
