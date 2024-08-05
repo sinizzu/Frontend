@@ -28,20 +28,31 @@ const StyledButton = styled(Button)({
 });
 
 const FeatureCard = styled(Card)(({ theme, active }) => ({
-  height: active === 'true' ? '300px' : '250px',
-  width: '100%',
+  height: active === 'true' ? '1000px' : '100px', // isActive 상태에 따라 높이 변경
+  width: active === 'true' ? '1000px' : '400px', // isActive 상태에 따라 너비 변경
   position: 'relative',
   overflow: 'hidden',
   borderRadius: '20px',
-  transition: 'all 0.3s ease'
+  transition: 'all 0.3s ease',
+  '&:before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: active === 'true' ? 'transparent' : 'rgba(0, 0, 0, 0.7)', // active 상태에 따라 오버레이 추가
+    transition: 'background-color 0.3s ease',
+  },
 }));
+
 
 const CardOverlay = styled('div')({
   position: 'absolute',
   bottom: 0,
   left: 0,
   right: 0,
-  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)',
+  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)', 
   padding: '30px',
   color: 'white',
 });
@@ -49,85 +60,84 @@ const CardOverlay = styled('div')({
 const FeatureSwiper = ({ handleFeatureChange, features, onUserInteraction, featureRefs, handleDetailView }) => {
   console.log('handleFeatureChange type:', typeof handleFeatureChange);
 
-  const totalSlides = features.length; // features 배열의 길이
+  const totalSlides = features.length;
   const initialSlideIndex = Math.floor(totalSlides / 2);
 
   return (
     <Box sx={{ marginTop: '100px' }}>
-    <Swiper
-      modules={[Navigation, Pagination, EffectCoverflow]}
-      spaceBetween={30} // 슬라이드 간 간격을 100px로 조정
-      slidesPerView={'auto'} // 'auto'로 설정하여 각 슬라이드의 너비에 따라 표시
-      initialSlide={initialSlideIndex}
-      centeredSlides={true}
-      loop={true}
-      effect={'slide'}
-      coverflowEffect={{
-        rotate: 0,
-        stretch: 0,
-        depth: 100,
-        modifier: 2,
-        slideShadows: true,
-      }}
-      pagination={{ clickable: true }}
-      navigation
-      style={{ background: 'transparent' }}
-    // onSwiper={handleSwiper}
-    // onSlideChange={handleSlideChange}
-    // onSlideChangeTransitionStart={handleSlideChangeTransitionStart}
-    >
-      {features.map((feature, index) => (
-        <SwiperSlide key={index} style={{width:'auto'}}>
-          {({ isActive }) => (
-            <FeatureCard active={isActive.toString()} style={{ width: '600px', height: '400px' }}>
-              <CardMedia
-                component="img"
-                height="100%"
-                image={feature.image}
-                alt={feature.title}
-              />
-              <CardOverlay>
-                <Typography gutterBottom variant="h6" component="div" sx={{ fontFamily: 'inherit', fontSize: '1.1rem', fontWeight: 'bold' }} >
-                  {feature.title}
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.8rem', fontFamily: 'inherit' }}>
-                  {feature.description}
-                </Typography>
-                <Button
-                  variant="contained"
-                  size="small"
-                  sx={{
-                    position: 'absolute',
-                    bottom: '30px',
-                    right: '30px',
-                    border: '1px solid white',
-                    backgroundColor: 'transparent',
-                    color: 'white',
-                    '&:hover': {
-                      backgroundColor: 'white',
-                      color: 'black', // 배경색이 흰색으로 변할 때 텍스트 색상을 검정으로 변경
-                    },
-                    fontFamily: 'inherit'
-                  }}
-                  onClick={() => {
-                    if (typeof handleFeatureChange === 'function') {
-                      handleFeatureChange(feature);
-                    }
-                    if (typeof handleDetailView === 'function') {
-                      handleDetailView(feature);
-                    }
-                  }}>
-                  상세보기
-                </Button>
-              </CardOverlay>
-            </FeatureCard>
-          )}
-        </SwiperSlide>
-      ))}
-    </Swiper>
+      <Swiper
+        modules={[Navigation, Pagination, EffectCoverflow]}
+        spaceBetween={30}
+        slidesPerView={'auto'}
+        initialSlide={initialSlideIndex}
+        centeredSlides={true}
+        loop={true}
+        effect={'slide'}
+        coverflowEffect={{
+          rotate: 0,
+          stretch: 0,
+          depth: 100,
+          modifier: 2,
+          slideShadows: true,
+        }}
+        pagination={{ clickable: true }}
+        navigation
+        style={{ background: 'transparent' }}
+      >
+        {features.map((feature, index) => (
+          <SwiperSlide key={index} style={{ width: 'auto' }}>
+            {({ isActive }) => (
+              <FeatureCard active={isActive.toString()} style={{ height: isActive ? '500px' : '400px' }}>
+                <CardMedia
+                  component="img"
+                  height="100%"
+                  image={feature.image}
+                  alt={feature.title}
+                />
+                <CardOverlay>
+                  <Typography gutterBottom variant="h6" component="div" sx={{ fontFamily: 'inherit', fontSize: '1.1rem', fontWeight: 'bold' }}>
+                    {feature.title}
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontSize: '0.8rem', fontFamily: 'inherit' }}>
+                    {feature.description}
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    sx={{
+                      position: 'absolute',
+                      bottom: '30px',
+                      right: '30px',
+                      border: '1px solid white',
+                      backgroundColor: 'transparent',
+                      color: 'white',
+                      '&:hover': {
+                        backgroundColor: 'white',
+                        color: 'black',
+                      },
+                      fontFamily: 'inherit'
+                    }}
+                    onClick={() => {
+                      if (typeof handleFeatureChange === 'function') {
+                        handleFeatureChange(feature);
+                      }
+                      if (typeof handleDetailView === 'function') {
+                        handleDetailView(feature);
+                      }
+                    }}
+                  >
+                    상세보기
+                  </Button>
+                </CardOverlay>
+              </FeatureCard>
+            )}
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </Box>
   );
 };
+
 
 const FeatureDetail = ({ feature, onBack }) => {
   useEffect(() => {
@@ -158,6 +168,7 @@ function Main() {
   const [viewMode, setViewMode] = useState('main'); // 'main' 또는 'detail'
   const [activeFeature, setActiveFeature] = useState(null);
   const [selectedFeature, setSelectedFeature] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
 
   const handleDetailView = (feature) => {
     setSelectedFeature(feature);
@@ -247,32 +258,67 @@ function Main() {
   const handleDriveClick = () => {
     navigate('/drive');
   };
+
+  const handleScroll = () => {
+    if (window.scrollY > 100) {
+      setScrolled(true);
+    } else {
+      setScrolled(false);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <StyledAppBar position="static">
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'black' }}>
+      <StyledAppBar position="static" sx={{ background: 'linear-gradient(to bottom, #032859, black)', height: '100px', paddingTop: '15px' }}>
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }} >
             <RouterLink to="/">
-              <img src="/header.png" alt="Header Logo" style={{ height: '40px' }} />
+              <img src="/logo_white.png" alt="Header Logo" style={{ height: '40px' }} />
             </RouterLink>
-            <Typography variant="h6" mx={2} noWrap sx={{ fontSize: '25px', color: 'black', fontWeight: 'bold' }}>PDFast</Typography>
+            <Typography variant="h6" mx={2} noWrap sx={{ fontSize: '25px', color: 'white', fontWeight: 'bold' }}>PDFast</Typography>
           </Box>
-          <Box sx={{ flexGrow: 1 }} />
-          {/* <Box>
-            <StyledButton color="inherit" onClick={() => navigate('/search')} sx={{ fontSize: '15px', fontWeight: 'bold' }}>벡터 검색</StyledButton>
-            <StyledButton color="inherit" onClick={handleDriveClick} sx={{ fontSize: '15px', fontWeight: 'bold' }}>학습하기</StyledButton>
-          </Box> */}
-          <Box sx={{ mx: 2 }} /> {/* 여백 추가 */}
+          <Box sx={{ display: 'flex', justifyContent: 'center'}} />
+          <Box >
+          <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF' }}}
+          onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange('드라이브'); }
+          if (typeof handleDetailView === 'function') { handleDetailView('드라이브'); }}}>Drive</StyledButton>
+          <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF' }}} 
+          onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange('챗봇'); }
+          if (typeof handleDetailView === 'function') { handleDetailView('챗봇'); }}}>Chatbot</StyledButton>          
+          <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF' }}} 
+          onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange('벡터 검색'); }
+          if (typeof handleDetailView === 'function') { handleDetailView('벡터 검색'); }}}>Vector Search</StyledButton>
+          <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF' } }} 
+          onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange('키워드 추출'); }
+          if (typeof handleDetailView === 'function') { handleDetailView('키워드 추출'); }}}>Keyword Extraction</StyledButton>
+          <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF' } }} 
+          onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange('요약 기능'); }
+          if (typeof handleDetailView === 'function') { handleDetailView('요약 기능'); }}}>Summary</StyledButton>
+          </Box>        
+          <Box sx={{ mx: 2, }} /> {/* 여백 추가 */}
           <Box>
           {accessToken && logoutStatus !== 204 ? (
-            <StyledButton variant="outlined" color="inherit" component={Link} to="/logout">Logout</StyledButton>
+            <StyledButton color="inherit" component={Link} to="/logout" sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#03318C' } }}>Logout</StyledButton>
           ) : (
-            <StyledButton variant="outlined" color="inherit" onClick={handleLoginClick}>Login</StyledButton>
+            <StyledButton color="inherit" onClick={handleLoginClick} sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#03318C' } }}>Login</StyledButton>
           )}
-            <StyledButton variant="contained" sx={{ backgroundColor: 'black', color: 'white' }} onClick={() => navigate('/register')}>Signup</StyledButton>
+            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#03318C' } }} onClick={() => navigate('/register')}>Signup</StyledButton>
           </Box>
         </Toolbar>
       </StyledAppBar>
+      {/* <Typography style={{ textAlign: 'left',  color: '#fff', fontSize: '40px', marginLeft: '50px', marginTop: '10px' }}>PDF Learning Solution: Sinizzu</Typography>
+      <Typography style={{ textAlign: 'left',  color: '#fff', fontSize: '20px', marginLeft: '50px' }}>사전학습 기능으로 사용자에게 최상의 서비스를 제공해드립니다.</Typography>
+      <Box sx={{ margin: '10px 50px' }}>
+        <Box component="hr" sx={{ border: '1px solid #737373', width: '30%', float: 'left' }} />
+      </Box> */}
       <Container maxWidth="xl" style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
           <Box
             sx={{
@@ -305,9 +351,16 @@ function Main() {
           >
             {selectedFeature && <FeatureDetail feature={selectedFeature} onBack={handleBackToMain} />}
           </Box>
+          
         </Container>
+        <Typography style={{ textAlign: 'left',  color: '#fff', fontSize: '40px', marginLeft: '50px' }}>PDF Learning Solution: Sinizzu</Typography>
+      <Box sx={{ marginLeft: '50px',  padding: '15px 0px' }}>
+        <Box component="hr" sx={{ border: '1px solid #737373', width: '30%', float: 'left' }} />
+      </Box>
+      <Typography style={{ textAlign: 'left',  color: '#737373', fontSize: '18px', marginLeft: '50px', marginBottom: '80px', }}>사전학습 기능으로 사용자에게 최상의 서비스를 제공해드립니다.</Typography>
     </div>
   );
 }
+
 
 export default Main;
