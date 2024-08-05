@@ -11,7 +11,6 @@ import { AuthContext } from '../contexts/authcontext';
 const AccountMenu = () => {
 
   const { accessToken, logoutStatus, setLogoutStatus } = useContext(AuthContext);
-  const [stateLogin, setStateLogin] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
