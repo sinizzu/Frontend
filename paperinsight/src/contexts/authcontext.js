@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
     const [accessToken, setAccessToken] = useState('');
     const [refreshToken, setRefreshToken] = useState('');
     const [email, setEmail] = useState('');
+    const [logoutStatus, setLogoutStatus] = useState(null);
     // const [api, setApi] = useState(null);
 
     // const initializeApi = useCallback(async (accessToken, refreshToken) => {
@@ -26,7 +27,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         // <AuthContext.Provider value={{ accessToken, refreshToken, email, setAccessToken, setRefreshToken, setEmail, setApi, api, initializeApi }}>
-        <AuthContext.Provider value={{ accessToken, refreshToken, email, setAccessToken, setRefreshToken, setEmail }}>
+        <AuthContext.Provider value={{ accessToken, refreshToken, email, logoutStatus, setAccessToken, setRefreshToken, setEmail, setLogoutStatus }}>
             {children}
         </AuthContext.Provider>
     );

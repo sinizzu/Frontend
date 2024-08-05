@@ -1,13 +1,16 @@
 // src/components/AccountMenu.js
 
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { List, ListItem, IconButton, Menu, MenuItem, Avatar, Tooltip, ListItemIcon } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import LoginIcon from '@mui/icons-material/Login';
 import Logout from '@mui/icons-material/Logout';
+import { AuthContext } from '../contexts/authcontext';
 
-const AccountMenu = ({ accessToken }) => {
+const AccountMenu = () => {
+
+  const { accessToken, logoutStatus, setLogoutStatus } = useContext(AuthContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
@@ -15,12 +18,24 @@ const AccountMenu = ({ accessToken }) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
+    console.log('토큰', accessToken);
     setAnchorEl(null);
   };
 
+  useEffect(() => {
+    if (logoutStatus === 204) {
+      console.log('로그아웃 성공');
+      setLogoutStatus(204); // 상태 리셋
+    } else if (logoutStatus === 'error') {
+      console.log('로그아웃 실패');
+      // 로그아웃 실패 시 필요한 작업 수행
+      setLogoutStatus(null); // 상태 리셋
+    }
+  }, [logoutStatus, setLogoutStatus]);
+
   return (
     <List>
-      {accessToken ? 
+      {accessToken && logoutStatus !== 204 ? (
       <ListItem sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <Tooltip title="로그인 중" placement="top">
           <IconButton
@@ -30,7 +45,7 @@ const AccountMenu = ({ accessToken }) => {
             aria-haspopup="true"
             aria-expanded={open ? 'true' : undefined}
           >
-            <Avatar sx={{ width: 48, height: 48 }} src="/logout.png" />
+            <Avatar sx={{ width: 48, height: 48 }} src="/login.png" />
           </IconButton>
         </Tooltip>
         <Menu
@@ -75,8 +90,8 @@ const AccountMenu = ({ accessToken }) => {
             Logout
           </MenuItem>
         </Menu>
-      </ListItem>
-      : 
+      </ListItem> 
+      ): (
       <ListItem sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} >
         <Tooltip title="사용자 정보 없음" placement="top">
           <IconButton
@@ -137,7 +152,7 @@ const AccountMenu = ({ accessToken }) => {
           </MenuItem>
         </Menu>
       </ListItem>
-      }
+      )}
     </List>
   );
 };
