@@ -12,7 +12,7 @@ import createApi from '../services/api';
 
 
 const Login = () => {
-  const { accessToken, refreshToken, setAccessToken, setRefreshToken, setEmail } = useContext(AuthContext);
+  const { accessToken, refreshToken, setAccessToken, setRefreshToken, setEmail, setLogoutStatus } = useContext(AuthContext);
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -24,6 +24,7 @@ const Login = () => {
         password: password
       });
       console.log('Login successful:', response.data);
+      setLogoutStatus(null);
 
       setAccessToken(response.data.accessToken);
       if (response.data.refreshToken) {
