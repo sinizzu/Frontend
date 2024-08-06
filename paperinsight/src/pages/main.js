@@ -77,8 +77,7 @@ const FeatureSwiper = ({ handleFeatureChange, features, onUserInteraction, featu
           slideShadows: true,
         }}
         pagination={{ clickable: true }}
-        navigation ={false}
-        style={{ background: 'transparent' }}
+        navigation={false}
       >
         {features.map((feature, index) => (
           <SwiperSlide key={index} style={{ width: 'auto',}}>
@@ -201,9 +200,10 @@ function Main() {
 
   const features = useMemo(() => [
     {
-      title: '드라이브',
-      image: '/drive.jpeg',
-      techimg: ['/s3.png', '/weaviate.png'],  // 배열로 변경
+      title: 'Drive',
+      image: '/drive.jpg',
+      video: 'video/drive.mp4',
+      techimg: ['/s3.png', '/weaviate.png'],
       description: '학습자료를 업로드하여 스터디 할 수 있어요.',
       detail: '여러분이 원하는 자료를 업로드할 수 있습니다. \n \
       자료들을 바탕으로 챗봇, 키워드, 요약 기능을 활용해보세요. \n \
@@ -215,9 +215,10 @@ function Main() {
       다양한 기능을 사용해 더욱 깊이 있는 자료 분석을 경험해보세요.'
     },
     {
-      title: '챗봇',
-      image: '/chat.jpeg',
-      techimg : [''],
+      title: 'ChatBot',
+      image: '/chat.jpg',
+      video: 'video/drive.mp4',
+      techimg: [''],
       description: '챗봇과 대화할 수 있습니다.',
       detail: '사용자가 선택한 PDF 파일을 업로드하면,\n \
       OCR 처리를 통해 텍스트를 추출하여 데이터베이스에 저장합니다. \n \
@@ -227,8 +228,9 @@ function Main() {
       이를 통해 더욱 정확하고 유용한 정보를 제공받을 수 있습니다.'
     },
     {
-      title: '벡터 검색',
-      image: '/search.jpeg',
+      title: 'Vector Search',
+      image: '/search.jpg',
+      video: 'video/drive.mp4',
       description: '원하는 키워드를 검색해보세요.',
       detail: '사용자가 키워드 또는 문장을 입력하면, \n \
       키워드 또는 문장을 Weaviate로 논문 기반 벡터 검색을 수행합니다. \n \
@@ -238,8 +240,9 @@ function Main() {
       연구자와 학습자가 필요한 논문을 쉽게 찾을 수 있도록 지원합니다.'
     },
     {
-      title: '키워드 추출',
-      image: '/keyword.jpeg',
+      title: 'Keyword Extraction',
+      image: '/keyword.jpg',
+      video: 'video/drive.mp4',
       description: '문서에서 중요 키워드를 추출해보세요.',
       detail: '업로드한 PDF 문서의 텍스트를 분석합니다. \n \
       Text Razor는 자연어 처리(NLP) 기술을 활용하여 \n \
@@ -250,8 +253,9 @@ function Main() {
       Text Razor의 강력한 NLP 기능를 통해, 효율적으로 분석할 수 있습니다.'
     },
     {
-      title: '요약 기능',
-      image: '/summary.jpeg',
+      title: 'Summary',
+      image: '/summary.jpg',
+      video: 'video/drive.mp4',
       description: '긴 문서를 요약해보세요.',
       detail: '긴 문서를 간결하게 요약하여 핵심 내용을 쉽게 파악할 수 있습니다. \n \
       HuggingFace와 의미론적 추출을 결합하여 정확하고 간결한 요약을 생성합니다. \n \
