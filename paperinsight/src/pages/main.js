@@ -81,7 +81,7 @@ const FeatureSwiper = ({ handleFeatureChange, features, onUserInteraction, featu
           slideShadows: true,
         }}
         pagination={{ clickable: true }}
-        navigation
+        navigation ={false}
         style={{ background: 'transparent' }}
       >
         {features.map((feature, index) => (
@@ -192,34 +192,34 @@ function Main() {
   const features = useMemo(() => [
     {
       title: '드라이브',
-      image: '/drive.jpeg',
+      image: '/drive.jpg',
       techimg: ['/s3.png', '/weaviate.png'],  // 배열로 변경
       description: '학습자료를 업로드하여 스터디 할 수 있어요.',
       detail: '원하는 자료를 업로드 할 수 있습니다. 자료들을 기반으로 챗봇, 키워드, 요약 기능을 활용해보세요. \nPDF뷰어를 지원하여 직접 자료를 분석해볼 수 있습니다.'
     },
     {
       title: '챗봇',
-      image: '/chat.jpeg',
+      image: '/chat.jpg',
       techimg : [''],
       description: '챗봇과 대화할 수 있습니다.',
       detail: '챗봇과 대화하며 학습 내용을 복습하고 새로운 인사이트를 얻어보세요.'
     },
     {
       title: '벡터 검색',
-      image: '/search.jpeg',
+      image: '/search.jpg',
       description: '원하는 키워드를 검색해보세요.',
       detail: '벡터 검색을 통해서 검색한 쿼리에 대해 유사도가 가장 높은 논문들을 받아보세요.'
 
     },
     {
       title: '키워드 추출',
-      image: '/keyword.jpeg',
+      image: '/keyword.jpg',
       description: '문서에서 중요 키워드를 추출해보세요.',
       detail: '문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다. \n 전체 텍스트에서 TextRazor를 통해 중요한 키워드를 추출하여 핵심 파악을 돕습니다.'
     },
     {
       title: '요약 기능',
-      image: '/summary.jpeg',
+      image: '/summary.jpg',
       description: '긴 문서를 요약해보세요.',
       detail: '긴 문서를 간결하게 요약하여 핵심 내용을 쉽게 파악할 수 있습니다. \nHuggingFace와 의미론적 추출을 결합하여 정확하고 간결한 요약을 생성합니다. \n이 기술은 자연어 처리 모델을 활용하여 문서의 주요 개념과 핵심 문장을 식별하고, 의미론적 분석을 통해 문맥을 파악합니다. \n결과적으로 원문의 핵심 메시지를 유지하면서도 불필요한 세부사항을 제거한 간결한 요약을 제공합니다. \n이를 통해 사용자는 긴 문서의 내용을 빠르게 이해하고, 효율적으로 정보를 처리할 수 있습니다.'
     }
