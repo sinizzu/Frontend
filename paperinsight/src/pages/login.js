@@ -9,8 +9,6 @@ import axios from 'axios';
 import { AuthContext } from '../contexts/authcontext';
 import createApi from '../services/api';
 
-
-
 const Login = () => {
   const { accessToken, refreshToken, setAccessToken, setRefreshToken, setEmail, setLogoutStatus } = useContext(AuthContext);
   const [id, setId] = useState('');
@@ -32,9 +30,10 @@ const Login = () => {
       }
 
       setEmail(id);
-      // 로컬 스토리지에 저장
-      localStorage.setItem('email', id);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
+      // 세션 스토리지에 저장
+      sessionStorage.setItem('email', id);
+      sessionStorage.setItem('accessToken', response.data.accessToken);
+      sessionStorage.setItem('refreshToken', response.data.refreshToken);
 
       // API 인스턴스 생성
       createApi(response.data.accessToken, setAccessToken);
@@ -44,7 +43,6 @@ const Login = () => {
       console.log(`authcontext api : ${accessToken}`);
       console.log(`authcontext refreshToken : ${refreshToken}`);
 
-
       // handle successful login
       navigate('/drive');
 
@@ -53,13 +51,13 @@ const Login = () => {
       console.log('Full API URL:', `${process.env.REACT_APP_API_BASE_URL}/api/auth/login`);
 
       if (error.response) {
-
         switch (error.response.status) {
           case 401:
             alert('해당 정보로 로그인할 수 없습니다.');
             break;
           case 400:
             alert('유효하지 않은 ID 및 PW 형태입니다.');
+            break;
           default:
             alert('Login failed');
         }
@@ -126,24 +124,6 @@ const Login = () => {
           onClick={handleLogin}>
           Log in</Button>
         <Divider style={{ width: '100%', margin: '24px 0' }}></Divider>
-        {/* <Button
-          variant="contained"
-          startIcon={<GoogleIcon />}
-          style={{ backgroundColor: '#4285F4', color: 'white', marginBottom: '8px' }}
-          fullWidth
-          sx={{ fontWeight: 'bold' }}
-        >
-          Continue with Google
-        </Button>
-        <Button
-          variant="contained"
-          style={{ backgroundColor: '#FEE500', color: 'black', display: 'flex', alignItems: 'center' }}
-          fullWidth
-          sx={{ fontWeight: 'bold' }}
-        >
-          <img src={kakaoIcon} alt="Kakao" style={{ width: '24px', height: '24px', marginRight: '8px' }} />
-          Continue with Kakao
-        </Button> */}
         <Typography variant="body2" sx={{ marginTop: '16px' }}>
           Don't have an account?{' '}
           <MuiLink component={RouterLink} to="/register" underline="hover">

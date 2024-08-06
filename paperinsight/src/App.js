@@ -51,7 +51,7 @@ const AppContent = () => {
   const [wikiLoading, setWikiLoading] = useState(false);
   const [language, setLanguage] = useState('');
   const [thumbnailFileName, setThumbnailFileName] = useState('');
-  const { accessToken, setAccessToken, setEmail } = useContext(AuthContext);
+  const { accessToken, setAccessToken, setEmail, setRefreshToken } = useContext(AuthContext);
 
 
   const handleChange = async (event, newValue) => {
@@ -222,26 +222,25 @@ const handleFileUploadComplete = async (fileUrl, uuid, region) => {
   }, [driveSelectedPdf, searchSelectedPdf]);
 
   useEffect(() => {
-    const email = localStorage.getItem('email');
-    const refreshToken = localStorage.getItem('refreshToken');
-
-    if (email && refreshToken) {
+    const email = sessionStorage.getItem('email');
+    const refreshToken = sessionStorage.getItem('refreshToken');
+    const accessToken = sessionStorage.getItem('accessToken');
+    console.log('email:', email, 'refreshToken:', refreshToken, 'accessToken:', accessToken);
+    if (email && refreshToken && accessToken) {
         const refreshLogin = async () => {
             try {
-                const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/refresh`, 
-                  { refreshToken, },
-                  { headers: { 'Content-Type': 'application/json' } });
+                  setAccessToken(accessToken);
+                  setRefreshToken(refreshToken);
+                  setEmail(email);
 
-                setAccessToken(response.data.accessToken);
-                setEmail(email);
-
-                // API 인스턴스 생성
-                createApi(response.data.accessToken, setAccessToken);
+                // // API 인스턴스 생성
+                // createApi(response.data.accessToken, setAccessToken);
             } catch (error) {
                 console.error('Failed to refresh token:', error);
                 // 로그인이 실패하면 로컬 스토리지에서 정보 삭제
-                // localStorage.removeItem('email');
-                // localStorage.removeItem('refreshToken');
+                sessionStorage.removeItem('email');
+                sessionStorage.removeItem('refreshToken');
+                sessionStorage.removeItem('accessToken');
             }
         };
 
