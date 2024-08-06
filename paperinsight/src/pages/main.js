@@ -64,7 +64,7 @@ const FeatureSwiper = ({ handleFeatureChange, features, onUserInteraction, featu
   const initialSlideIndex = Math.floor(totalSlides / 2);
 
   return (
-    <Box sx={{ marginTop: '100px' }}>
+    <Box sx={{ marginTop: '30px' }}>
       <Swiper
         modules={[Navigation, Pagination, EffectCoverflow]}
         spaceBetween={30}
@@ -314,12 +314,7 @@ function Main() {
           </Box>
         </Toolbar>
       </StyledAppBar>
-      {/* <Typography style={{ textAlign: 'left',  color: '#fff', fontSize: '40px', marginLeft: '50px', marginTop: '10px' }}>PDF Learning Solution: Sinizzu</Typography>
-      <Typography style={{ textAlign: 'left',  color: '#fff', fontSize: '20px', marginLeft: '50px' }}>사전학습 기능으로 사용자에게 최상의 서비스를 제공해드립니다.</Typography>
-      <Box sx={{ margin: '10px 50px' }}>
-        <Box component="hr" sx={{ border: '1px solid #737373', width: '30%', float: 'left' }} />
-      </Box> */}
-      <Container maxWidth="xl" style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+      <Container maxWidth="100%" style={{ flex: 1, overflow: 'hidden', position: 'relative', maxHeight: '100vh' }}>
           <Box
             sx={{
               height: '100%',
