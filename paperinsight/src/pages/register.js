@@ -74,7 +74,7 @@ const Register = () => {
       flexDirection="column"
       alignItems="center"
       justifyContent="center"
-      height="100vh"
+      height="87vh"
     >
       <Box
         display="flex"

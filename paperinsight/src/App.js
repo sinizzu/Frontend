@@ -18,6 +18,7 @@ import { useLocation } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './contexts/authcontext';
 import AccountMenu from './components/AccountMenu'; // import AccountMenu
 import Logout from './pages/logout';
+import createApi from './services/api';
 
 const drawerWidth = 80;
 const appBarHeight = 64;
@@ -50,7 +51,7 @@ const AppContent = () => {
   const [wikiLoading, setWikiLoading] = useState(false);
   const [language, setLanguage] = useState('');
   const [thumbnailFileName, setThumbnailFileName] = useState('');
-  const { accessToken } = useContext(AuthContext);
+  const { accessToken, setAccessToken, setEmail, setRefreshToken } = useContext(AuthContext);
 
 
   const handleChange = async (event, newValue) => {
@@ -220,7 +221,32 @@ const handleFileUploadComplete = async (fileUrl, uuid, region) => {
     }
   }, [driveSelectedPdf, searchSelectedPdf]);
 
+  useEffect(() => {
+    const email = sessionStorage.getItem('email');
+    const refreshToken = sessionStorage.getItem('refreshToken');
+    const accessToken = sessionStorage.getItem('accessToken');
+    console.log('email:', email, 'refreshToken:', refreshToken, 'accessToken:', accessToken);
+    if (email && refreshToken && accessToken) {
+        const refreshLogin = async () => {
+            try {
+                  setAccessToken(accessToken);
+                  setRefreshToken(refreshToken);
+                  setEmail(email);
 
+                // // API 인스턴스 생성
+                // createApi(response.data.accessToken, setAccessToken);
+            } catch (error) {
+                console.error('Failed to refresh token:', error);
+                // 로그인이 실패하면 로컬 스토리지에서 정보 삭제
+                sessionStorage.removeItem('email');
+                sessionStorage.removeItem('refreshToken');
+                sessionStorage.removeItem('accessToken');
+            }
+        };
+
+        refreshLogin();
+    }
+}, [setAccessToken, setEmail]);
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <Header fileName={thumbnailFileName}/>

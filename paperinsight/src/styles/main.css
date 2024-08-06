@@ -94,7 +94,7 @@ font-size: 12px;
 margin-top: 5px;
 }
 .swiper-button-next, .swiper-button-prev{
-  --swiper-theme-color: rgb(245, 245, 245);
+  --swiper-theme-color: 'transparent';
 }
  
 .swiper-slide img {

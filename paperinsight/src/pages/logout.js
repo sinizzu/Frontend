@@ -24,6 +24,9 @@ const Logout = () => {
         );
         if (response.status === 204) {
           setLogoutStatus(204);
+          sessionStorage.removeItem('email');
+          sessionStorage.removeItem('refreshToken');
+          sessionStorage.removeItem('accessToken');
           alert('로그아웃 되었습니다.');
           navigate('/login');
         }
