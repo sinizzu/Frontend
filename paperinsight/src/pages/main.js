@@ -322,16 +322,16 @@ function Main() {
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center'}} />
           <Box >
-            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  }}}
+            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', borderRadius: '50px', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  }}}
               onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange(features[0]); }
               if (typeof handleDetailView === 'function') { handleDetailView(features[0]); }}}>Drive</StyledButton>
-            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white' }}} 
+            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', borderRadius: '50px', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white' }}} 
               onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange(features[1]); }
               if (typeof handleDetailView === 'function') { handleDetailView(features[1]); }}}>Chatbot</StyledButton>          
-            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  }}} 
+            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', borderRadius: '50px', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  }}} 
               onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange(features[2]); }
               if (typeof handleDetailView === 'function') { handleDetailView(features[2]); }}}>Vector Search</StyledButton>
-            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }} 
+            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', borderRadius: '50px', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }} 
               onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange(features[3]); }
               if (typeof handleDetailView === 'function') { handleDetailView(features[3]); }}}>Keyword Extraction</StyledButton>
             <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }} 
@@ -341,11 +341,11 @@ function Main() {
           <Box sx={{ mx: 2, }} /> {/* 여백 추가 */}
           <Box>
           {accessToken && logoutStatus !== 204 ? (
-            <StyledButton color="inherit" component={Link} to="/logout" sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }}>Logout</StyledButton>
+            <StyledButton color="inherit" component={Link} to="/logout" sx={{ borderRadius: '50px', fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }}>Logout</StyledButton>
           ) : (
-            <StyledButton color="inherit" onClick={handleLoginClick} sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }}>Login</StyledButton>
+            <StyledButton color="inherit" onClick={handleLoginClick} sx={{ borderRadius: '50px', fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }}>Login</StyledButton>
           )}
-            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white' } }} onClick={() => navigate('/register')}>Signup</StyledButton>
+            <StyledButton sx={{ borderRadius: '50px', fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white' } }} onClick={() => navigate('/register')}>Signup</StyledButton>
           </Box>
         </Toolbar>
       </StyledAppBar>
