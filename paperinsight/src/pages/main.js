@@ -136,6 +136,8 @@ const FeatureSwiper = ({ handleFeatureChange, features, onUserInteraction, featu
 };
 
 const FeatureDetail = ({ feature, onBack }) => {
+  const { accessToken, logoutStatus, setLogoutStatus } = useContext(AuthContext);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -163,6 +165,15 @@ const FeatureDetail = ({ feature, onBack }) => {
       >
       <source src={feature.video} type="video/mp4" />
       </video>
+      </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: '3%', mr: '7%' }}>
+      {accessToken && logoutStatus !== 204 ? (
+            <StyledButton color="inherit" component={Link} to={feature.url} sx={{ backgroundColor: '#4677F0', borderRadius: '10px', fontSize: '25px', fontWeight: 'bold', color: 'white', 
+              padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }}>시작하기</StyledButton>
+          ) : (
+            <StyledButton color="inherit" component={Link} to={feature.unurl} sx={{ backgroundColor: '#4677F0', borderRadius: '10px', fontSize: '25px', fontWeight: 'bold', color: 'white',
+               padding: '10px 30px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }}>시작하기</StyledButton>
+          )}
       </Box>
     </Box>
   );
@@ -202,6 +213,8 @@ function Main() {
     {
       title: 'Drive',
       image: '/drive.jpg',
+      url: "/drive",
+      unurl: "/login",
       video: 'video/drive.mp4',
       techimg: ['/s3.png', '/weaviate.png'],
       description: '학습자료를 업로드하여 스터디 할 수 있어요.',
@@ -217,6 +230,8 @@ function Main() {
     {
       title: 'ChatBot',
       image: '/chat.jpg',
+      url: "/drive",
+      unurl: "/login",
       video: 'video/drive.mp4',
       techimg: [''],
       description: '챗봇과 대화할 수 있습니다.',
@@ -229,6 +244,8 @@ function Main() {
     },
     {
       title: 'Vector Search',
+      url: "/search",
+      unurl: "/search",
       image: '/search.jpg',
       video: 'video/drive.mp4',
       description: '원하는 키워드를 검색해보세요.',
@@ -243,6 +260,8 @@ function Main() {
       title: 'Keyword Extraction',
       image: '/keyword.jpg',
       video: 'video/drive.mp4',
+      url: "/drive",
+      unurl: "/login",
       description: '문서에서 중요 키워드를 추출해보세요.',
       detail: '업로드한 PDF 문서의 텍스트를 분석합니다. \n \
       Text Razor는 자연어 처리(NLP) 기술을 활용하여 \n \
@@ -256,6 +275,8 @@ function Main() {
       title: 'Summary',
       image: '/summary.jpg',
       video: 'video/drive.mp4',
+      url: "/drive",
+      unurl: "/login",
       description: '긴 문서를 요약해보세요.',
       detail: '긴 문서를 간결하게 요약하여 핵심 내용을 쉽게 파악할 수 있습니다. \n \
       HuggingFace와 의미론적 추출을 결합하여 정확하고 간결한 요약을 생성합니다. \n \
@@ -334,7 +355,7 @@ function Main() {
             <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', borderRadius: '50px', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }} 
               onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange(features[3]); }
               if (typeof handleDetailView === 'function') { handleDetailView(features[3]); }}}>Keyword Extraction</StyledButton>
-            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }} 
+            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', borderRadius: '50px', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }} 
               onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange(features[4]); }
               if (typeof handleDetailView === 'function') { handleDetailView(features[4]); }}}>Summary</StyledButton>
           </Box>        
