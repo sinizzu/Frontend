@@ -2,15 +2,13 @@ import React, { useState, useRef, useMemo, useCallback, useEffect, useContext } 
 import { Typography, Button, Card, Box, CardMedia, Container, AppBar, Toolbar } from '@mui/material';
 import { styled } from '@mui/system';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, EffectCoverflow } from 'swiper/modules';
+import { Pagination, EffectCoverflow } from 'swiper/modules';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import Logout from '@mui/icons-material/Logout';
 import { AuthContext } from '../contexts/authcontext';
 
 // Swiper styles
 import 'swiper/css';
-import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
 import '../styles/main.css';
@@ -19,7 +17,7 @@ const StyledAppBar = styled(AppBar)({
   backgroundColor: 'white',
   fontFamily: 'inherit',
   color: 'black',
-  boxShadow: 'none',  // 그림자 제거
+  boxShadow: 'none',
 });
 
 const StyledButton = styled(Button)({
@@ -28,8 +26,8 @@ const StyledButton = styled(Button)({
 });
 
 const FeatureCard = styled(Card)(({ theme, active }) => ({
-  height: active === 'true' ? '1000px' : '100px', // isActive 상태에 따라 높이 변경
-  width: active === 'true' ? '1000px' : '400px', // isActive 상태에 따라 너비 변경
+  height: active === 'true' ? '40vh' : 'auto',
+  width: active === 'true' ? '50vw' : '35vw',
   position: 'relative',
   overflow: 'hidden',
   borderRadius: '20px',
@@ -41,24 +39,22 @@ const FeatureCard = styled(Card)(({ theme, active }) => ({
     left: 0,
     width: '100%',
     height: '100%',
-    backgroundColor: active === 'true' ? 'transparent' : 'rgba(0, 0, 0, 0.7)', // active 상태에 따라 오버레이 추가
+    backgroundColor: active === 'true' ? 'transparent' : 'rgba(0, 0, 0, 0.7)',
     transition: 'background-color 0.3s ease',
   },
 }));
-
 
 const CardOverlay = styled('div')({
   position: 'absolute',
   bottom: 0,
   left: 0,
   right: 0,
-  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)', 
+  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)',
   padding: '30px',
   color: 'white',
 });
 
 const FeatureSwiper = ({ handleFeatureChange, features, onUserInteraction, featureRefs, handleDetailView }) => {
-  console.log('handleFeatureChange type:', typeof handleFeatureChange);
 
   const totalSlides = features.length;
   const initialSlideIndex = Math.floor(totalSlides / 2);
@@ -66,7 +62,7 @@ const FeatureSwiper = ({ handleFeatureChange, features, onUserInteraction, featu
   return (
     <Box sx={{ marginTop: '30px' }}>
       <Swiper
-        modules={[Navigation, Pagination, EffectCoverflow]}
+        modules={[Pagination, EffectCoverflow]}
         spaceBetween={30}
         slidesPerView={'auto'}
         initialSlide={initialSlideIndex}
@@ -81,13 +77,12 @@ const FeatureSwiper = ({ handleFeatureChange, features, onUserInteraction, featu
           slideShadows: true,
         }}
         pagination={{ clickable: true }}
-        navigation
-        style={{ background: 'transparent' }}
+        navigation={false}
       >
         {features.map((feature, index) => (
-          <SwiperSlide key={index} style={{ width: 'auto' }}>
+          <SwiperSlide key={index} style={{ width: 'auto',}}>
             {({ isActive }) => (
-              <FeatureCard active={isActive.toString()} style={{ height: isActive ? '500px' : '400px' }}>
+              <FeatureCard active={isActive.toString()} style={{ height: isActive ? '50vh' : '40vh', }}>
                 <CardMedia
                   component="img"
                   height="100%"
@@ -95,22 +90,24 @@ const FeatureSwiper = ({ handleFeatureChange, features, onUserInteraction, featu
                   alt={feature.title}
                 />
                 <CardOverlay>
-                  <Typography gutterBottom variant="h6" component="div" sx={{ fontFamily: 'inherit', fontSize: '1.1rem', fontWeight: 'bold' }}>
+                  <Typography component="div" sx={{ fontSize: isActive ? '3rem': '1.5rem', fontWeight: 'bold' }}>
                     {feature.title}
                   </Typography>
-                  <Typography variant="body2" sx={{ fontSize: '0.8rem', fontFamily: 'inherit' }}>
+                  <Typography sx={{ fontSize: isActive ? '1.5rem': '1rem' }}>
                     {feature.description}
                   </Typography>
                   <Button
                     variant="contained"
-                    size="small"
+                    size="large"
                     sx={{
+                      width: isActive ? '9vw' : '5vw',
                       position: 'absolute',
                       bottom: '30px',
-                      right: '30px',
+                      right: '40px',
                       border: '1px solid white',
                       backgroundColor: 'transparent',
                       color: 'white',
+                      fontSize: isActive ? '1.5rem' : '1.2rem',
                       '&:hover': {
                         backgroundColor: 'white',
                         color: 'black',
@@ -126,7 +123,7 @@ const FeatureSwiper = ({ handleFeatureChange, features, onUserInteraction, featu
                       }
                     }}
                   >
-                    상세보기
+                    More
                   </Button>
                 </CardOverlay>
               </FeatureCard>
@@ -138,34 +135,46 @@ const FeatureSwiper = ({ handleFeatureChange, features, onUserInteraction, featu
   );
 };
 
-
 const FeatureDetail = ({ feature, onBack }) => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   if (!feature) {
-    return null; // 또는 로딩 표시기를 렌더링할 수 있습니다.
+    return null;
   }
 
   return (
-    <Box sx={{ padding: '20px' }}>
-      <Button onClick={onBack}>돌아가기</Button>
-      <Typography variant="h4" sx={{ mt: 2 }}>{feature.title}</Typography>
-      <Typography variant="body1" sx={{ mt: 2, whiteSpace: 'pre-line' }}>{feature.detail}</Typography>
+    <Box sx={{ padding: '1.5vw 5vw' }}>
+      <Button onClick={onBack} sx={{ fontSize: '25px', fontWeight: 'bold', color: '#4677F0' }}>{'< Back'}</Button>
+      <Box sx={{display: 'flex', justifyContent: 'space-between', m: '0 5%', gap: '3%'}}> 
+      <Box sx={{ flex: 1, marginTop: '5%' }}>
+      <Typography variant="h3" sx={{ color: '#4677F0', fontWeight: 'bold' }} mb={1}>{feature.title}</Typography>
+      <Box component="hr" sx={{ border: '2px solid #4677F0', width: '5%', float: 'left' }} />
+      <Typography sx={{ mt: 5, color: '#000', fontSize: '22px',  whiteSpace: 'pre-line'}}>{feature.detail}</Typography>
+      </Box>
+      <video
+      autoPlay
+      loop
+      muted
+      style={{ flex: 1,width: '50%', height: 'auto', pointerEvents: 'none', borderRadius: '30px', boxShadow: '10px 10px 20px rgba(0, 0, 0, 0.3)'
+        , marginTop: '6%', marginRight: '2%'
+       }}
+      >
+      <source src={feature.video} type="video/mp4" />
+      </video>
+      </Box>
     </Box>
   );
 };
-function Main() {
 
+function Main() {
   const navigate = useNavigate();
-  // const { setAccessToken, setRefreshToken, setEmail } = useContext(AuthContext);
   const featureRefs = useRef([]);
   const [initialLoad, setInitialLoad] = useState(true);
   const [userInteracted, setUserInteracted] = useState(false);
   const { accessToken, logoutStatus, setLogoutStatus } = useContext(AuthContext);
-
-  const [viewMode, setViewMode] = useState('main'); // 'main' 또는 'detail'
+  const [viewMode, setViewMode] = useState('main');
   const [activeFeature, setActiveFeature] = useState(null);
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [scrolled, setScrolled] = useState(false);
@@ -174,6 +183,7 @@ function Main() {
     setSelectedFeature(feature);
     setTimeout(() => setViewMode('detail'), 0);
   };
+
   const handleBackToMain = () => {
     setViewMode('main');
     setSelectedFeature(null);
@@ -184,44 +194,74 @@ function Main() {
       });
     }, 100);
   };
+
   useEffect(() => {
-    console.log("토큰", accessToken);
   }, [accessToken]);
 
-  
   const features = useMemo(() => [
     {
-      title: '드라이브',
-      image: '/drive.jpeg',
-      techimg: ['/s3.png', '/weaviate.png'],  // 배열로 변경
+      title: 'Drive',
+      image: '/drive.jpg',
+      video: 'video/drive.mp4',
+      techimg: ['/s3.png', '/weaviate.png'],
       description: '학습자료를 업로드하여 스터디 할 수 있어요.',
-      detail: '원하는 자료를 업로드 할 수 있습니다. 자료들을 기반으로 챗봇, 키워드, 요약 기능을 활용해보세요. \nPDF뷰어를 지원하여 직접 자료를 분석해볼 수 있습니다.'
+      detail: '여러분이 원하는 자료를 업로드할 수 있습니다. \n \
+      자료들을 바탕으로 챗봇, 키워드, 요약 기능을 활용해보세요. \n \
+      PDF 뷰어를 지원하여 직접 자료를 분석할 수 있습니다. \n \
+      업로드된 자료를 통해 인사이트를 도출하고, \n \
+      필요한 정보를 쉽게 추출할 수 있습니다. \n \
+      여러분의 작업을 도와줄 다양한 도구를 제공하며, \n \
+      데이터의 효율적인 관리와 분석을 돕습니다. \n \
+      다양한 기능을 사용해 더욱 깊이 있는 자료 분석을 경험해보세요.'
     },
     {
-      title: '챗봇',
-      image: '/chat.jpeg',
-      techimg : [''],
+      title: 'ChatBot',
+      image: '/chat.jpg',
+      video: 'video/drive.mp4',
+      techimg: [''],
       description: '챗봇과 대화할 수 있습니다.',
-      detail: '챗봇과 대화하며 학습 내용을 복습하고 새로운 인사이트를 얻어보세요.'
+      detail: '사용자가 선택한 PDF 파일을 업로드하면,\n \
+      OCR 처리를 통해 텍스트를 추출하여 데이터베이스에 저장합니다. \n \
+      챗봇은 RAG 방법론을 사용해 \n \
+      사용자가 제공한 질문과 관련된 내용을 데이터베이스에서 찾아, \n \
+      이를 사전학습된 언어모델(GPT-3 Turbo)과 결합하여 답변을 제공합니다. \n \
+      이를 통해 더욱 정확하고 유용한 정보를 제공받을 수 있습니다.'
     },
     {
-      title: '벡터 검색',
-      image: '/search.jpeg',
+      title: 'Vector Search',
+      image: '/search.jpg',
+      video: 'video/drive.mp4',
       description: '원하는 키워드를 검색해보세요.',
-      detail: '벡터 검색을 통해서 검색한 쿼리에 대해 유사도가 가장 높은 논문들을 받아보세요.'
-
+      detail: '사용자가 키워드 또는 문장을 입력하면, \n \
+      키워드 또는 문장을 Weaviate로 논문 기반 벡터 검색을 수행합니다. \n \
+      Weaviate는 입력된 텍스트를 벡터로 변환하여 \n \
+      고차원 벡터 공간에서 유사한 벡터를 가진 문서를 검색하고, \n 관련성 높은 결과를 반환합니다. \n \
+      사용자가 찾고자 하는 정보를 정확하고 신속하게 제공하여, \n \
+      연구자와 학습자가 필요한 논문을 쉽게 찾을 수 있도록 지원합니다.'
     },
     {
-      title: '키워드 추출',
-      image: '/keyword.jpeg',
+      title: 'Keyword Extraction',
+      image: '/keyword.jpg',
+      video: 'video/drive.mp4',
       description: '문서에서 중요 키워드를 추출해보세요.',
-      detail: '문서에서 중요한 키워드를 자동으로 추출하여 핵심 내용을 빠르게 파악할 수 있습니다. \n 전체 텍스트에서 TextRazor를 통해 중요한 키워드를 추출하여 핵심 파악을 돕습니다.'
+      detail: '업로드한 PDF 문서의 텍스트를 분석합니다. \n \
+      Text Razor는 자연어 처리(NLP) 기술을 활용하여 \n \
+      텍스트를 정밀하게 분석하고, 문서에서 의미 있는 단어와 구를 추출합니다. \n \
+      이를 통해 문서의 주요 내용을 효과적으로 파악할 수 있으며, \n \
+      중요한 정보와 키워드를 쉽게 식별할 수 있습니다. \n \
+      이 과정은 문서의 깊이 있는 이해를 돕고, 기본적인 데이터를 제공합니다. \n \
+      Text Razor의 강력한 NLP 기능를 통해, 효율적으로 분석할 수 있습니다.'
     },
     {
-      title: '요약 기능',
-      image: '/summary.jpeg',
+      title: 'Summary',
+      image: '/summary.jpg',
+      video: 'video/drive.mp4',
       description: '긴 문서를 요약해보세요.',
-      detail: '긴 문서를 간결하게 요약하여 핵심 내용을 쉽게 파악할 수 있습니다. \nHuggingFace와 의미론적 추출을 결합하여 정확하고 간결한 요약을 생성합니다. \n이 기술은 자연어 처리 모델을 활용하여 문서의 주요 개념과 핵심 문장을 식별하고, 의미론적 분석을 통해 문맥을 파악합니다. \n결과적으로 원문의 핵심 메시지를 유지하면서도 불필요한 세부사항을 제거한 간결한 요약을 제공합니다. \n이를 통해 사용자는 긴 문서의 내용을 빠르게 이해하고, 효율적으로 정보를 처리할 수 있습니다.'
+      detail: '긴 문서를 간결하게 요약하여 핵심 내용을 쉽게 파악할 수 있습니다. \n \
+      HuggingFace와 의미론적 추출을 결합하여 정확하고 간결한 요약을 생성합니다. \n \
+      이 기술은 자연어 처리 모델을 활용하여 문서의 주요 개념과 핵심 문장을 식별하고, 의미론적 분석을 통해 문맥을 파악합니다. \n \
+      그 결과 원문의 핵심 메시지를 유지하면서도 불필요한 세부사항을 제거한 간결한 요약을 제공합니다. \n \
+      이 기능을 통해 사용자는 긴 문서의 내용을 빠르게 이해하고, \n효율적으로 정보를 처리할 수 있습니다.'
     }
   ], [navigate]);
 
@@ -234,6 +274,7 @@ function Main() {
 
   const handleFeatureChange = useCallback((feature) => {
     setActiveFeature(feature);
+    console.log(feature);
     if (!initialLoad && userInteracted) {
       const index = features.findIndex(f => f.title === feature.title);
       if (index !== -1 && featureRefs.current[index]) {
@@ -250,13 +291,8 @@ function Main() {
     setUserInteracted(true);
   }, []);
 
-  // console.log(`api: ${api}`);
   const handleLoginClick = () => {
     navigate('/login');
-  };
-
-  const handleDriveClick = () => {
-    navigate('/drive');
   };
 
   const handleScroll = () => {
@@ -274,88 +310,91 @@ function Main() {
     };
   }, []);
 
-
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'black' }}>
-      <StyledAppBar position="static" sx={{ background: 'linear-gradient(to bottom, #032859, black)', height: '100px', paddingTop: '15px' }}>
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'white', overflowY: 'auto', scrollBehavior: 'smooth' }}>
+      <StyledAppBar position="static" sx={{ background: 'white', height: '10%', paddingTop: '15px' }}>
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', margin: '0px 20px' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }} >
             <RouterLink to="/">
-              <img src="/logo_white.png" alt="Header Logo" style={{ height: '40px' }} />
+              <img src="/header.png" alt="Header Logo" style={{ height: '40px' }} />
             </RouterLink>
-            <Typography variant="h6" mx={2} noWrap sx={{ fontSize: '25px', color: 'white', fontWeight: 'bold' }}>PDFast</Typography>
+            <Typography variant="h6" mx={2} noWrap sx={{ fontSize: '25px', color: '#376FFF', fontWeight: 'bold' }}>PDFast</Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center'}} />
           <Box >
-          <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF' }}}
-          onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange('드라이브'); }
-          if (typeof handleDetailView === 'function') { handleDetailView('드라이브'); }}}>Drive</StyledButton>
-          <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF' }}} 
-          onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange('챗봇'); }
-          if (typeof handleDetailView === 'function') { handleDetailView('챗봇'); }}}>Chatbot</StyledButton>          
-          <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF' }}} 
-          onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange('벡터 검색'); }
-          if (typeof handleDetailView === 'function') { handleDetailView('벡터 검색'); }}}>Vector Search</StyledButton>
-          <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF' } }} 
-          onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange('키워드 추출'); }
-          if (typeof handleDetailView === 'function') { handleDetailView('키워드 추출'); }}}>Keyword Extraction</StyledButton>
-          <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF' } }} 
-          onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange('요약 기능'); }
-          if (typeof handleDetailView === 'function') { handleDetailView('요약 기능'); }}}>Summary</StyledButton>
+            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  }}}
+              onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange(features[0]); }
+              if (typeof handleDetailView === 'function') { handleDetailView(features[0]); }}}>Drive</StyledButton>
+            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white' }}} 
+              onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange(features[1]); }
+              if (typeof handleDetailView === 'function') { handleDetailView(features[1]); }}}>Chatbot</StyledButton>          
+            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  }}} 
+              onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange(features[2]); }
+              if (typeof handleDetailView === 'function') { handleDetailView(features[2]); }}}>Vector Search</StyledButton>
+            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }} 
+              onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange(features[3]); }
+              if (typeof handleDetailView === 'function') { handleDetailView(features[3]); }}}>Keyword Extraction</StyledButton>
+            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }} 
+              onClick={() => { if (typeof handleFeatureChange === 'function') { handleFeatureChange(features[4]); }
+              if (typeof handleDetailView === 'function') { handleDetailView(features[4]); }}}>Summary</StyledButton>
           </Box>        
           <Box sx={{ mx: 2, }} /> {/* 여백 추가 */}
           <Box>
           {accessToken && logoutStatus !== 204 ? (
-            <StyledButton color="inherit" component={Link} to="/logout" sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#03318C' } }}>Logout</StyledButton>
+            <StyledButton color="inherit" component={Link} to="/logout" sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }}>Logout</StyledButton>
           ) : (
-            <StyledButton color="inherit" onClick={handleLoginClick} sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#03318C' } }}>Login</StyledButton>
+            <StyledButton color="inherit" onClick={handleLoginClick} sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white'  } }}>Login</StyledButton>
           )}
-            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'white', padding: '5px 20px', '&:hover': { backgroundColor: '#03318C' } }} onClick={() => navigate('/register')}>Signup</StyledButton>
+            <StyledButton sx={{ fontSize: '18px', fontWeight: 'bold', color: 'black', padding: '5px 20px', '&:hover': { backgroundColor: '#0455BF', color: 'white' } }} onClick={() => navigate('/register')}>Signup</StyledButton>
           </Box>
         </Toolbar>
       </StyledAppBar>
       <Container maxWidth="100%" style={{ flex: 1, overflow: 'hidden', position: 'relative', maxHeight: '100vh' }}>
-          <Box
-            sx={{
-              height: '100%',
-              transition: 'transform 0.5s ease-in-out, opacity 0.5s ease-in-out',
-              transform: viewMode === 'main' ? 'translateY(0)' : 'translateY(-100%)',
-              opacity: viewMode === 'main' ? 1 : 0,
-              position: 'absolute',
-              width: '100%',
-            }}
-          >
-            <FeatureSwiper
-              handleFeatureChange={handleFeatureChange}
-              features={features}
-              onUserInteraction={handleUserInteraction}
-              featureRefs={featureRefs}
-              handleDetailView={handleDetailView}
-            />
+        <Box
+          sx={{
+            height: '100%',
+            transition: 'transform 0.5s ease-in-out, opacity 0.5s ease-in-out',
+            transform: viewMode === 'main' ? 'translateY(0)' : 'translateY(-100%)',
+            opacity: viewMode === 'main' ? 1 : 0,
+            position: 'absolute',
+            width: '96%',
+          }}
+        >
+          <FeatureSwiper
+            handleFeatureChange={handleFeatureChange}
+            features={features}
+            onUserInteraction={handleUserInteraction}
+            featureRefs={featureRefs}
+            handleDetailView={handleDetailView}
+          />
+          <Box sx={{ marginTop: '3vw' }}>
+            <Typography style={{ textAlign: 'left',  color: 'black', fontSize: '2.5em', marginLeft: '50px', fontWeight: 'bold' }}>PDF Learning Solution</Typography>
+            <Typography style={{ textAlign: 'left',  color: 'black', fontSize: '2.5em', marginLeft: '50px', fontWeight: 'bold' }}>Analyze Documents Efficiently</Typography>
+            <Box sx={{ marginLeft: '50px',  padding: '0px' }}>
+              <Box component="hr" sx={{ border: '1px solid #737373', width: '30%', float: 'left' }} />
+            </Box>
+            <Typography style={{ textAlign: 'left',  width: '43%',  color: '#737373', fontSize: '1.1em', marginLeft: '50px', marginTop: '30px' }}>
+              사전학습 기능을 통해 사용자에게 최상의 서비스를 제공합니다. 이를 통해 더 정확하고 개인화된 응답을 받을 수 있습니다.
+              사용자의 요구를 깊이 이해하고, 최적의 해결책을 제안합니다. </Typography>
           </Box>
-          <Box
-            sx={{
-              height: '100%',
-              transition: 'transform 0.5s ease-in-out, opacity 0.5s ease-in-out',
-              transform: viewMode === 'detail' ? 'translateY(0)' : 'translateY(100%)',
-              opacity: viewMode === 'detail' ? 1 : 0,
-              position: 'absolute',
-              width: '100%',
-              overflow: 'auto',
-            }}
-          >
-            {selectedFeature && <FeatureDetail feature={selectedFeature} onBack={handleBackToMain} />}
-          </Box>
-          
-        </Container>
-        <Typography style={{ textAlign: 'left',  color: '#fff', fontSize: '40px', marginLeft: '50px' }}>PDF Learning Solution: Sinizzu</Typography>
-      <Box sx={{ marginLeft: '50px',  padding: '15px 0px' }}>
-        <Box component="hr" sx={{ border: '1px solid #737373', width: '30%', float: 'left' }} />
-      </Box>
-      <Typography style={{ textAlign: 'left',  color: '#737373', fontSize: '18px', marginLeft: '50px', marginBottom: '80px', }}>사전학습 기능으로 사용자에게 최상의 서비스를 제공해드립니다.</Typography>
+        </Box>
+        <Box
+          sx={{
+            height: '100%',
+            transition: 'transform 0.5s ease-in-out, opacity 0.5s ease-in-out',
+            transform: viewMode === 'detail' ? 'translateY(0)' : 'translateY(100%)',
+            opacity: viewMode === 'detail' ? 1 : 0,
+            position: 'absolute',
+            width: '100%',
+            overflow: 'auto',
+          }}
+        >
+          {selectedFeature && <FeatureDetail feature={selectedFeature} onBack={handleBackToMain} />}
+        </Box>
+      </Container>
+      <Box sx={{ width: '100%', position: 'absolute', bottom: 0, textAlign: 'center', backgroundColor: '#fff', color: '#000', padding: '10px 0' }}>Copyright © 2022 Sinizzu. All rights reserved.</Box>
     </div>
   );
 }
-
 
 export default Main;
