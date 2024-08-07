@@ -24,7 +24,7 @@
 ![파이널-프로젝트-005](https://github.com/user-attachments/assets/4c7d0043-7651-4d3c-b1f0-294b8818998d)
 
 
-## 👥 팀원 소개
+# 👥 팀원 소개
 
 | <img width="250" alt="hj" src="https://github.com/user-attachments/assets/c0af7daa-f81b-4527-b62b-f9ee8d23e311"> | <img width="250" alt="yj" src="https://github.com/user-attachments/assets/bee1516f-d25d-46af-8cee-2771a4d9c917"> | <img width="250" alt="jh" src="https://github.com/user-attachments/assets/0c08e694-5ca3-446a-8af9-e7441b83553f"> |
 | --- | --- | --- |
@@ -33,9 +33,18 @@
 <br/>
 <br/>
 
+
 # ⚒ 전체 아키텍처
 
 ![파이널-프로젝트-008](https://github.com/user-attachments/assets/da29e426-b752-4f92-98ef-833580c38298)
+
+<br/>
+<br/>
+
+# 📝 기능 및 화면
+
+![Cap 2024-08-06 16-20-27-430](https://github.com/user-attachments/assets/e2a472ab-def9-416e-887a-7b6b28ac3bd2)
+![Cap 2024-08-06 17-17-11-524](https://github.com/user-attachments/assets/b7edf6db-d21f-46a6-9fee-5bdfe26a1e3a)
 
 <br/>
 <br/>
@@ -46,19 +55,29 @@
 <img width="45" alt="javascript" src="https://github.com/user-attachments/assets/14301984-8b78-4449-bab3-74b5f18a4650"> 
 <br/>
 
+## Library & Framework
+
+<img width="50" alt="react" src="https://github.com/user-attachments/assets/f72d2270-f5a6-4bc8-b3fd-59f2e8f6d8d0"> 
+<br/>
 
 ## Database
-<img width="45" alt="s3" src="https://github.com/user-attachments/assets/53249fab-04e0-41e8-845b-ae75ce3b33d8"> 
+
+<img width="45" alt="s3" src="https://github.com/user-attachments/assets/53249fab-04e0-41e8-845b-ae75ce3b33d8"> <img width="50" alt="mongodb" src="https://github.com/user-attachments/assets/bb0d8cf9-01db-4f61-befa-53f1f384f835"> <img width="50" alt="weaviate" src="https://github.com/user-attachments/assets/3c8bd45b-74d8-420a-aa8b-8726f9ed0e9e"> 
 <br/>
 
 
 ## Version Control System
+
 <img width="50" alt="github" src="https://github.com/user-attachments/assets/2e05133c-088b-4494-ae2c-2947e7b96c9f"> 
 <br/>
 
 
 ## Communication Tool
+
 <img width="50" alt="kakao" src="https://github.com/user-attachments/assets/4dbeeaba-c7ca-4316-8569-b58ebb18a4fc"> <img width="50" alt="notion" src="https://github.com/user-attachments/assets/3b7dda7e-909a-41a5-90f9-7058c35b41dd"> 
+
+
+<br/>
 <br/>
 <br/>
 
