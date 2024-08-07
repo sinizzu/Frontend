@@ -1,3 +1,68 @@
+
+# 📂 PDFast 서비스 소개
+
+![파이널-프로젝트-001](https://github.com/user-attachments/assets/b6ceb105-2b41-4101-b510-ac062fe5c130)
+
+![파이널-프로젝트-004](https://github.com/user-attachments/assets/4ec19ea5-4540-4606-8ef0-fc35691e852e)
+
+
+<br/>
+<br/>
+
+## 🎥 시연 영상
+
+|<img width="1000" src="https://github.com/user-attachments/assets/6d27a6c6-caf8-4071-974c-54c735fe1d0f">|
+| :---: |
+|PDF 문서를 통한 학습 보조 웹 플랫폼|
+
+<br/>
+<br/>
+
+## ✅ 추진 배경
+
+
+![파이널-프로젝트-005](https://github.com/user-attachments/assets/4c7d0043-7651-4d3c-b1f0-294b8818998d)
+
+
+## 👥 팀원 소개
+
+| <img width="250" alt="hj" src="https://github.com/user-attachments/assets/c0af7daa-f81b-4527-b62b-f9ee8d23e311"> | <img width="250" alt="yj" src="https://github.com/user-attachments/assets/bee1516f-d25d-46af-8cee-2771a4d9c917"> | <img width="250" alt="jh" src="https://github.com/user-attachments/assets/0c08e694-5ca3-446a-8af9-e7441b83553f"> |
+| --- | --- | --- |
+| 🐼[정현주](https://github.com/wjdguswn1203)🐼 | 🐱[송윤주](https://github.com/raminicano)🐱 | 🐶[신지현](https://github.com/sinzng)🐶 |
+
+<br/>
+<br/>
+
+# ⚒ 전체 아키텍처
+
+![파이널-프로젝트-008](https://github.com/user-attachments/assets/da29e426-b752-4f92-98ef-833580c38298)
+
+<br/>
+<br/>
+
+# 🏆 기술 스택
+## Programming language
+
+<img width="45" alt="javascript" src="https://github.com/user-attachments/assets/14301984-8b78-4449-bab3-74b5f18a4650"> 
+<br/>
+
+
+## Database
+<img width="45" alt="s3" src="https://github.com/user-attachments/assets/53249fab-04e0-41e8-845b-ae75ce3b33d8"> 
+<br/>
+
+
+## Version Control System
+<img width="50" alt="github" src="https://github.com/user-attachments/assets/2e05133c-088b-4494-ae2c-2947e7b96c9f"> 
+<br/>
+
+
+## Communication Tool
+<img width="50" alt="kakao" src="https://github.com/user-attachments/assets/4dbeeaba-c7ca-4316-8569-b58ebb18a4fc"> <img width="50" alt="notion" src="https://github.com/user-attachments/assets/3b7dda7e-909a-41a5-90f9-7058c35b41dd"> 
+<br/>
+<br/>
+
+
 # 설명
 메인 frontend repo입니다.
 
