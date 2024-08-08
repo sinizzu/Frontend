@@ -52,29 +52,29 @@
 # 🏆 기술 스택
 ## Programming language
 
-<img width="45" alt="javascript" src="https://github.com/user-attachments/assets/14301984-8b78-4449-bab3-74b5f18a4650"> 
+<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black"/>
 <br/>
 
 ## Library & Framework
 
-<img width="50" alt="react" src="https://github.com/user-attachments/assets/f72d2270-f5a6-4bc8-b3fd-59f2e8f6d8d0"> 
+<img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=white"/>
 <br/>
 
 ## Database
 
-<img width="45" alt="s3" src="https://github.com/user-attachments/assets/53249fab-04e0-41e8-845b-ae75ce3b33d8"> <img width="50" alt="mongodb" src="https://github.com/user-attachments/assets/bb0d8cf9-01db-4f61-befa-53f1f384f835"> <img width="50" alt="weaviate" src="https://github.com/user-attachments/assets/3c8bd45b-74d8-420a-aa8b-8726f9ed0e9e"> 
+<img alt="s3" src="https://img.shields.io/badge/AWS_S3-569A31?logo=amazons3&logoColor=fff&style=for-the-badge"> <img src="https://img.shields.io/badge/-MongoDB-13aa52?style=for-the-badge&logo=mongodb&logoColor=white"/> <img src="https://img.shields.io/badge/weaviate-6EBE49?style=for-the-badge"/>
+
 <br/>
 
 
 ## Version Control System
-
-<img width="50" alt="github" src="https://github.com/user-attachments/assets/2e05133c-088b-4494-ae2c-2947e7b96c9f"> 
+<img alt="github" src="https://img.shields.io/badge/Github-000000?style=for-the-badge&logo=github&logoColor=white"> 
 <br/>
 
 
 ## Communication Tool
 
-<img width="50" alt="kakao" src="https://github.com/user-attachments/assets/4dbeeaba-c7ca-4316-8569-b58ebb18a4fc"> <img width="50" alt="notion" src="https://github.com/user-attachments/assets/3b7dda7e-909a-41a5-90f9-7058c35b41dd"> 
+<img alt="notion" src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white"> <img alt="kakao" src="https://img.shields.io/badge/KakaoTalk-FFCD00?style=for-the-badge&logo=kakao&logoColor=black"> 
 
 
 <br/>
