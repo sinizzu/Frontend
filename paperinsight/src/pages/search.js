@@ -7,6 +7,7 @@ const MainFastAPI = process.env.REACT_APP_MainFastAPI;
 const Search = ({ setSelectedPdf, setFileName, handleButtonClick, handlePdfSelection }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchCategory, setSearchCategory] = useState('keyword');
+  const [searchQuery, setSearchQuery] = useState('');
   const [papers, setPapers] = useState([]);
   const [expandedAbstracts, setExpandedAbstracts] = useState({});
 
@@ -58,24 +59,59 @@ const Search = ({ setSelectedPdf, setFileName, handleButtonClick, handlePdfSelec
     if (event.key === 'Enter' && event.nativeEvent.isComposing === false) {
       console.log("Search term:", searchTerm);
       console.log("Search category:", searchCategory);
-      const MainFastAPI = process.env.REACT_APP_MainFastAPI;
-      let response = null;
+
       if (searchCategory === 'keyword') {
-        response = axios.get(`${MainFastAPI}/api/paper/searchKeyword?searchword=${searchTerm}`);
+        axios.get(`${MainFastAPI}/api/paper/searchKeyword?searchword=${searchTerm}`)
+          .then((response) => {
+            const { resultCode, data } = response.data;
+            if (resultCode === 200) {
+              setPapers(data); // Update the papers state with the new data
+            } else {
+              console.error('Error: ', response.data);
+            }
+          })
+          .catch((error) => console.error('Error:', error));
+      } else if (searchCategory === 'sentence') {
+        axios.post(`${MainFastAPI}/api/translate/checkLanguage`, { text: searchTerm })
+          .then((res) => {
+            console.log("searchLanguage:", res.data);
+            if (res.data.lang === 'kr') {
+              axios.post(`${MainFastAPI}/api/translate/transelateToEnglish`, { text: searchTerm })
+                .then((res) => {
+                  const translatedQuery = res.data.data;
+                  setSearchQuery(translatedQuery); // Update the searchQuery state with the translated query
+                  console.log("translateToEnglish:", translatedQuery);
+                  return translatedQuery; // Return the translated query to be used in the next then block
+                })
+                .then((translatedQuery) => {
+                  return axios.get(`${MainFastAPI}/api/paper/searchColl?searchword=${translatedQuery}`);
+                })
+                .then((response) => {
+                  const { resultCode, data } = response.data;
+                  console.log("searchSentence:", data);
+                  if (resultCode === 200) {
+                    setPapers(data);
+                  } else {
+                    console.error('Error: ', response.data);
+                  }
+                })
+                .catch((error) => console.error('Error:', error));
+            } else {
+              axios.get(`${MainFastAPI}/api/paper/searchColl?searchword=${searchTerm}`)
+                .then((response) => {
+                  const { resultCode, data } = response.data;
+                  console.log("searchSentence:", data);
+                  if (resultCode === 200) {
+                    setPapers(data);
+                  } else {
+                    console.error('Error: ', response.data);
+                  }
+                })
+                .catch((error) => console.error('Error:', error));
+            }
+          })
+          .catch((error) => console.error('Error:', error));
       }
-      else if (searchCategory === 'sentence') {
-        response = axios.get(`${MainFastAPI}/api/paper/getColl?searchword=${searchTerm}`);
-      }
-      response.then((res) => {
-        const { resultCode, data } = res.data;
-        if (resultCode === 200) {
-          setPapers(data); // Update the papers state with the new data
-        } else {
-          console.error('Error: ', res.data);
-        }
-      }).catch((error) => {
-        console.error('Error fetching data:', error);
-      });
     }
   };
 
