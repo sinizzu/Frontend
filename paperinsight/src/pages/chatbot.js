@@ -167,15 +167,21 @@ function Chatbot({ pdfId, fullText, ocrCompleted, uploadedFileUrl, language, pdf
     setIsTyping(true);
 
     try {
-      // 한국어로 전송된 쿼리를 영어로 변경
-      const request = await axios.post(`${MainFastAPI}/api/translate/transelateToEnglish`,
-        { text: messageInput },
-        { headers: { 'Content-Type': 'application/json' } }
-      )
-      console.log(`Sending message to chatbot: ${request.data.data}`);
+      let request = '';
+      if (language === 'en'){
+        // 한국어로 전송된 쿼리를 영어로 변경
+        request = await axios.post(`${MainFastAPI}/api/translate/transelateToEnglish`,
+          { text: messageInput },
+          { headers: { 'Content-Type': 'application/json' } }
+        )
+        console.log(`Sending message to chatbot: ${request.data.data}`);
+        request = request.data.data;
+      } else {
+        request = messageInput;
+      }
 
       // 챗봇 응답값 반환
-      const response = await fetchChatbotResponse(pdfId, request.data.data, language);
+      const response = await fetchChatbotResponse(pdfId, request, language);
       setIsTyping(false);
 
       let botResponse = response.data.data || '챗봇 응답을 가져오지 못했습니다.';
